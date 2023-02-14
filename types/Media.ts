@@ -1,5 +1,6 @@
 
-type Game = {
+type Media = {
+	mediatype: string,
 	banner: string,
 	capsuleimage: string,
 	contentrating: string,
@@ -29,4 +30,4 @@ type Game = {
 	website: string,
 }
 
-export default Game;
+export default Media;
