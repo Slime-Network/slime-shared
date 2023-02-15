@@ -1,5 +1,5 @@
 # Spriggan Shared
 
-Shared types and utils used throughout Spriggan, and DApps.
+Contains the Spriggan RPC Context, and other shared types and utils that are used by Spriggan, and our first party dapps.
 
-Please use these shared types in your DApps to help maintain compatibility.
+Please use this shared repo in your dapps to increase compatibility.
