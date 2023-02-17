@@ -3,6 +3,7 @@ import { createContext, ReactNode, useContext, useState } from "react";
 import Media from "../types/Media";
 
 import axios from 'axios';
+import { SPRIGGAN_METHODS } from "../constants";
 
 /**
  * Types
@@ -13,16 +14,22 @@ interface IFormattedRpcResponse {
 	result: string;
 }
 
+type SprigganRPCParams = {
+	media: Media,
+}
+
 type TRpcRequestCallback = (params: {media: Media}) => Promise<void>;
 
 interface IContext {
-	SprigganRpc: {
+	sprigganRpc: {
 		ping: TRpcRequestCallback,
 		downloadMedia: TRpcRequestCallback,
 	},
 	rpcResult?: IFormattedRpcResponse | null;
 	isRpcRequestPending: boolean;
 }
+
+
 
 /**
  * Context
@@ -60,12 +67,11 @@ export function SprigganRpcContextProvider({children}: {
 			}
 		};
 
-	const SprigganRpc = {
-		ping: _createSprigganRpcRequestHandler(
-			async (
+	const standardRequest = (method: string): (params: SprigganRPCParams) => Promise<IFormattedRpcResponse> => {
+		return async (
+			params: SprigganRPCParams
 			): Promise<IFormattedRpcResponse> => {
-				const method = 'downloadMedia'
-				const result = await axios.post(`http://127.0.0.1:5235/`, {
+				const result = await axios.post(`http://localhost:5235/`, {
 					jsonrpc: "2.0",
 					method: method,
 					id: "ping",
@@ -76,31 +82,17 @@ export function SprigganRpcContextProvider({children}: {
 					result: JSON.stringify(result),
 				};
 			}
-		),
-		downloadMedia: _createSprigganRpcRequestHandler(
-			async (
-				params: {media: Media}
-			): Promise<IFormattedRpcResponse> => {
-				const method = 'downloadMedia'
-				const result = await axios.post(`http://127.0.0.1:5235/`, {
-					jsonrpc: "2.0",
-					method: method,
-					id: "downloadMedia: " + params.media.title,
-					params: params,
-				});
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+	}
+
+	const sprigganRpc = {
+		ping: _createSprigganRpcRequestHandler(standardRequest(SPRIGGAN_METHODS.PING)),
+		downloadMedia: _createSprigganRpcRequestHandler(standardRequest(SPRIGGAN_METHODS.DOWNLOAD_MEDIA)),
 	};
 
 	return (
 		<SprigganRpcContext.Provider
 		value={{
-			SprigganRpc,
+			sprigganRpc,
 			rpcResult: result,
 			isRpcRequestPending: pending,
 		}}
