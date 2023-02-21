@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext, useState } from "react";
 
-import Media from "../types/Media";
+import { Media } from "../types/Media";
 
 import axios from 'axios';
 import { SPRIGGAN_METHODS } from "../constants";
@@ -14,22 +14,20 @@ interface IFormattedRpcResponse {
 	result: string;
 }
 
-type SprigganRPCParams = {
+export type SprigganRPCParams = {
 	media: Media,
 }
 
-type TRpcRequestCallback = (params: {media: Media}) => Promise<void>;
+type TRpcRequestCallback = (params: SprigganRPCParams) => Promise<void>;
 
 interface IContext {
 	sprigganRpc: {
 		ping: TRpcRequestCallback,
 		downloadMedia: TRpcRequestCallback,
 	},
-	rpcResult?: IFormattedRpcResponse | null;
+	sprigganRpcResult?: IFormattedRpcResponse | null;
 	isRpcRequestPending: boolean;
 }
-
-
 
 /**
  * Context
@@ -48,10 +46,10 @@ export function SprigganRpcContextProvider({children}: {
 	const _createSprigganRpcRequestHandler =
 		(
 			rpcRequest: (
-				params: {media: Media}
+				params: SprigganRPCParams
 			) => Promise<IFormattedRpcResponse>
 		) =>
-		async (params: {media: Media}) => {
+		async (params: SprigganRPCParams) => {
 			try {
 				setPending(true);
 				const result = await rpcRequest(params);
@@ -93,7 +91,7 @@ export function SprigganRpcContextProvider({children}: {
 		<SprigganRpcContext.Provider
 		value={{
 			sprigganRpc,
-			rpcResult: result,
+			sprigganRpcResult: result,
 			isRpcRequestPending: pending,
 		}}
 		>
