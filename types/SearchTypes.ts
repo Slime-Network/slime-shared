@@ -10,11 +10,15 @@ export enum sortOptions {
 
 export type SearchParams = {
 	titleTerm: string;
-	developerTerm: string;
+	creatorTerm: string;
 	publisherTerm: string;
 	offset: number;
 	sort: sortOptions;
 	tags: string[];
 	status: string;
 	includeAdultOnly: boolean;
+};
+
+export type InstallDataParams = {
+	productId: string;
 };
