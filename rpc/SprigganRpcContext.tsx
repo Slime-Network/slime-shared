@@ -24,6 +24,7 @@ interface IContext {
 	sprigganRpc: {
 		ping: TRpcRequestCallback,
 		downloadMedia: TRpcRequestCallback,
+		getMediaData: TRpcRequestCallback,
 	},
 	rpcResult?: IFormattedRpcResponse | null;
 	isRpcRequestPending: boolean;
@@ -87,6 +88,7 @@ export function SprigganRpcContextProvider({children}: {
 	const sprigganRpc = {
 		ping: _createSprigganRpcRequestHandler(standardRequest(SPRIGGAN_METHODS.PING)),
 		downloadMedia: _createSprigganRpcRequestHandler(standardRequest(SPRIGGAN_METHODS.DOWNLOAD_MEDIA)),
+		getMediaData: _createSprigganRpcRequestHandler(standardRequest(SPRIGGAN_METHODS.GET_MEDIA_DATA))
 	};
 
 	return (
