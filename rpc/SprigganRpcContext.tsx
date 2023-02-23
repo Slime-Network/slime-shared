@@ -25,12 +25,8 @@ interface IContext {
 	sprigganRpc: {
 		ping: TRpcRequestCallback,
 		downloadMedia: TRpcRequestCallback,
-<<<<<<< HEAD
 		getLocalData: TRpcRequestCallback,
 		saveLocalData: TRpcRequestCallback,
-=======
-		getMediaData: TRpcRequestCallback,
->>>>>>> ec5a6d41447a662e89780ae953ea05771e330ef7
 	},
 	sprigganRpcResult?: IFormattedRpcResponse | null;
 	isRpcRequestPending: boolean;
