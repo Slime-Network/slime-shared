@@ -16,6 +16,7 @@ interface IFormattedRpcResponse {
 
 export type SprigganRPCParams = {
 	media: Media,
+	productId: string,
 }
 
 type TRpcRequestCallback = (params: SprigganRPCParams) => Promise<void>;
@@ -24,6 +25,8 @@ interface IContext {
 	sprigganRpc: {
 		ping: TRpcRequestCallback,
 		downloadMedia: TRpcRequestCallback,
+		getLocalData: TRpcRequestCallback,
+		saveLocalData: TRpcRequestCallback,
 	},
 	sprigganRpcResult?: IFormattedRpcResponse | null;
 	isRpcRequestPending: boolean;
@@ -37,9 +40,9 @@ export const SprigganRpcContext = createContext<IContext>({} as IContext);
 /**
  * Provider
  */
-export function SprigganRpcContextProvider({children}: {
+export const SprigganRpcContextProvider = ({children}: {
 	children: ReactNode | ReactNode[];
-}) {
+}) => {
 	const [pending, setPending] = useState(false);
 	const [result, setResult] = useState<IFormattedRpcResponse | null>();
 
@@ -69,10 +72,11 @@ export function SprigganRpcContextProvider({children}: {
 		return async (
 			params: SprigganRPCParams
 			): Promise<IFormattedRpcResponse> => {
-				const result = await axios.post(`http://localhost:5235/`, {
+				const result = await axios.post(`http://localhost:5235`, {
 					jsonrpc: "2.0",
+					id: + new Date(),
 					method: method,
-					id: "ping",
+					params: params,
 				});
 				return {
 					method,
@@ -85,6 +89,8 @@ export function SprigganRpcContextProvider({children}: {
 	const sprigganRpc = {
 		ping: _createSprigganRpcRequestHandler(standardRequest(SPRIGGAN_METHODS.PING)),
 		downloadMedia: _createSprigganRpcRequestHandler(standardRequest(SPRIGGAN_METHODS.DOWNLOAD_MEDIA)),
+		getLocalData: _createSprigganRpcRequestHandler(standardRequest(SPRIGGAN_METHODS.GET_LOCAL_DATA)),
+		saveLocalData: _createSprigganRpcRequestHandler(standardRequest(SPRIGGAN_METHODS.SAVE_LOCAL_DATA)),
 	};
 
 	return (
@@ -100,7 +106,7 @@ export function SprigganRpcContextProvider({children}: {
 	);
 }
 
-export function useSprigganRpc() {
+export const useSprigganRpc = () => {
 	const context = useContext(SprigganRpcContext);
 	if (context === undefined) {
 		throw new Error("useSprigganRpc must be used within a SprigganRpcContextProvider");
