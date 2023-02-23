@@ -93,12 +93,9 @@ export const SprigganRpcContextProvider = ({children}: {
 	const sprigganRpc = {
 		ping: _createSprigganRpcRequestHandler(standardRequest(SPRIGGAN_METHODS.PING)),
 		downloadMedia: _createSprigganRpcRequestHandler(standardRequest(SPRIGGAN_METHODS.DOWNLOAD_MEDIA)),
-<<<<<<< HEAD
 		getLocalData: _createSprigganRpcRequestHandler(standardRequest(SPRIGGAN_METHODS.GET_LOCAL_DATA)),
 		saveLocalData: _createSprigganRpcRequestHandler(standardRequest(SPRIGGAN_METHODS.SAVE_LOCAL_DATA)),
-=======
-		getMediaData: _createSprigganRpcRequestHandler(standardRequest(SPRIGGAN_METHODS.GET_MEDIA_DATA))
->>>>>>> ec5a6d41447a662e89780ae953ea05771e330ef7
+
 	};
 
 	return (
