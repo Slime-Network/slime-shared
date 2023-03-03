@@ -79,6 +79,7 @@ export const parseNftMetadata = (resp: NftMetadataResponse): NftMetadataParsed =
 
 export type Media = {
 	mediaType: string,
+	adultTags: string[],
 	banner: string,
 	capsuleImage: string,
 	contentRating: string,
@@ -95,10 +96,10 @@ export type Media = {
 	productId: string,
 	publisher: string,
 	publisherDid: string,
-	screenshots: string,
+	screenshots: string[],
 	shortDescription: string,
 	status: string,
-	tags: string,
+	tags: string[],
 	title: string,
 	torrents: string,
 	trailer: string,

@@ -1,5 +1,5 @@
 
-export const tags = [
+export const ContentTags = [
 	'Abstract',
 	'Action',
 	'Action Adventure',
@@ -444,7 +444,7 @@ export const tags = [
 ]
 
 
-export const adultContentTags = [
+export const AdultContentTags = [
 	'Anal Sex',
 	'Ahegao',
 	'Bdsm',
