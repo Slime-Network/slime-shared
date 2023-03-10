@@ -47,6 +47,10 @@ export const DevelopmentStatuses = [
 	"Complete",
 ];
 
+export const KnownMarketplaces = [
+	"http://localhost:5233",
+];
+
 export const infoModalStyle = {
 	position: 'absolute' as 'absolute',
 	top: '50%',

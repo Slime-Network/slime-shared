@@ -50,15 +50,15 @@ export const SearchContextProvider = ({children}: {
 
 	const search = {
 		search: async (params: SearchParams) => {
-			const response = await axios.get(`${apiUrl}/media/search`, { params: { titleTerm: params.titleTerm } })
+			const response = await axios.get(`${apiUrl}/listings/search`, { params: { titleTerm: params.titleTerm } })
 			return hitsToGameList(response.data.hits.hits);
 		},
 		mostRecent: async (params: SearchParams) => {
-			const response = await axios.get(`${apiUrl}/media/mostRecent`, { params: {} })
+			const response = await axios.get(`${apiUrl}/listings/mostRecent`, { params: {} })
 			return hitsToGameList(response.data.hits.hits);
 		},
 		installData: async (productId: string) => {
-			const response = await axios.get(`${apiUrl}/media/getInstallData`, { params: {productId: productId} })
+			const response = await axios.get(`${apiUrl}/listings/getInstallData`, { params: {productId: productId} })
 			return response.data.hits.hits[0];
 		}
 	}
