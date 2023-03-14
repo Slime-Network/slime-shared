@@ -4,6 +4,8 @@ export enum sortOptions {
 	DateDesc,
 	RatingAsc,
 	RatingDesc,
+	lastUpdatedAsc,
+	lastUpdatedDesc,
 	NameAsc,
 	NameDesc,
 };
@@ -21,4 +23,5 @@ export type SearchParams = {
 
 export type InstallDataParams = {
 	productId: string;
+	offer: string;
 };

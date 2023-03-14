@@ -15,11 +15,13 @@ export enum SPRIGGAN_METHODS {
 
 export const MediaTypes = [
 	"Game",
-	// "Visual Novel",
-	// "Video",
-	// "Animation",
-	// "Book",
-	// "Audio Book",
+	"DApp",
+	"Software",
+	"Visual Novel",
+	"Video",
+	"Animation",
+	"Book",
+	"Audio Book",
 ];
 
 export const RatingOptions = [
