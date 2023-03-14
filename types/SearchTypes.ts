@@ -1,5 +1,4 @@
-
-export enum sortOptions {
+export enum SortOptions {
 	DateAsc,
 	DateDesc,
 	RatingAsc,
@@ -8,14 +7,14 @@ export enum sortOptions {
 	lastUpdatedDesc,
 	NameAsc,
 	NameDesc,
-};
+}
 
 export type SearchParams = {
 	titleTerm: string;
 	creatorTerm: string;
 	publisherTerm: string;
 	offset: number;
-	sort: sortOptions;
+	sort: SortOptions;
 	tags: string[];
 	status: string;
 	includeAdultOnly: boolean;

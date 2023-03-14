@@ -1,11 +1,11 @@
 import axios from "axios";
-
 import {
 	createContext,
 	ReactNode,
 	useContext,
 	useState,
 } from "react";
+
 import { Media } from "../types/Media";
 import { SearchParams } from "../types/SearchTypes";
 
@@ -33,35 +33,37 @@ export const SearchContext = createContext<IContext>({} as IContext);
 /**
  * Provider
  */
-export const SearchContextProvider = ({children}: {
+export const SearchContextProvider = ({ children }: {
 	children: ReactNode | ReactNode[];
 }) => {
 	const [apiUrl, setApiUrl] = useState('http://localhost:5233');
 
 	const hitsToGameList = (hits: any) => {
-		const games = new Array<Media>()
+		const games = new Array<Media>();
 		if (hits) {
 			hits.forEach((hit: any) => {
-				games.push(hit._source as Media)
+				// eslint-disable-next-line no-underscore-dangle -- needed because reading axios response
+				games.push(hit._source as Media);
 			});
 		}
-		return games
-	}
+		return games;
+	};
 
 	const search = {
 		search: async (params: SearchParams) => {
-			const response = await axios.get(`${apiUrl}/listings/search`, { params: { titleTerm: params.titleTerm } })
+			const response = await axios.get(`${apiUrl}/listings/search`, { params: { titleTerm: params.titleTerm } });
 			return hitsToGameList(response.data.hits.hits);
 		},
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars -- search will be improved later
 		mostRecent: async (params: SearchParams) => {
-			const response = await axios.get(`${apiUrl}/listings/mostRecent`, { params: {} })
+			const response = await axios.get(`${apiUrl}/listings/mostRecent`, { params: {} });
 			return hitsToGameList(response.data.hits.hits);
 		},
 		installData: async (productId: string) => {
-			const response = await axios.get(`${apiUrl}/listings/getInstallData`, { params: {productId: productId} })
+			const response = await axios.get(`${apiUrl}/listings/getInstallData`, { params: { productId } });
 			return response.data.hits.hits[0];
 		}
-	}
+	};
 
 	return (
 		<SearchContext.Provider
@@ -70,11 +72,11 @@ export const SearchContextProvider = ({children}: {
 				setApiUrl,
 				search,
 			}}
-			>
+		>
 			{children}
 		</SearchContext.Provider>
 	);
-}
+};
 
 export const useSearch = () => {
 	const context = useContext(SearchContext);
@@ -84,4 +86,4 @@ export const useSearch = () => {
 		);
 	}
 	return context;
-}
+};

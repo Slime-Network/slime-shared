@@ -1,4 +1,3 @@
-
 export const ContentTags = [
 	'Abstract',
 	'Action',
@@ -441,8 +440,7 @@ export const ContentTags = [
 	'6DOF',
 	'3D Fighter',
 	'3D Vision',
-]
-
+];
 
 export const AdultContentTags = [
 	'Anal Sex',
@@ -505,4 +503,4 @@ export const AdultContentTags = [
 	'Virgin',
 	'Vore',
 	'Voyeurism',
-]
+];
