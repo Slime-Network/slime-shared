@@ -51,12 +51,12 @@ export const SearchContextProvider = ({ children }: {
 
 	const search = {
 		search: async (params: SearchParams) => {
-			const response = await axios.get(`${apiUrl}/listings/search`, { params: { titleTerm: params.titleTerm } });
+			const response = await axios.get(`${apiUrl}/listings/search`, { params: { mediaType: params.mediaType, titleTerm: params.titleTerm } });
 			return hitsToGameList(response.data.hits.hits);
 		},
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars -- search will be improved later
+
 		mostRecent: async (params: SearchParams) => {
-			const response = await axios.get(`${apiUrl}/listings/mostRecent`, { params: {} });
+			const response = await axios.get(`${apiUrl}/listings/mostRecent`, { params: { mediaType: params.mediaType } });
 			return hitsToGameList(response.data.hits.hits);
 		},
 		installData: async (productId: string) => {
