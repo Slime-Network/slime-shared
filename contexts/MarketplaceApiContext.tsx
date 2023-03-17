@@ -56,15 +56,27 @@ export const MarketplaceApiContextProvider = ({ children }: {
 
 	const search = {
 		search: async (params: SearchParams) => {
+			if (params.url) {
+				const response = await axios.get(`${params.url}/listings/search`, { params });
+				return hitsToGameList(response.data.hits.hits);
+			}
 			const response = await axios.get(`${apiUrl}/listings/search`, { params });
 			return hitsToGameList(response.data.hits.hits);
 		},
 
 		mostRecent: async (params: SearchParams) => {
+			if (params.url) {
+				const response = await axios.get(`${params.url}/listings/mostRecent`, { params });
+				return hitsToGameList(response.data.hits.hits);
+			}
 			const response = await axios.get(`${apiUrl}/listings/mostRecent`, { params });
 			return hitsToGameList(response.data.hits.hits);
 		},
 		installData: async (params: InstallDataParams) => {
+			if (params.url) {
+				const response = await axios.get(`${params.url}/listings/getInstallData`, { params });
+				return hitsToGameList(response.data.hits.hits);
+			}
 			const response = await axios.get(`${apiUrl}/listings/getInstallData`, { params });
 			return response.data.hits.hits[0];
 		}
@@ -72,11 +84,21 @@ export const MarketplaceApiContextProvider = ({ children }: {
 
 	const listing = {
 		requestListingOrUpdate: async (params: RequestListingOrUpdateParams) => {
+			if (params.url) {
+				const response = await axios.get(`${params.url}/listings/requestListingOrUpdate`, { params });
+				console.log("requestListingOrUpdate response", response);
+				return true;
+			}
 			const response = await axios.get(`${apiUrl}/listings/requestListingOrUpdate`, { params });
 			console.log("requestListingOrUpdate response", response);
 			return true;
 		},
 		setPublic: async (params: RequestListingOrUpdateParams) => {
+			if (params.url) {
+				const response = await axios.get(`${params.url}/listings/setPublic`, { params });
+				console.log("setPublic response", response);
+				return true;
+			}
 			const response = await axios.get(`${apiUrl}/listings/setPublic`, { params });
 			console.log("setPublic response", response);
 			return true;

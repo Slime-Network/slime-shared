@@ -12,6 +12,7 @@ export enum SortOptions {
 }
 
 export type SearchParams = {
+	url: string;
 	titleTerm: string;
 	mediaType: string;
 	creatorTerm: string;
@@ -24,15 +25,18 @@ export type SearchParams = {
 };
 
 export type InstallDataParams = {
+	url: string;
 	productId: string;
 	offer: string;
 };
 
 export type RequestListingOrUpdateParams = {
+	url: string;
 	media: Media;
 };
 
 export type SetMediaPublicParams = {
+	url: string;
 	isPublic: boolean;
 	productId: string;
 };
