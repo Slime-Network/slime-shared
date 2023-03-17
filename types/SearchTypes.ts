@@ -13,6 +13,7 @@ export enum SortOptions {
 
 export type SearchParams = {
 	titleTerm: string;
+	mediaType: string;
 	creatorTerm: string;
 	publisherTerm: string;
 	offset: number;
