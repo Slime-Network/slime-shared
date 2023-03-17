@@ -24,6 +24,7 @@ export type SprigganRPCParams = {
 	datastoreId: string,
 	sourcePaths: { windows: string, mac: string, linux: string },
 	config: SprigganConfig,
+	fee: number,
 	mintingConfig: {
 		quantity: number,
 		batchSize: number,

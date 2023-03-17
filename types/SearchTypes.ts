@@ -1,3 +1,5 @@
+import { Media } from './Media';
+
 export enum SortOptions {
 	DateAsc,
 	DateDesc,
@@ -23,4 +25,13 @@ export type SearchParams = {
 export type InstallDataParams = {
 	productId: string;
 	offer: string;
+};
+
+export type RequestListingOrUpdateParams = {
+	media: Media;
+};
+
+export type SetMediaPublicParams = {
+	isPublic: boolean;
+	productId: string;
 };
