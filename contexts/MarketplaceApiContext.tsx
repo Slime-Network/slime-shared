@@ -7,7 +7,7 @@ import {
 } from "react";
 
 import { Media } from "../types/Media";
-import { InstallDataParams, RequestListingOrUpdateParams, SearchParams } from "../types/SearchTypes";
+import { InstallDataParams, RequestListingOrUpdateParams, SearchParams, SetMediaPublicParams } from "../types/SearchTypes";
 
 /**
  * Types
@@ -22,13 +22,14 @@ interface IContext {
 	},
 	listing: {
 		requestListingOrUpdate: ListingStatusCallback,
-		setPublic: ListingStatusCallback,
+		setMediaPublic: SetPublicStatusCallback,
 	}
 }
 
 type SearchCallback = (params: SearchParams) => Promise<Media[]>;
 type InstallDataCallback = (params: InstallDataParams) => Promise<Media>;
 type ListingStatusCallback = (params: RequestListingOrUpdateParams) => Promise<boolean>;
+type SetPublicStatusCallback = (params: SetMediaPublicParams) => Promise<boolean>;
 
 /**
  * Context
@@ -93,13 +94,13 @@ export const MarketplaceApiContextProvider = ({ children }: {
 			console.log("requestListingOrUpdate response", response);
 			return true;
 		},
-		setPublic: async (params: RequestListingOrUpdateParams) => {
+		setMediaPublic: async (params: SetMediaPublicParams) => {
 			if (params.url) {
 				const response = await axios.get(`${params.url}/listings/setPublic`, { params });
 				console.log("setPublic response", response);
 				return true;
 			}
-			const response = await axios.get(`${apiUrl}/listings/setPublic`, { params });
+			const response = await axios.get(`${apiUrl}/listings/setMediaPublic`, { params });
 			console.log("setPublic response", response);
 			return true;
 		}
