@@ -27,7 +27,8 @@ export type SearchParams = {
 export type InstallDataParams = {
 	url: string;
 	productId: string;
-	offer: string;
+	pubkey: string;
+	signature: string;
 };
 
 export type RequestListingOrUpdateParams = {

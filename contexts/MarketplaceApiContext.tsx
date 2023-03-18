@@ -18,7 +18,8 @@ interface IContext {
 	search: {
 		search: SearchCallback,
 		mostRecent: SearchCallback,
-		installData: InstallDataCallback,
+		getSignMessage: SignMessageCallback,
+		getInstallData: InstallDataCallback,
 	},
 	listing: {
 		requestListingOrUpdate: ListingStatusCallback,
@@ -30,6 +31,7 @@ type SearchCallback = (params: SearchParams) => Promise<Media[]>;
 type InstallDataCallback = (params: InstallDataParams) => Promise<Media>;
 type ListingStatusCallback = (params: RequestListingOrUpdateParams) => Promise<boolean>;
 type SetPublicStatusCallback = (params: SetMediaPublicParams) => Promise<boolean>;
+type SignMessageCallback = () => Promise<any>;
 
 /**
  * Context
@@ -73,14 +75,20 @@ export const MarketplaceApiContextProvider = ({ children }: {
 			const response = await axios.get(`${apiUrl}/listings/mostRecent`, { params });
 			return hitsToGameList(response.data.hits.hits);
 		},
-		installData: async (params: InstallDataParams) => {
+		getSignMessage: async () => {
+			const response = await axios.get(`${apiUrl}/listings/getSignMessage`);
+			console.log("sign message", response);
+			return response;
+		},
+		getInstallData: async (params: InstallDataParams) => {
 			if (params.url) {
 				const response = await axios.get(`${params.url}/listings/getInstallData`, { params });
 				return hitsToGameList(response.data.hits.hits);
 			}
 			const response = await axios.get(`${apiUrl}/listings/getInstallData`, { params });
 			return response.data.hits.hits[0];
-		}
+		},
+
 	};
 
 	const listing = {
