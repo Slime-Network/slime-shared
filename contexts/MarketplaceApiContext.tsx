@@ -96,7 +96,7 @@ export const MarketplaceApiContextProvider = ({ children }: {
 		},
 		setMediaPublic: async (params: SetMediaPublicParams) => {
 			if (params.url) {
-				const response = await axios.get(`${params.url}/listings/setPublic`, { params });
+				const response = await axios.get(`${params.url}/listings/setMediaPublic`, { params });
 				console.log("setPublic response", response);
 				return true;
 			}
