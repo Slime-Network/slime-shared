@@ -39,7 +39,7 @@ export type SprigganRPCParams = {
 	}
 }
 
-export type TRpcRequestCallback = (params: SprigganRPCParams) => Promise<void>;
+export type TRpcRequestCallback = (params: SprigganRPCParams) => Promise<IFormattedRpcResponse>;
 
 interface IContext {
 	sprigganRpc: {
@@ -47,6 +47,7 @@ interface IContext {
 		downloadMedia: TRpcRequestCallback,
 		getLocalData: TRpcRequestCallback,
 		saveLocalData: TRpcRequestCallback,
+		loadAllLocalData: TRpcRequestCallback,
 		getConfig: TRpcRequestCallback,
 		saveConfig: TRpcRequestCallback,
 		getOwnedDatastores: TRpcRequestCallback,
@@ -54,6 +55,7 @@ interface IContext {
 		publishMedia: TRpcRequestCallback,
 		createDatastore: TRpcRequestCallback,
 		generateTorrents: TRpcRequestCallback,
+		getTorrentStatus: TRpcRequestCallback,
 		mintNftCopies: TRpcRequestCallback,
 	},
 	sprigganRpcResult?: IFormattedRpcResponse | null;
@@ -83,13 +85,17 @@ export const SprigganRpcContextProvider = ({ children }: {
 			async (params: SprigganRPCParams) => {
 				try {
 					setPending(true);
-					setResult(await rpcRequest(params));
+					const res = await rpcRequest(params);
+					setResult(res);
+					return res;
 				} catch (err: any) {
 					console.error("RPC request failed: ", err);
-					setResult({
+					const res = {
 						valid: false,
 						result: err?.message ?? err,
-					});
+					};
+					setResult(res);
+					return res;
 				} finally {
 					setPending(false);
 				}
@@ -124,6 +130,7 @@ export const SprigganRpcContextProvider = ({ children }: {
 		downloadMedia: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.DOWNLOAD_MEDIA)),
 		getLocalData: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.GET_LOCAL_DATA)),
 		saveLocalData: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.SAVE_LOCAL_DATA)),
+		loadAllLocalData: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.LOAD_ALL_LOCAL_DATA)),
 		getConfig: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.GET_CONFIG)),
 		saveConfig: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.SAVE_CONFIG)),
 		getOwnedDatastores: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.GET_OWNED_DATASTORES)),
@@ -131,6 +138,7 @@ export const SprigganRpcContextProvider = ({ children }: {
 		publishMedia: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.PUBLISH_MEDIA)),
 		createDatastore: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.CREATE_DATASTORE)),
 		generateTorrents: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.GENERATE_TORRENTS)),
+		getTorrentStatus: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.GET_TORRENT_STATUS)),
 		mintNftCopies: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.MINT_NFT_COPIES)),
 
 	};

@@ -83,10 +83,10 @@ export const MarketplaceApiContextProvider = ({ children }: {
 		getInstallData: async (params: InstallDataParams) => {
 			if (params.url) {
 				const response = await axios.get(`${params.url}/listings/getInstallData`, { params });
-				return hitsToGameList(response.data.hits.hits);
+				return hitsToGameList(response.data.hits.hits)[0];
 			}
 			const response = await axios.get(`${apiUrl}/listings/getInstallData`, { params });
-			return response.data.hits.hits[0];
+			return hitsToGameList(response.data.hits.hits)[0];
 		},
 
 	};

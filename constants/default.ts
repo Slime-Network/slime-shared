@@ -3,6 +3,7 @@ export enum SprigganMethods {
 	DOWNLOAD_MEDIA = 'downloadMedia',
 	GET_LOCAL_DATA = 'getLocalData',
 	SAVE_LOCAL_DATA = 'saveLocalData',
+	LOAD_ALL_LOCAL_DATA = 'loadAllLocalData',
 	GET_CONFIG = 'getConfig',
 	SAVE_CONFIG = 'saveConfig',
 	GET_OWNED_DATASTORES = 'getOwnedDatastores',
@@ -10,6 +11,7 @@ export enum SprigganMethods {
 	PUBLISH_MEDIA = 'publishMedia',
 	CREATE_DATASTORE = 'createDatastore',
 	GENERATE_TORRENTS = 'generateTorrents',
+	GET_TORRENT_STATUS = 'getTorrentStatus',
 	MINT_NFT_COPIES = 'mintNftCopies',
 }
 
