@@ -27,7 +27,7 @@ export type NftMetadataParsed = {
 	mediaType: string;
 	productId: string;
 	productName: string;
-	datastoreId: string;
+	dataStoreId: string;
 	edition: string;
 	attributes: [
 		{
@@ -44,15 +44,15 @@ export type NftMetadataParsed = {
 };
 
 export const parseNftMetadata = (resp: NftMetadataResponse): NftMetadataParsed => {
-	let datastoreId = '';
+	let dataStoreId = '';
 	let isMediaNFT = false;
 	let edition = 'Standard';
 
 	console.log(resp);
 
 	resp.collection.attributes.forEach((element: { type: string; value: string }) => {
-		if (element.type === 'datastore id') {
-			datastoreId = element.value;
+		if (element.type === 'dataStore id') {
+			dataStoreId = element.value;
 			isMediaNFT = true;
 		}
 	});
@@ -69,7 +69,7 @@ export const parseNftMetadata = (resp: NftMetadataResponse): NftMetadataParsed =
 		mediaType: 'game',
 		productId: resp.collection.id,
 		productName: resp.collection.name,
-		datastoreId,
+		dataStoreId,
 		edition,
 		attributes: resp.collection.attributes,
 		traits: resp.attributes,

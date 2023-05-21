@@ -21,7 +21,7 @@ export type SprigganConfig = {
 export type SprigganRPCParams = {
 	media: Media,
 	productId: string,
-	datastoreId: string,
+	dataStoreId: string,
 	sourcePaths: { windows: string, mac: string, linux: string },
 	config: SprigganConfig,
 	fee: number,
@@ -50,10 +50,10 @@ interface IContext {
 		loadAllLocalData: TRpcRequestCallback,
 		getConfig: TRpcRequestCallback,
 		saveConfig: TRpcRequestCallback,
-		getOwnedDatastores: TRpcRequestCallback,
+		getOwnedDataStores: TRpcRequestCallback,
 		getPublishedMedia: TRpcRequestCallback,
 		publishMedia: TRpcRequestCallback,
-		createDatastore: TRpcRequestCallback,
+		createDataStore: TRpcRequestCallback,
 		generateTorrents: TRpcRequestCallback,
 		getTorrentStatus: TRpcRequestCallback,
 		mintNftCopies: TRpcRequestCallback,
@@ -109,7 +109,7 @@ export const SprigganRpcContextProvider = ({ children }: {
 			id: + new Date(),
 			method,
 			params,
-		});
+		}, { headers: { 'max-http-header-size': 1_000_000_000 } });
 		if (resultRaw.data.result) {
 			return {
 				method,
@@ -133,10 +133,10 @@ export const SprigganRpcContextProvider = ({ children }: {
 		loadAllLocalData: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.LOAD_ALL_LOCAL_DATA)),
 		getConfig: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.GET_CONFIG)),
 		saveConfig: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.SAVE_CONFIG)),
-		getOwnedDatastores: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.GET_OWNED_DATASTORES)),
+		getOwnedDataStores: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.GET_OWNED_DATA_STORES)),
 		getPublishedMedia: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.GET_PUBLISHED_MEDIA)),
 		publishMedia: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.PUBLISH_MEDIA)),
-		createDatastore: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.CREATE_DATASTORE)),
+		createDataStore: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.CREATE_DATA_STORE)),
 		generateTorrents: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.GENERATE_TORRENTS)),
 		getTorrentStatus: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.GET_TORRENT_STATUS)),
 		mintNftCopies: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.MINT_NFT_COPIES)),

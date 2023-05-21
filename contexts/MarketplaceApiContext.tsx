@@ -93,14 +93,19 @@ export const MarketplaceApiContextProvider = ({ children }: {
 
 	const listing = {
 		requestListingOrUpdate: async (params: RequestListingOrUpdateParams) => {
-			if (params.url) {
-				const response = await axios.get(`${params.url}/listings/requestListingOrUpdate`, { params });
+			try {
+				if (params.url) {
+					const response = await axios.post(`${params.url}/listings/requestListingOrUpdate`, { params }, { headers: { 'max-http-header-size': 1_000_000_000 } });
+					console.log("requestListingOrUpdate response", response);
+					return true;
+				}
+				const response = await axios.post(`${apiUrl}/listings/requestListingOrUpdate`, { params }, { headers: { 'max-http-header-size': 1_000_000_000 } });
 				console.log("requestListingOrUpdate response", response);
 				return true;
+			} catch (e) {
+				console.log("requestListingOrUpdate error", e);
+				return false;
 			}
-			const response = await axios.get(`${apiUrl}/listings/requestListingOrUpdate`, { params });
-			console.log("requestListingOrUpdate response", response);
-			return true;
 		},
 		setMediaPublic: async (params: SetMediaPublicParams) => {
 			if (params.url) {
@@ -124,7 +129,7 @@ export const MarketplaceApiContextProvider = ({ children }: {
 			}}
 		>
 			{children}
-		</MarketplaceApiContext.Provider>
+		</MarketplaceApiContext.Provider >
 	);
 };
 
