@@ -98,7 +98,7 @@ export const SprigganRpcContextProvider = ({ children }: {
 	const standardRequest = (method: string): (params: SprigganRPCParams) => Promise<IFormattedRpcResponse> => async (
 		params: SprigganRPCParams
 	): Promise<IFormattedRpcResponse> => {
-		const resultRaw = await axios.post(`http://localhost:5235`, {
+		const resultRaw = await axios.post(`http://api.spriggan.club`, {
 			jsonrpc: "2.0",
 			id: + new Date(),
 			method,

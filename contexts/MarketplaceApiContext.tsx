@@ -44,7 +44,7 @@ export const MarketplaceApiContext = createContext<IContext>({} as IContext);
 export const MarketplaceApiContextProvider = ({ children }: {
 	children: ReactNode | ReactNode[];
 }) => {
-	const [apiUrl, setApiUrl] = useState('http://localhost:5233');
+	const [apiUrl, setApiUrl] = useState('http://api.spriggan.club');
 
 	const hitsToGameList = (hits: any) => {
 		const games = new Array<Media>();
