@@ -45,6 +45,8 @@ interface IContext {
 	sprigganRpc: {
 		ping: TRpcRequestCallback,
 		downloadMedia: TRpcRequestCallback,
+		installMedia: TRpcRequestCallback,
+		getInstallStatus: TRpcRequestCallback,
 		getLocalData: TRpcRequestCallback,
 		saveLocalData: TRpcRequestCallback,
 		loadAllLocalData: TRpcRequestCallback,
@@ -128,6 +130,8 @@ export const SprigganRpcContextProvider = ({ children }: {
 	const sprigganRpc = {
 		ping: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.PING)),
 		downloadMedia: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.DOWNLOAD_MEDIA)),
+		installMedia: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.INSTALL_MEDIA)),
+		getInstallStatus: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.GET_INSTALL_STATUS)),
 		getLocalData: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.GET_LOCAL_DATA)),
 		saveLocalData: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.SAVE_LOCAL_DATA)),
 		loadAllLocalData: createSprigganRpcRequestHandler(standardRequest(SprigganMethods.LOAD_ALL_LOCAL_DATA)),
