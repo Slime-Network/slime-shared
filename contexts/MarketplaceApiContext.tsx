@@ -59,6 +59,7 @@ export const MarketplaceApiContextProvider = ({ children }: {
 
 	const search = {
 		search: async (params: SearchParams) => {
+			console.log("search params", params);
 			if (params.url) {
 				const response = await axios.get(`${params.url}/listings/search`, { params });
 				return hitsToGameList(response.data.hits.hits);
@@ -68,6 +69,7 @@ export const MarketplaceApiContextProvider = ({ children }: {
 		},
 
 		mostRecent: async (params: SearchParams) => {
+			console.log("search params", params);
 			if (params.url) {
 				const response = await axios.get(`${params.url}/listings/mostRecent`, { params });
 				return hitsToGameList(response.data.hits.hits);
