@@ -2,6 +2,7 @@ export enum SprigganMethods {
 	PING = 'ping',
 	DOWNLOAD_MEDIA = 'downloadMedia',
 	INSTALL_MEDIA = 'installMedia',
+	PLAY_MEDIA = 'playMedia',
 	GET_INSTALL_STATUS = 'getInstallStatus',
 	GET_LOCAL_DATA = 'getLocalData',
 	SAVE_LOCAL_DATA = 'saveLocalData',
