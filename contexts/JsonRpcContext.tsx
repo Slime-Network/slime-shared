@@ -4,121 +4,121 @@ import { ChiaMethod } from '../constants/wallet-connect';
 import {
     AddCatTokenRequest,
     AddCatTokenResponse,
-} from '../types/rpc/AddCatToken';
+} from '../types/walletconnect/rpc/AddCatToken';
 import {
     CancelOfferRequest,
     CancelOfferResponse,
-} from '../types/rpc/CancelOffer';
+} from '../types/walletconnect/rpc/CancelOffer';
 import {
     CheckOfferValidityRequest,
     CheckOfferValidityResponse,
-} from '../types/rpc/CheckOfferValidity';
+} from '../types/walletconnect/rpc/CheckOfferValidity';
 import {
     CreateNewCatWalletRequest,
     CreateNewCatWalletResponse,
-} from '../types/rpc/CreateNewCatWallet';
+} from '../types/walletconnect/rpc/CreateNewCatWallet';
 import {
     CreateNewDidWalletRequest,
     CreateNewDidWalletResponse,
-} from '../types/rpc/CreateNewDidWallet';
+} from '../types/walletconnect/rpc/CreateNewDidWallet';
 import {
     CreateOfferForIdsRequest,
     CreateOfferForIdsResponse,
-} from '../types/rpc/CreateOfferForIds';
+} from '../types/walletconnect/rpc/CreateOfferForIds';
 import {
     GetAllOffersRequest,
     GetAllOffersResponse,
-} from '../types/rpc/GetAllOffers';
+} from '../types/walletconnect/rpc/GetAllOffers';
 import {
     GetCatAssetIdRequest,
     GetCatAssetIdResponse,
-} from '../types/rpc/GetCatAssetId';
+} from '../types/walletconnect/rpc/GetCatAssetId';
 import {
     GetCatWalletInfoRequest,
     GetCatWalletInfoResponse,
-} from '../types/rpc/GetCatWalletInfo';
+} from '../types/walletconnect/rpc/GetCatWalletInfo';
 import {
     GetCurrentAddressRequest,
     GetCurrentAddressResponse,
-} from '../types/rpc/GetCurrentAddress';
+} from '../types/walletconnect/rpc/GetCurrentAddress';
 import {
     GetNextAddressRequest,
     GetNextAddressResponse,
-} from '../types/rpc/GetNextAddress';
+} from '../types/walletconnect/rpc/GetNextAddress';
 import {
     GetNftInfoRequest,
     GetNftInfoResponse,
-} from '../types/rpc/GetNftInfo';
+} from '../types/walletconnect/rpc/GetNftInfo';
 import {
     GetNftWalletsWithDidsRequest,
     GetNftWalletsWithDidsResponse,
-} from '../types/rpc/GetNftWalletsWithDids';
+} from '../types/walletconnect/rpc/GetNftWalletsWithDids';
 import {
     GetNftsRequest,
     GetNftsResponse,
-} from '../types/rpc/GetNfts';
+} from '../types/walletconnect/rpc/GetNfts';
 import {
     GetNftsCountRequest,
     GetNftsCountResponse,
-} from '../types/rpc/GetNftsCount';
+} from '../types/walletconnect/rpc/GetNftsCount';
 import {
     GetOfferDataRequest,
     GetOfferDataResponse,
-} from '../types/rpc/GetOfferData';
+} from '../types/walletconnect/rpc/GetOfferData';
 import {
     GetOfferRecordRequest,
     GetOfferRecordResponse,
-} from '../types/rpc/GetOfferRecord';
+} from '../types/walletconnect/rpc/GetOfferRecord';
 import {
     GetOfferSummaryRequest,
     GetOfferSummaryResponse,
-} from '../types/rpc/GetOfferSummary';
+} from '../types/walletconnect/rpc/GetOfferSummary';
 import {
     GetOffersCountRequest,
     GetOffersCountResponse,
-} from '../types/rpc/GetOffersCount';
+} from '../types/walletconnect/rpc/GetOffersCount';
 import {
     GetSyncStatusRequest,
     GetSyncStatusResponse,
-} from '../types/rpc/GetSyncStatus';
+} from '../types/walletconnect/rpc/GetSyncStatus';
 import {
     GetTransactionRequest,
     GetTransactionResponse,
-} from '../types/rpc/GetTransaction';
+} from '../types/walletconnect/rpc/GetTransaction';
 import {
     GetWalletBalanceRequest,
     GetWalletBalanceResponse,
-} from '../types/rpc/GetWalletBalance';
-import { GetWalletsRequest, GetWalletsResponse } from '../types/rpc/GetWallets';
-import { LogInRequest, LogInResponse } from '../types/rpc/LogIn';
+} from '../types/walletconnect/rpc/GetWalletBalance';
+import { GetWalletsRequest, GetWalletsResponse } from '../types/walletconnect/rpc/GetWallets';
+import { LogInRequest, LogInResponse } from '../types/walletconnect/rpc/LogIn';
 import {
     MintNftRequest,
     MintNftResponse,
-} from '../types/rpc/MintNft';
+} from '../types/walletconnect/rpc/MintNft';
 import {
     SendTransactionRequest,
     SendTransactionResponse,
-} from '../types/rpc/SendTransaction';
-import { SetDidNameRequest, SetDidNameResponse } from '../types/rpc/SetDidName';
-import { SetNftDidRequest, SetNftDidResponse } from '../types/rpc/SetNftDid';
+} from '../types/walletconnect/rpc/SendTransaction';
+import { SetDidNameRequest, SetDidNameResponse } from '../types/walletconnect/rpc/SetDidName';
+import { SetNftDidRequest, SetNftDidResponse } from '../types/walletconnect/rpc/SetNftDid';
 import {
     SignMessageByAddressRequest,
     SignMessageByAddressResponse,
-} from '../types/rpc/SignMessageByAddress';
+} from '../types/walletconnect/rpc/SignMessageByAddress';
 import {
     SignMessageByIdRequest,
     SignMessageByIdResponse,
-} from '../types/rpc/SignMessageById';
-import { SpendCatRequest, SpendCatResponse } from '../types/rpc/SpendCat';
-import { TakeOfferRequest, TakeOfferResponse } from '../types/rpc/TakeOffer';
+} from '../types/walletconnect/rpc/SignMessageById';
+import { SpendCatRequest, SpendCatResponse } from '../types/walletconnect/rpc/SpendCat';
+import { TakeOfferRequest, TakeOfferResponse } from '../types/walletconnect/rpc/TakeOffer';
 import {
     TransferNftRequest,
     TransferNftResponse,
-} from '../types/rpc/TransferNft';
+} from '../types/walletconnect/rpc/TransferNft';
 import {
     VerifySignatureRequest,
     VerifySignatureResponse,
-} from '../types/rpc/VerifySignature';
+} from '../types/walletconnect/rpc/VerifySignature';
 import { useWalletConnect } from './WalletConnectContext';
 
 interface JsonRpc {

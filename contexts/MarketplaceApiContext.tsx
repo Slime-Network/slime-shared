@@ -6,8 +6,8 @@ import {
 	useState,
 } from "react";
 
-import { Media } from "../types/Media";
-import { InstallDataParams, RequestListingOrUpdateParams, SearchParams, SetMediaPublicParams } from "../types/SearchTypes";
+import { GetSignMessageRequest, GetSignMessageResponse, InstallDataRequest, InstallDataResponse, RequestListingOrUpdateRequest, RequestListingOrUpdateResponse, SearchRequest, SearchResponse, SetMediaPublicRequest, SetMediaPublicResponse } from "../types/spriggan/MarketplaceApiTypes";
+import { Media } from "../types/spriggan/Media";
 
 /**
  * Types
@@ -15,23 +15,18 @@ import { InstallDataParams, RequestListingOrUpdateParams, SearchParams, SetMedia
 interface IContext {
 	apiUrl: string,
 	setApiUrl: React.Dispatch<React.SetStateAction<string>>,
-	search: {
-		search: SearchCallback,
-		mostRecent: SearchCallback,
-		getSignMessage: SignMessageCallback,
-		getInstallData: InstallDataCallback,
-	},
-	listing: {
-		requestListingOrUpdate: ListingStatusCallback,
-		setMediaPublic: SetPublicStatusCallback,
-	}
+	search: SearchCallback,
+	getSignMessage: GetSignMessageCallback,
+	getInstallData: InstallDataCallback,
+	requestListingOrUpdate: RequestListingOrUpdateCallback,
+	setMediaPublic: SetPublicStatusCallback,
 }
 
-type SearchCallback = (params: SearchParams) => Promise<Media[]>;
-type InstallDataCallback = (params: InstallDataParams) => Promise<Media>;
-type ListingStatusCallback = (params: RequestListingOrUpdateParams) => Promise<boolean>;
-type SetPublicStatusCallback = (params: SetMediaPublicParams) => Promise<boolean>;
-type SignMessageCallback = () => Promise<any>;
+type SearchCallback = (params: SearchRequest) => Promise<SearchResponse>;
+type InstallDataCallback = (params: InstallDataRequest) => Promise<InstallDataResponse>;
+type RequestListingOrUpdateCallback = (params: RequestListingOrUpdateRequest) => Promise<RequestListingOrUpdateResponse>;
+type SetPublicStatusCallback = (params: SetMediaPublicRequest) => Promise<SetMediaPublicResponse>;
+type GetSignMessageCallback = (params: GetSignMessageRequest) => Promise<GetSignMessageResponse>;
 
 /**
  * Context
@@ -57,67 +52,54 @@ export const MarketplaceApiContextProvider = ({ children }: {
 		return games;
 	};
 
-	const search = {
-		search: async (params: SearchParams) => {
-			console.log("search params", params);
-			if (params.url) {
-				const response = await axios.get(`${params.url}/listings/search`, { params });
-				return hitsToGameList(response.data.hits.hits);
-			}
-			const response = await axios.get(`${apiUrl}/listings/search`, { params });
-			return hitsToGameList(response.data.hits.hits);
-		},
-
-		mostRecent: async (params: SearchParams) => {
-			console.log("search params", params);
-			if (params.url) {
-				const response = await axios.get(`${params.url}/listings/mostRecent`, { params });
-				return hitsToGameList(response.data.hits.hits);
-			}
-			const response = await axios.get(`${apiUrl}/listings/mostRecent`, { params });
-			return hitsToGameList(response.data.hits.hits);
-		},
-		getSignMessage: async () => {
-			const response = await axios.get(`${apiUrl}/listings/getSignMessage`);
-			console.log("sign message", response);
-			return response;
-		},
-		getInstallData: async (params: InstallDataParams) => {
-			if (params.url) {
-				const response = await axios.get(`${params.url}/listings/getInstallData`, { params });
-				return hitsToGameList(response.data.hits.hits)[0];
-			}
-			const response = await axios.get(`${apiUrl}/listings/getInstallData`, { params });
-			return hitsToGameList(response.data.hits.hits)[0];
-		},
-
+	const search = async (params: SearchRequest) => {
+		try {
+			const response = await axios.get(`${params.url ? params.url : apiUrl}/listings/search`, { params });
+			return {
+				results: hitsToGameList(response.data.hits.hits),
+				message: response.data.message
+			} as SearchResponse;
+		} catch (e) {
+			return {
+				results: [],
+				message: "An unknown error occurred during search"
+			} as SearchResponse;
+		};
 	};
 
-	const listing = {
-		requestListingOrUpdate: async (params: RequestListingOrUpdateParams) => {
-			try {
-				if (params.url) {
-					const response = await axios.post(`${params.url}/listings/requestListingOrUpdate`, { params }, { headers: { 'max-http-header-size': 1_000_000_000 } });
-					console.log("requestListingOrUpdate response", response);
-					return true;
-				}
-				const response = await axios.post(`${apiUrl}/listings/requestListingOrUpdate`, { params }, { headers: { 'max-http-header-size': 1_000_000_000 } });
-				console.log("requestListingOrUpdate response", response);
-				return true;
-			} catch (e) {
-				console.log("requestListingOrUpdate error", e);
-				return false;
-			}
-		},
-		setMediaPublic: async (params: SetMediaPublicParams) => {
-			if (params.url) {
-				const response = await axios.get(`${params.url}/listings/setMediaPublic`, { params });
-				console.log("setPublic response", response);
-				return true;
-			}
-			const response = await axios.get(`${apiUrl}/listings/setMediaPublic`, { params });
-			console.log("setPublic response", response);
-			return true;
+	const getSignMessage = async (params: GetSignMessageRequest) => {
+		try {
+			const response = await axios.get(`${params.url ? params.url : apiUrl}/listings/getSignMessage`);
+			return { message: response.data.message } as GetSignMessageResponse;
+		} catch (e) {
+			return { message: "An unknown error occurred during getSignMessage" } as GetSignMessageResponse;
+		}
+	};
+
+	const getInstallData = async (params: InstallDataRequest) => {
+		try {
+			const response = await axios.get(`${params.url ? params.url : apiUrl}/listings/getInstallData`, { params });
+			return { installData: hitsToGameList(response.data.hits.hits)[0], message: response.data.message } as InstallDataResponse;
+		} catch (e) {
+			return { message: "An unknown error occurred during getInstallData" } as InstallDataResponse;
+		}
+	};
+
+	const requestListingOrUpdate = async (params: RequestListingOrUpdateRequest) => {
+		try {
+			const response = await axios.post(`${params.url ? params.url : apiUrl}/listings/requestListingOrUpdate`, { params }, { headers: { 'max-http-header-size': 1_000_000_000 } });
+			return { currentStatus: response.data.currentStatus, message: response.data.message } as RequestListingOrUpdateResponse;
+		} catch (e) {
+			return { currentStatus: "Error", message: "An unknown error occurred during requestListingOrUpdate" } as RequestListingOrUpdateResponse;
+		}
+	};
+
+	const setMediaPublic = async (params: SetMediaPublicRequest) => {
+		try {
+			const response = await axios.get(`${params.url ? params.url : apiUrl}/listings/setMediaPublic`, { params });
+			return { currentStatus: response.data.currentStatus, message: response.data.message } as SetMediaPublicResponse;
+		} catch (e) {
+			return { currentStatus: "Error", message: "An unknown error occurred during setMediaPublic" } as RequestListingOrUpdateResponse;
 		}
 	};
 
@@ -127,7 +109,10 @@ export const MarketplaceApiContextProvider = ({ children }: {
 				apiUrl,
 				setApiUrl,
 				search,
-				listing,
+				getSignMessage,
+				getInstallData,
+				requestListingOrUpdate,
+				setMediaPublic
 			}}
 		>
 			{children}

@@ -48,8 +48,6 @@ export const parseNftMetadata = (resp: NftMetadataResponse): NftMetadataParsed =
 	let isMediaNFT = false;
 	let edition = 'Standard';
 
-	console.log(resp);
-
 	resp.collection.attributes.forEach((element: { type: string; value: string }) => {
 		if (element.type === 'dataStore id') {
 			dataStoreId = element.value;
