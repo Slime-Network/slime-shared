@@ -6,7 +6,7 @@ import {
 	useState,
 } from "react";
 
-import { GetSignMessageRequest, GetSignMessageResponse, InstallDataRequest, InstallDataResponse, RequestListingOrUpdateRequest, RequestListingOrUpdateResponse, SearchRequest, SearchResponse, SetMediaPublicRequest, SetMediaPublicResponse } from "../types/spriggan/MarketplaceApiTypes";
+import { GetSignMessageRequest, GetSignMessageResponse, GetInstallDataRequest, GetInstallDataResponse, RequestListingOrUpdateRequest, RequestListingOrUpdateResponse, SearchRequest, SearchResponse, SetMediaPublicRequest, SetMediaPublicResponse } from "../types/spriggan/MarketplaceApiTypes";
 import { Media } from "../types/spriggan/Media";
 
 /**
@@ -23,7 +23,7 @@ interface IContext {
 }
 
 type SearchCallback = (params: SearchRequest) => Promise<SearchResponse>;
-type InstallDataCallback = (params: InstallDataRequest) => Promise<InstallDataResponse>;
+type InstallDataCallback = (params: GetInstallDataRequest) => Promise<GetInstallDataResponse>;
 type RequestListingOrUpdateCallback = (params: RequestListingOrUpdateRequest) => Promise<RequestListingOrUpdateResponse>;
 type SetPublicStatusCallback = (params: SetMediaPublicRequest) => Promise<SetMediaPublicResponse>;
 type GetSignMessageCallback = (params: GetSignMessageRequest) => Promise<GetSignMessageResponse>;
@@ -76,12 +76,12 @@ export const MarketplaceApiContextProvider = ({ children }: {
 		}
 	};
 
-	const getInstallData = async (params: InstallDataRequest) => {
+	const getInstallData = async (params: GetInstallDataRequest) => {
 		try {
 			const response = await axios.get(`${params.url ? params.url : apiUrl}/listings/getInstallData`, { params });
-			return { installData: hitsToGameList(response.data.hits.hits)[0], message: response.data.message } as InstallDataResponse;
+			return { installData: hitsToGameList(response.data.hits.hits)[0], message: response.data.message } as GetInstallDataResponse;
 		} catch (e) {
-			return { message: "An unknown error occurred during getInstallData" } as InstallDataResponse;
+			return { message: "An unknown error occurred during getInstallData" } as GetInstallDataResponse;
 		}
 	};
 

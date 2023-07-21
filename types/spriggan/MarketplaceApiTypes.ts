@@ -29,12 +29,12 @@ export type SearchRequest = {
 	includeAdultOnly: boolean;
 };
 
-export type InstallDataResponse = {
+export type GetInstallDataResponse = {
 	installData: Media;
 	message: string;
 };
 
-export type InstallDataRequest = {
+export type GetInstallDataRequest = {
 	url: string;
 	productId: string;
 	pubkey: string;
