@@ -1,7 +1,7 @@
+import { WalletConnectModal } from '@walletconnect/modal';
 import Client from '@walletconnect/sign-client';
 import { PairingTypes, SessionTypes } from '@walletconnect/types';
 import { getSdkError } from '@walletconnect/utils';
-import { Web3Modal } from '@web3modal/standalone';
 import {
     createContext,
     PropsWithChildren,
@@ -16,7 +16,7 @@ import { METADATA, REQUIRED_NAMESPACES } from '../constants/wallet-connect';
 
 interface WalletConnect {
     client?: Client;
-    web3Modal?: Web3Modal;
+    walletConnectModal?: WalletConnectModal;
     session?: SessionTypes.Struct;
     chainId: string;
     fingerprint?: string;
@@ -43,7 +43,7 @@ export function WalletConnectProvider({
     chainId,
     children,
 }: WalletConnectProviderProps) {
-    const [web3Modal, setWeb3Modal] = useState<Web3Modal>();
+    const [walletConnectModal, setWalletConnectModal] = useState<WalletConnectModal>();
     const [client, setClient] = useState<Client>();
     const [pairings, setPairings] = useState<PairingTypes.Struct[]>([]);
     const [session, setSession] = useState<SessionTypes.Struct>();
@@ -69,7 +69,7 @@ export function WalletConnectProvider({
     const connect = useCallback(
         async (pairing: any) => {
             if (!client) throw new Error('WalletConnect is not initialized');
-            if (!web3Modal) throw new Error('Web3Modal is not initialized');
+            if (!walletConnectModal) throw new Error('WalletConnectModal is not initialized');
 
             try {
                 const { uri, approval } = await client.connect({
@@ -78,7 +78,7 @@ export function WalletConnectProvider({
                 });
 
                 if (uri) {
-                    web3Modal.openModal({ uri });
+                    walletConnectModal.openModal({ uri });
                     const sessionTemp = await approval();
                     onSessionConnected(sessionTemp);
                     setPairings(client.pairing.getAll({ active: true }));
@@ -88,10 +88,10 @@ export function WalletConnectProvider({
                     console.error(e);
                 }
             } finally {
-                web3Modal.closeModal();
+                walletConnectModal.closeModal();
             }
         },
-        [client, onSessionConnected, web3Modal]
+        [client, onSessionConnected, walletConnectModal]
     );
 
     const disconnect = useCallback(async () => {
@@ -161,14 +161,14 @@ export function WalletConnectProvider({
                 metadata: METADATA,
             });
 
-            const web3ModalTemp = new Web3Modal({
+            const walletConnectModalTemp = new WalletConnectModal({
                 projectId,
-                standaloneChains: [chainId],
-                walletConnectVersion: 2,
+                chains: [chainId],
+
             });
 
             setClient(clientTemp);
-            setWeb3Modal(web3ModalTemp);
+            setWalletConnectModal(walletConnectModalTemp);
 
             await subscribeToEvents(clientTemp);
             await checkPersistedState(clientTemp);
@@ -187,7 +187,7 @@ export function WalletConnectProvider({
             isInitializing,
             accounts,
             client,
-            web3Modal,
+            walletConnectModal,
             session,
             fingerprint,
             connect,
@@ -198,7 +198,7 @@ export function WalletConnectProvider({
             isInitializing,
             accounts,
             client,
-            web3Modal,
+            walletConnectModal,
             session,
             fingerprint,
             connect,

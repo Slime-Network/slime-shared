@@ -1,23 +1,3 @@
-export enum SprigganMethods {
-	PING = 'ping',
-	DOWNLOAD_MEDIA = 'downloadMedia',
-	INSTALL_MEDIA = 'installMedia',
-	PLAY_MEDIA = 'playMedia',
-	GET_INSTALL_STATUS = 'getInstallStatus',
-	GET_LOCAL_DATA = 'getLocalData',
-	SAVE_LOCAL_DATA = 'saveLocalData',
-	LOAD_ALL_LOCAL_DATA = 'loadAllLocalData',
-	GET_CONFIG = 'getConfig',
-	SAVE_CONFIG = 'saveConfig',
-	GET_OWNED_DATA_STORES = 'getOwnedDataStores',
-	GET_PUBLISHED_MEDIA = 'getPublishedMedia',
-	PUBLISH_MEDIA = 'publishMedia',
-	CREATE_DATA_STORE = 'createDataStore',
-	GENERATE_TORRENTS = 'generateTorrents',
-	GET_TORRENT_STATUS = 'getTorrentStatus',
-	MINT_NFT_COPIES = 'mintNftCopies',
-}
-
 export const MediaTypes = ['Game', 'DApp', 'Software', 'Visual Novel', 'Video', 'Animation', 'Book', 'Audio Book'];
 
 export const RatingOptions = ['Everyone', 'Everyone 10+', 'Teen', 'Mature', 'Adults Only 18+'];

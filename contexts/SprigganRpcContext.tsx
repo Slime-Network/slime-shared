@@ -1,35 +1,12 @@
 import axios from 'axios';
 import { createContext, ReactNode, useContext, useState } from "react";
 
-import { SprigganMethods } from "../constants";
 import { Media } from "../types/spriggan/Media";
 
 
 export type SprigganConfig = {
 	torrentsPath: string
 }
-
-// export type SprigganRPCParams = {
-// 	media: Media,
-// 	productId: string,
-// 	dataStoreId: string,
-// 	sourcePaths: { windows: string, mac: string, linux: string },
-// 	config: SprigganConfig,
-// 	fee: number,
-// 	mintingConfig: {
-// 		quantity: number,
-// 		batchSize: number,
-// 		metadataUris: string[],
-// 		imageUris: string[],
-// 		licenseUris: string[],
-// 		publisherDid: string,
-// 		royaltyAddress: string,
-// 		royaltyPercentage: number,
-// 		fee: number,
-// 		salePrice: number,
-// 	}
-// }
-
 
 export type PingRequest = {}
 
@@ -131,6 +108,7 @@ export type GenerateTorrentsRequest = {
 }
 
 export type GenerateTorrentsResponse = {
+	torrents: string,
 	success: boolean
 }
 
@@ -142,19 +120,21 @@ export type GetTorrentStatusResponse = {
 	status: "not-seeding" | "seeding" | "error"
 }
 
+export type MintingConfig = {
+	quantity: number,
+	batchSize: number,
+	metadataUris: string[],
+	imageUris: string[],
+	licenseUris: string[],
+	publisherDid: string,
+	royaltyAddress: string,
+	royaltyPercentage: number,
+	fee: number,
+	salePrice: number
+}
+
 export type MintNftCopiesRequest = {
-	mintingConfig: {
-		quantity: number,
-		batchSize: number,
-		metadataUris: string[],
-		imageUris: string[],
-		licenseUris: string[],
-		publisherDid: string,
-		royaltyAddress: string,
-		royaltyPercentage: number,
-		fee: number,
-		salePrice: number,
-	}
+	mintingConfig: MintingConfig
 }
 
 export type MintNftCopiesResponse = {}
@@ -162,7 +142,12 @@ export type MintNftCopiesResponse = {}
 
 export type SprigganRpcRequest = PingRequest | DownloadMediaRequest | InstallMediaRequest | PlayMediaRequest | GetInstallStatusRequest | GetLocalDataRequest | SaveLocalDataRequest | LoadAllLocalDataRequest | GetConfigRequest | SaveConfigRequest | GetOwnedDataStoresRequest | GetPublishedMediaRequest | PublishMediaRequest | CreateDataStoreRequest | GenerateTorrentsRequest | GetTorrentStatusRequest | MintNftCopiesRequest
 export type SprigganRpcResponse = PingResponse | DownloadMediaResponse | InstallMediaResponse | PlayMediaResponse | GetInstallStatusResponse | GetLocalDataResponse | SaveLocalDataResponse | LoadAllLocalDataResponse | GetConfigResponse | SaveConfigResponse | GetOwnedDataStoresResponse | GetPublishedMediaResponse | PublishMediaResponse | CreateDataStoreResponse | GenerateTorrentsResponse | GetTorrentStatusResponse | MintNftCopiesResponse
-export type SprigganRpcCallback = (params: SprigganRpcRequest) => Promise<SprigganRpcResponse>
+export type SprigganRpcFormattedResponse = {
+	method: string,
+	valid: boolean,
+	result: SprigganRpcResponse
+}
+export type SprigganRpcCallback = (params: SprigganRpcRequest) => Promise<SprigganRpcFormattedResponse>
 
 interface IContext {
 	ping: SprigganRpcCallback,
@@ -182,7 +167,7 @@ interface IContext {
 	generateTorrents: SprigganRpcCallback,
 	getTorrentStatus: SprigganRpcCallback,
 	mintNftCopies: SprigganRpcCallback,
-	sprigganRpcResult?: SprigganRpcResponse | undefined;
+	sprigganRpcResult?: SprigganRpcFormattedResponse | undefined;
 	isRpcRequestPending: boolean;
 }
 
@@ -198,7 +183,7 @@ export const SprigganRpcContextProvider = ({ children }: {
 	children: ReactNode | ReactNode[];
 }) => {
 	const [pending, setPending] = useState(false);
-	const [result, setResult] = useState<SprigganRpcResponse>();
+	const [result, setResult] = useState<SprigganRpcFormattedResponse>();
 
 	const createSprigganRpcRequestHandler =
 		(
@@ -215,6 +200,7 @@ export const SprigganRpcContextProvider = ({ children }: {
 					const res = {
 						valid: false,
 						result: err?.message ?? err,
+						method: "unknown",
 					};
 					setResult(res);
 					return res;
@@ -225,7 +211,7 @@ export const SprigganRpcContextProvider = ({ children }: {
 
 	const standardRequest = (method: string): SprigganRpcCallback => async (
 		params: SprigganRpcRequest
-	): Promise<SprigganRpcResponse> => {
+	): Promise<SprigganRpcFormattedResponse> => {
 		const resultRaw = await axios.post(`http://localhost:5235`, {
 			jsonrpc: "2.0",
 			id: + new Date(),
@@ -235,35 +221,35 @@ export const SprigganRpcContextProvider = ({ children }: {
 		if (resultRaw.data.result) {
 			return {
 				method,
-				valid: resultRaw.data.result.success,
-				result: resultRaw.data.result.result,
-			};
+				valid: resultRaw.data.result.success as boolean,
+				result: resultRaw.data.result.result as SprigganRpcResponse,
+			} as SprigganRpcFormattedResponse;
 		}
 		return {
 			method,
 			valid: false,
-			result: resultRaw.data.error,
-		};
+			result: { message: resultRaw.data.error } as SprigganRpcResponse,
+		} as SprigganRpcFormattedResponse;
 
 	};
 
-	const ping = createSprigganRpcRequestHandler(standardRequest(SprigganMethods.PING));
-	const downloadMedia = createSprigganRpcRequestHandler(standardRequest(SprigganMethods.DOWNLOAD_MEDIA));
-	const installMedia = createSprigganRpcRequestHandler(standardRequest(SprigganMethods.INSTALL_MEDIA));
-	const playMedia = createSprigganRpcRequestHandler(standardRequest(SprigganMethods.PLAY_MEDIA));
-	const getInstallStatus = createSprigganRpcRequestHandler(standardRequest(SprigganMethods.GET_INSTALL_STATUS));
-	const getLocalData = createSprigganRpcRequestHandler(standardRequest(SprigganMethods.GET_LOCAL_DATA));
-	const saveLocalData = createSprigganRpcRequestHandler(standardRequest(SprigganMethods.SAVE_LOCAL_DATA));
-	const loadAllLocalData = createSprigganRpcRequestHandler(standardRequest(SprigganMethods.LOAD_ALL_LOCAL_DATA));
-	const getConfig = createSprigganRpcRequestHandler(standardRequest(SprigganMethods.GET_CONFIG));
-	const saveConfig = createSprigganRpcRequestHandler(standardRequest(SprigganMethods.SAVE_CONFIG));
-	const getOwnedDataStores = createSprigganRpcRequestHandler(standardRequest(SprigganMethods.GET_OWNED_DATA_STORES));
-	const getPublishedMedia = createSprigganRpcRequestHandler(standardRequest(SprigganMethods.GET_PUBLISHED_MEDIA));
-	const publishMedia = createSprigganRpcRequestHandler(standardRequest(SprigganMethods.PUBLISH_MEDIA));
-	const createDataStore = createSprigganRpcRequestHandler(standardRequest(SprigganMethods.CREATE_DATA_STORE));
-	const generateTorrents = createSprigganRpcRequestHandler(standardRequest(SprigganMethods.GENERATE_TORRENTS));
-	const getTorrentStatus = createSprigganRpcRequestHandler(standardRequest(SprigganMethods.GET_TORRENT_STATUS));
-	const mintNftCopies = createSprigganRpcRequestHandler(standardRequest(SprigganMethods.MINT_NFT_COPIES));
+	const ping = createSprigganRpcRequestHandler(standardRequest("ping"));
+	const downloadMedia = createSprigganRpcRequestHandler(standardRequest("downloadMedia"));
+	const installMedia = createSprigganRpcRequestHandler(standardRequest("installMedia"));
+	const playMedia = createSprigganRpcRequestHandler(standardRequest("playMedia"));
+	const getInstallStatus = createSprigganRpcRequestHandler(standardRequest("getInstallStatus"));
+	const getLocalData = createSprigganRpcRequestHandler(standardRequest("getLocalData"));
+	const saveLocalData = createSprigganRpcRequestHandler(standardRequest("saveLocalData"));
+	const loadAllLocalData = createSprigganRpcRequestHandler(standardRequest("loadAllLocalData"));
+	const getConfig = createSprigganRpcRequestHandler(standardRequest("getConfig"));
+	const saveConfig = createSprigganRpcRequestHandler(standardRequest("saveConfig"));
+	const getOwnedDataStores = createSprigganRpcRequestHandler(standardRequest("getOwnedDataStores"));
+	const getPublishedMedia = createSprigganRpcRequestHandler(standardRequest("getPublishedMedia"));
+	const publishMedia = createSprigganRpcRequestHandler(standardRequest("publishMedia"));
+	const createDataStore = createSprigganRpcRequestHandler(standardRequest("createDataStore"));
+	const generateTorrents = createSprigganRpcRequestHandler(standardRequest("generateTorrents"));
+	const getTorrentStatus = createSprigganRpcRequestHandler(standardRequest("getTorrentStatus"));
+	const mintNftCopies = createSprigganRpcRequestHandler(standardRequest("mintNftCopies"));
 
 
 	return (
