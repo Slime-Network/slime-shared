@@ -77,8 +77,6 @@ export function WalletConnectProvider({
                     requiredNamespaces: REQUIRED_NAMESPACES,
                 });
 
-                console.log('client', client);
-
                 if (uri) {
                     web3Modal.openModal({ uri });
                     const sessionTemp = await approval();
@@ -122,7 +120,9 @@ export function WalletConnectProvider({
             clientTemp.on('session_delete', () => reset());
 
             // Debug
-            clientTemp.on('session_event', (...args) => console.log(args));
+            clientTemp.on('session_event', (...args) => {
+                console.log(args);
+            });
         },
         [onSessionConnected]
     );
