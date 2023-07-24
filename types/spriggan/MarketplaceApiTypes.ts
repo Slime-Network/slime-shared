@@ -11,6 +11,11 @@ export enum SortOptions {
 	NameDesc,
 }
 
+export type Marketplace = {
+	displayName: string;
+	url: string;
+};
+
 export type SearchResponse = {
 	results: Media[];
 	message: string;

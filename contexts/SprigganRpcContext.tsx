@@ -1,11 +1,14 @@
 import axios from 'axios';
 import { createContext, ReactNode, useContext, useState } from "react";
 
+import { Marketplace } from '../types/spriggan/MarketplaceApiTypes';
 import { Media } from "../types/spriggan/Media";
 
 
 export type SprigganConfig = {
-	torrentsPath: string
+	torrentsPath: string,
+	marketplaces: Marketplace[]
+	activeMarketplace: Marketplace
 }
 
 export type PingRequest = {}
@@ -33,6 +36,7 @@ export type PlayMediaRequest = {
 }
 
 export type PlayMediaResponse = {
+	pid: string
 }
 
 export type GetInstallStatusRequest = {
@@ -44,14 +48,20 @@ export type GetInstallStatusResponse = {
 }
 
 export type GetLocalDataRequest = {
+	media: Media,
 }
 
 export type GetLocalDataResponse = {
+	media: Media,
 }
 
-export type SaveLocalDataRequest = {}
+export type SaveLocalDataRequest = {
+	media: Media,
+}
 
-export type SaveLocalDataResponse = {}
+export type SaveLocalDataResponse = {
+	success: boolean
+}
 
 export type LoadAllLocalDataRequest = {}
 
@@ -59,7 +69,9 @@ export type LoadAllLocalDataResponse = {}
 
 export type GetConfigRequest = {}
 
-export type GetConfigResponse = {}
+export type GetConfigResponse = {
+	config: SprigganConfig
+}
 
 export type SaveConfigRequest = {
 	config: SprigganConfig
@@ -167,6 +179,7 @@ interface IContext {
 	generateTorrents: SprigganRpcCallback,
 	getTorrentStatus: SprigganRpcCallback,
 	mintNftCopies: SprigganRpcCallback,
+	config: SprigganConfig,
 	sprigganRpcResult?: SprigganRpcFormattedResponse | undefined;
 	isRpcRequestPending: boolean;
 }
@@ -184,6 +197,8 @@ export const SprigganRpcContextProvider = ({ children }: {
 }) => {
 	const [pending, setPending] = useState(false);
 	const [result, setResult] = useState<SprigganRpcFormattedResponse>();
+
+	const [config, setConfig] = useState<SprigganConfig>({} as SprigganConfig);
 
 	const createSprigganRpcRequestHandler =
 		(
@@ -218,6 +233,11 @@ export const SprigganRpcContextProvider = ({ children }: {
 			method,
 			params,
 		}, { headers: { 'max-http-header-size': 1_000_000_000 } });
+		if (method === "getConfig") {
+			setConfig(resultRaw.data.result.result as SprigganConfig);
+		} else if (method === "saveConfig") {
+			setConfig(params as SprigganConfig);
+		}
 		if (resultRaw.data.result) {
 			return {
 				method,
@@ -272,6 +292,7 @@ export const SprigganRpcContextProvider = ({ children }: {
 				generateTorrents,
 				getTorrentStatus,
 				mintNftCopies,
+				config,
 				sprigganRpcResult: result,
 				isRpcRequestPending: pending,
 			}}
