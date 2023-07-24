@@ -12,8 +12,6 @@ export const DefaultExecutables = `{
 
 export const DevelopmentStatuses = ['Coming Soon', 'Pre-Release', 'Early Access', 'Complete'];
 
-export const KnownMarketplaces = ['http://api.spriggan.club'];
-
 export const infoModalStyle = {
 	position: 'absolute' as 'absolute',
 	top: '50%',
