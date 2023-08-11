@@ -1,8 +1,9 @@
 import { Button, Grid, Modal, Paper, TextField, Typography } from "@mui/material";
 import { useState } from "react";
 
-import { SprigganConfig, SprigganRpcCallback } from "../contexts/SprigganRpcContext";
+import { SprigganRpcCallback } from "../contexts/SprigganRpcContext";
 import { Marketplace } from "../types/spriggan/MarketplaceApiTypes";
+import { SaveConfigRequest, SprigganConfig } from "../types/spriggan/SprigganRpcTypes";
 
 
 export const style = {
@@ -78,7 +79,7 @@ export const AddMarketplaceModal = (
                                     configCopy.marketplaces = [];
                                 }
                                 configCopy.marketplaces.push(newMarketplace);
-                                saveConfig(configCopy);
+                                saveConfig({ config: configCopy } as SaveConfigRequest);
                                 setOpen(false);
                             }}>Add Marketplace</Button>
                     </Grid>
