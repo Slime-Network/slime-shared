@@ -1,155 +1,7 @@
 import axios from 'axios';
 import { createContext, ReactNode, useContext, useState } from "react";
 
-import { Marketplace } from '../types/spriggan/MarketplaceApiTypes';
-import { Media } from "../types/spriggan/Media";
-
-
-export type SprigganConfig = {
-	torrentsPath: string,
-	marketplaces: Marketplace[]
-	activeMarketplace: Marketplace
-}
-
-export type PingRequest = {}
-
-export type PingResponse = {
-	success: boolean
-}
-
-export type DownloadMediaRequest = {
-	media: Media
-}
-
-export type DownloadMediaResponse = {
-}
-
-export type InstallMediaRequest = {
-	media: Media
-}
-
-export type InstallMediaResponse = {
-}
-
-export type PlayMediaRequest = {
-	media: Media
-}
-
-export type PlayMediaResponse = {
-	pid: string
-}
-
-export type GetInstallStatusRequest = {
-	media: Media
-}
-
-export type GetInstallStatusResponse = {
-	status: "not-installed" | "downloading" | "installing" | "installed" | "pending-update" | "updating" | "pending-uninstall" | "uninstalling" | "error"
-}
-
-export type GetLocalDataRequest = {
-	media: Media,
-}
-
-export type GetLocalDataResponse = {
-	media: Media,
-}
-
-export type SaveLocalDataRequest = {
-	media: Media,
-}
-
-export type SaveLocalDataResponse = {
-	success: boolean
-}
-
-export type LoadAllLocalDataRequest = {}
-
-export type LoadAllLocalDataResponse = {}
-
-export type GetConfigRequest = {}
-
-export type GetConfigResponse = {
-	config: SprigganConfig
-}
-
-export type SaveConfigRequest = {
-	config: SprigganConfig
-}
-
-export type SaveConfigResponse = {
-	success: boolean
-}
-
-export type GetOwnedDataStoresRequest = {}
-
-export type GetOwnedDataStoresResponse = {
-	dataStoreIds: string[]
-}
-
-export type GetPublishedMediaRequest = {
-	dataStoreId: string
-}
-
-export type GetPublishedMediaResponse = {
-	media: Media[]
-}
-
-export type PublishMediaRequest = {
-	dataStoreId: string,
-	media: Media,
-	fee: number
-}
-
-export type PublishMediaResponse = {
-	success: boolean,
-	tx_id: string
-}
-
-export type CreateDataStoreRequest = {
-	fee: number
-}
-
-export type CreateDataStoreResponse = {
-	dataStoreId: string
-}
-
-export type GenerateTorrentsRequest = {
-	media: Media,
-	sourcePaths: { windows: string, mac: string, linux: string }
-}
-
-export type GenerateTorrentsResponse = {
-	torrents: string,
-	success: boolean
-}
-
-export type GetTorrentStatusRequest = {
-	media: Media
-}
-
-export type GetTorrentStatusResponse = {
-	status: "not-seeding" | "seeding" | "error"
-}
-
-export type MintingConfig = {
-	quantity: number,
-	batchSize: number,
-	metadataUris: string[],
-	imageUris: string[],
-	licenseUris: string[],
-	publisherDid: string,
-	royaltyAddress: string,
-	royaltyPercentage: number,
-	fee: number,
-	salePrice: number
-}
-
-export type MintNftCopiesRequest = {
-	mintingConfig: MintingConfig
-}
-
-export type MintNftCopiesResponse = {}
+import { CreateDataStoreRequest, CreateDataStoreResponse, DownloadMediaRequest, DownloadMediaResponse, GenerateTorrentsRequest, GenerateTorrentsResponse, GetConfigRequest, GetConfigResponse, GetInstallStatusRequest, GetInstallStatusResponse, GetLocalDataRequest, GetLocalDataResponse, GetOwnedDataStoresRequest, GetOwnedDataStoresResponse, GetPublishedMediaRequest, GetPublishedMediaResponse, GetTorrentStatusRequest, GetTorrentStatusResponse, InstallMediaRequest, InstallMediaResponse, LoadAllLocalDataRequest, LoadAllLocalDataResponse, MintNftCopiesRequest, MintNftCopiesResponse, PingRequest, PingResponse, PlayMediaRequest, PlayMediaResponse, PublishMediaRequest, PublishMediaResponse, SaveConfigRequest, SaveConfigResponse, SaveLocalDataRequest, SaveLocalDataResponse, SprigganConfig } from '../types/spriggan/SprigganRpcTypes';
 
 
 export type SprigganRpcRequest = PingRequest | DownloadMediaRequest | InstallMediaRequest | PlayMediaRequest | GetInstallStatusRequest | GetLocalDataRequest | SaveLocalDataRequest | LoadAllLocalDataRequest | GetConfigRequest | SaveConfigRequest | GetOwnedDataStoresRequest | GetPublishedMediaRequest | PublishMediaRequest | CreateDataStoreRequest | GenerateTorrentsRequest | GetTorrentStatusRequest | MintNftCopiesRequest
@@ -234,15 +86,16 @@ export const SprigganRpcContextProvider = ({ children }: {
 			params,
 		}, { headers: { 'max-http-header-size': 1_000_000_000 } });
 		if (method === "getConfig") {
-			setConfig(resultRaw.data.result.result as SprigganConfig);
+			setConfig(resultRaw.data.result.config as SprigganConfig);
 		} else if (method === "saveConfig") {
 			setConfig(params as SprigganConfig);
 		}
 		if (resultRaw.data.result) {
+			console.log("resultRaw", resultRaw);
 			return {
 				method,
-				valid: resultRaw.data.result.success as boolean,
-				result: resultRaw.data.result.result as SprigganRpcResponse,
+				valid: resultRaw.status === 200,
+				result: resultRaw.data.result as SprigganRpcResponse,
 			} as SprigganRpcFormattedResponse;
 		}
 		return {
