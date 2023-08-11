@@ -1,4 +1,4 @@
-import { WalletConnectModal } from '@walletconnect/modal';
+import { WalletConnectModal, WalletConnectModalConfig } from '@walletconnect/modal';
 import Client from '@walletconnect/sign-client';
 import { PairingTypes, SessionTypes } from '@walletconnect/types';
 import { getSdkError } from '@walletconnect/utils';
@@ -69,13 +69,15 @@ export function WalletConnectProvider({
     const connect = useCallback(
         async (pairing: any) => {
             if (!client) throw new Error('WalletConnect is not initialized');
-            if (!walletConnectModal) throw new Error('WalletConnectModal is not initialized');
+            if (!walletConnectModal) throw new Error('walletConnectModal is not initialized');
 
             try {
                 const { uri, approval } = await client.connect({
                     pairingTopic: pairing?.topic,
                     requiredNamespaces: REQUIRED_NAMESPACES,
                 });
+
+                console.log('client', client);
 
                 if (uri) {
                     walletConnectModal.openModal({ uri });
@@ -120,9 +122,7 @@ export function WalletConnectProvider({
             clientTemp.on('session_delete', () => reset());
 
             // Debug
-            clientTemp.on('session_event', (...args) => {
-                console.log(args);
-            });
+            clientTemp.on('session_event', (...args) => console.log(args));
         },
         [onSessionConnected]
     );
@@ -164,8 +164,8 @@ export function WalletConnectProvider({
             const walletConnectModalTemp = new WalletConnectModal({
                 projectId,
                 chains: [chainId],
-
-            });
+                walletConnectVersion: 2,
+            } as WalletConnectModalConfig);
 
             setClient(clientTemp);
             setWalletConnectModal(walletConnectModalTemp);
