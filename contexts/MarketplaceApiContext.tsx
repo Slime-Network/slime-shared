@@ -54,7 +54,7 @@ export const MarketplaceApiContextProvider = ({ children }: {
 
 	const search = async (params: SearchRequest) => {
 		try {
-			const response = await axios.get(`${params.url ? params.url : apiUrl}/listings/search`, { params });
+			const response = await axios.get(`${apiUrl}/listings/search`, { params });
 			return {
 				results: hitsToGameList(response.data.hits.hits),
 				message: response.data.message
@@ -69,7 +69,7 @@ export const MarketplaceApiContextProvider = ({ children }: {
 
 	const getSignMessage = async (params: GetSignMessageRequest) => {
 		try {
-			const response = await axios.get(`${params.url ? params.url : apiUrl}/listings/getSignMessage`);
+			const response = await axios.get(`${apiUrl}/listings/getSignMessage`, { params });
 			return { message: response.data.message } as GetSignMessageResponse;
 		} catch (e) {
 			return { message: "An unknown error occurred during getSignMessage" } as GetSignMessageResponse;
@@ -78,7 +78,7 @@ export const MarketplaceApiContextProvider = ({ children }: {
 
 	const getInstallData = async (params: GetInstallDataRequest) => {
 		try {
-			const response = await axios.get(`${params.url ? params.url : apiUrl}/listings/getInstallData`, { params });
+			const response = await axios.get(`${apiUrl}/listings/getInstallData`, { params });
 			return { installData: hitsToGameList(response.data.hits.hits)[0], message: response.data.message } as GetInstallDataResponse;
 		} catch (e) {
 			return { message: "An unknown error occurred during getInstallData" } as GetInstallDataResponse;
@@ -87,7 +87,7 @@ export const MarketplaceApiContextProvider = ({ children }: {
 
 	const requestListingOrUpdate = async (params: RequestListingOrUpdateRequest) => {
 		try {
-			const response = await axios.post(`${params.url ? params.url : apiUrl}/listings/requestListingOrUpdate`, { params }, { headers: { 'max-http-header-size': 1_000_000_000 } });
+			const response = await axios.post(`${apiUrl}/listings/requestListingOrUpdate`, { params }, { headers: { 'max-http-header-size': 1_000_000_000 } });
 			return { currentStatus: response.data.currentStatus, message: response.data.message } as RequestListingOrUpdateResponse;
 		} catch (e) {
 			return { currentStatus: "Error", message: "An unknown error occurred during requestListingOrUpdate" } as RequestListingOrUpdateResponse;
@@ -96,7 +96,7 @@ export const MarketplaceApiContextProvider = ({ children }: {
 
 	const setMediaPublic = async (params: SetMediaPublicRequest) => {
 		try {
-			const response = await axios.get(`${params.url ? params.url : apiUrl}/listings/setMediaPublic`, { params });
+			const response = await axios.get(`${apiUrl}/listings/setMediaPublic`, { params });
 			return { currentStatus: response.data.currentStatus, message: response.data.message } as SetMediaPublicResponse;
 		} catch (e) {
 			return { currentStatus: "Error", message: "An unknown error occurred during setMediaPublic" } as RequestListingOrUpdateResponse;
