@@ -67,28 +67,28 @@ export default function StorePage(props: StorePageProps) {
 	const [tab, setTab] = React.useState(0);
 
 	useEffect(() => {
-		const pubdid = media.publisherDid;
-		const id = media.productId;
-		console.log("pubdid", pubdid);
-		console.log("id", id);
+		if (open) {
+			const pubdid = media.publisherDid;
+			const id = media.productId;
 
-		const decoded = Buffer.from(bech32m.fromWords(bech32m.decode(pubdid).words)).toString("hex");
+			const decoded = Buffer.from(bech32m.fromWords(bech32m.decode(pubdid).words)).toString("hex");
 
-		const col = sha256.create().update(decoded + id).hex();
-		const collectionID = bech32m.encode("col", bech32m.toWords(Buffer.from(col, "hex")));
+			const col = sha256.create().update(decoded + id).hex();
+			const collectionID = bech32m.encode("col", bech32m.toWords(Buffer.from(col, "hex")));
 
-		axios.get(`https://api-testnet.dexie.space/v1/offers`, { params: { requested: asset, offered: collectionID, page_size: 1 } })
-			.then(res => {
-				console.log(res);
-				if (res.data.offers.length > 0) {
-					setActiveOffer(res.data.offers[0].offer);
-					setPrice(res.data.offers[0].requested[0].amount);
-				} else {
-					setPrice("Not Found");
+			axios.get(`https://api-testnet.dexie.space/v1/offers`, { params: { requested: asset, offered: collectionID, page_size: 1 } })
+				.then(res => {
+					console.log(res);
+					if (res.data.offers.length > 0) {
+						setActiveOffer(res.data.offers[0].offer);
+						setPrice(res.data.offers[0].requested[0].amount);
+					} else {
+						setPrice("Not Found");
+					}
 				}
-			}
-			);
-	}, [asset, media, setActiveOffer]);
+				);
+		}
+	}, [asset, media, open, setActiveOffer]);
 
 	const assets = [
 		'TXCH', 'USDS', 'SBX'

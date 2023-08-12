@@ -2,8 +2,8 @@ import { Button, Grid, Modal, Paper, TextField, Typography } from "@mui/material
 import { useState } from "react";
 
 import { SprigganRpcCallback } from "../contexts/SprigganRpcContext";
-import { Marketplace } from "../types/spriggan/MarketplaceApiTypes";
 import { SaveConfigRequest, SprigganConfig } from "../types/spriggan/SprigganRpcTypes";
+import { Marketplace } from "../types/spriggan/types";
 
 
 export const style = {

@@ -11,18 +11,12 @@ export enum SortOptions {
 	NameDesc,
 }
 
-export type Marketplace = {
-	displayName: string;
-	url: string;
-};
-
 export type SearchResponse = {
 	results: Media[];
 	message: string;
 };
 
 export type SearchRequest = {
-	url: string;
 	titleTerm: string;
 	mediaType: string;
 	creatorTerm: string;
@@ -40,7 +34,6 @@ export type GetInstallDataResponse = {
 };
 
 export type GetInstallDataRequest = {
-	url: string;
 	productId: string;
 	pubkey: string;
 	signature: string;
@@ -52,7 +45,6 @@ export type RequestListingOrUpdateResponse = {
 };
 
 export type RequestListingOrUpdateRequest = {
-	url: string;
 	media: Media;
 };
 
@@ -62,7 +54,6 @@ export type SetMediaPublicResponse = {
 };
 
 export type SetMediaPublicRequest = {
-	url: string;
 	isPublic: boolean;
 	productId: string;
 };
@@ -72,6 +63,5 @@ export type GetSignMessageResponse = {
 };
 
 export type GetSignMessageRequest = {
-	url: string;
 	message: string;
 };

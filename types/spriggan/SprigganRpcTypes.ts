@@ -1,14 +1,13 @@
 import type { Media } from './Media';
+import { Marketplace } from './types';
 
 export type SprigganConfig = {
 	torrentsPath: string;
 	marketplaces: Marketplace[];
 	activeMarketplace: Marketplace;
-};
-
-export type Marketplace = {
-	displayName: string;
-	url: string;
+	mintingDataPath: string;
+	mediaDataPath: string;
+	installsPath: string;
 };
 
 export type PingRequest = {};
