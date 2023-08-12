@@ -53,6 +53,7 @@ export type RequestListingOrUpdateResponse = {
 
 export type RequestListingOrUpdateRequest = {
 	url: string;
+	setPublic: boolean;
 	media: Media;
 };
 
@@ -64,7 +65,7 @@ export type SetMediaPublicResponse = {
 export type SetMediaPublicRequest = {
 	url: string;
 	isPublic: boolean;
-	productId: string;
+	media: Media;
 };
 
 export type GetSignMessageResponse = {
