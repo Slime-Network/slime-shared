@@ -34,7 +34,7 @@ export type GetInstallDataResponse = {
 };
 
 export type GetInstallDataRequest = {
-	productId: string;
+	media: Media;
 	pubkey: string;
 	signature: string;
 };
@@ -64,5 +64,5 @@ export type GetSignMessageResponse = {
 };
 
 export type GetSignMessageRequest = {
-	message: string;
+	media: Media;
 };
