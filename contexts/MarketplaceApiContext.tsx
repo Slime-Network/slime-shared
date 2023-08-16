@@ -87,7 +87,7 @@ export const MarketplaceApiContextProvider = ({ children }: {
 
 	const requestListingOrUpdate = async (params: RequestListingOrUpdateRequest) => {
 		try {
-			const response = await axios.post(`${apiUrl}/listings/requestListingOrUpdate`, { params }, { headers: { 'max-http-header-size': 1_000_000_000 } });
+			const response = await axios.post(`${params.url ? params.url : apiUrl}/listings/requestListingOrUpdate`, { params }, { headers: { 'max-http-header-size': 1_000_000_000 } });
 			return { currentStatus: response.data.currentStatus, message: response.data.message } as RequestListingOrUpdateResponse;
 		} catch (e) {
 			return { currentStatus: "Error", message: "An unknown error occurred during requestListingOrUpdate" } as RequestListingOrUpdateResponse;
@@ -96,7 +96,7 @@ export const MarketplaceApiContextProvider = ({ children }: {
 
 	const setMediaPublic = async (params: SetMediaPublicRequest) => {
 		try {
-			const response = await axios.get(`${apiUrl}/listings/setMediaPublic`, { params });
+			const response = await axios.get(`${params.url ? params.url : apiUrl}/listings/setMediaPublic`, { params });
 			return { currentStatus: response.data.currentStatus, message: response.data.message } as SetMediaPublicResponse;
 		} catch (e) {
 			return { currentStatus: "Error", message: "An unknown error occurred during setMediaPublic" } as RequestListingOrUpdateResponse;
