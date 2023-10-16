@@ -16,7 +16,9 @@ export type SprigganRpcCallback = (params: SprigganRpcRequest) => Promise<Sprigg
 interface IContext {
 	ping: SprigganRpcCallback,
 	downloadMedia: SprigganRpcCallback,
+	deleteMedia: SprigganRpcCallback,
 	installMedia: SprigganRpcCallback,
+	uninstallMedia: SprigganRpcCallback,
 	playMedia: SprigganRpcCallback,
 	getInstallStatus: SprigganRpcCallback,
 	getLocalData: SprigganRpcCallback,
@@ -108,7 +110,9 @@ export const SprigganRpcContextProvider = ({ children }: {
 
 	const ping = createSprigganRpcRequestHandler(standardRequest("ping"));
 	const downloadMedia = createSprigganRpcRequestHandler(standardRequest("downloadMedia"));
+	const deleteMedia = createSprigganRpcRequestHandler(standardRequest("deleteMedia"));
 	const installMedia = createSprigganRpcRequestHandler(standardRequest("installMedia"));
+	const uninstallMedia = createSprigganRpcRequestHandler(standardRequest("uninstallMedia"));
 	const playMedia = createSprigganRpcRequestHandler(standardRequest("playMedia"));
 	const getInstallStatus = createSprigganRpcRequestHandler(standardRequest("getInstallStatus"));
 	const getLocalData = createSprigganRpcRequestHandler(standardRequest("getLocalData"));
@@ -130,7 +134,9 @@ export const SprigganRpcContextProvider = ({ children }: {
 			value={{
 				ping,
 				downloadMedia,
+				deleteMedia,
 				installMedia,
+				uninstallMedia,
 				playMedia,
 				getInstallStatus,
 				getLocalData,

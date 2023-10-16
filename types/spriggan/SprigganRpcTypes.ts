@@ -25,12 +25,30 @@ export type DownloadMediaResponse = {
 	message: string;
 };
 
+export type DeleteMediaRequest = {
+	media: Media;
+};
+
+export type DeleteMediaResponse = {
+	status: 'deleted' | 'error' | 'complete';
+	message: string;
+};
+
 export type InstallMediaRequest = {
 	media: Media;
 };
 
 export type InstallMediaResponse = {
 	status: 'installing' | 'error' | 'complete';
+	message: string;
+};
+
+export type UninstallMediaRequest = {
+	media: Media;
+};
+
+export type UninstallMediaResponse = {
+	status: 'uninstalling' | 'error' | 'complete';
 	message: string;
 };
 
@@ -50,14 +68,18 @@ export type GetInstallStatusRequest = {
 
 export type InstallStatus = {
 	isDownloading: boolean;
-	isDoneDownloading: boolean;
+	isDownloaded: boolean;
 	isInstalling: boolean;
 	isInstalled: boolean;
 	hasPendingUpdate: boolean;
+	progress: number;
+	isSeeding: boolean;
+	downloadRate: number;
+	uploadRate: number;
 };
 
 export type GetInstallStatusResponse = {
-	status: InstallStatus | 'error';
+	status: InstallStatus;
 	message: string;
 };
 
@@ -146,6 +168,11 @@ export type GenerateTorrentsResponse = {
 
 export type GetTorrentStatusRequest = {
 	media: Media;
+};
+
+export type TorrentStatus = {
+	isDownloading: boolean;
+	isDoneDownloading: boolean;
 };
 
 export type GetTorrentStatusResponse = {
