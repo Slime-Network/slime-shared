@@ -1,5 +1,5 @@
-# Spriggan Shared
+# Gosti Shared
 
-Contains the Spriggan RPC Context, and other shared types and utils that are used by Spriggan, and our first party dapps.
+Contains shared types and utilities that are used throughout Gosti, and our first party dapps.
 
 Please use this shared repo in your dapps to increase compatibility.

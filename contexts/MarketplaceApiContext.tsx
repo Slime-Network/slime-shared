@@ -6,8 +6,8 @@ import {
 	useState,
 } from "react";
 
-import { GetSignMessageRequest, GetSignMessageResponse, GetInstallDataRequest, GetInstallDataResponse, RequestListingOrUpdateRequest, RequestListingOrUpdateResponse, SearchRequest, SearchResponse, SetMediaPublicRequest, SetMediaPublicResponse } from "../types/spriggan/MarketplaceApiTypes";
-import { Media } from "../types/spriggan/Media";
+import { GetSignMessageRequest, GetSignMessageResponse, GetInstallDataRequest, GetInstallDataResponse, RequestListingOrUpdateRequest, RequestListingOrUpdateResponse, SearchRequest, SearchResponse, SetMediaPublicRequest, SetMediaPublicResponse } from "../types/gosti/MarketplaceApiTypes";
+import { Media } from "../types/gosti/Media";
 
 /**
  * Types
@@ -39,7 +39,7 @@ export const MarketplaceApiContext = createContext<IContext>({} as IContext);
 export const MarketplaceApiContextProvider = ({ children }: {
 	children: ReactNode | ReactNode[];
 }) => {
-	const [apiUrl, setApiUrl] = useState('http://api.spriggan.club');
+	const [apiUrl, setApiUrl] = useState('http://api.gosti.club');
 
 	const hitsToGameList = (hits: any) => {
 		const games = new Array<Media>();

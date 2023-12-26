@@ -1,5 +1,10 @@
 import { Media } from './Media';
 
+export type Marketplace = {
+	displayName: string;
+	url: string;
+};
+
 export enum SortOptions {
 	DateAsc,
 	DateDesc,

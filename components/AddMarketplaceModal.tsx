@@ -1,9 +1,9 @@
 import { Button, Grid, Modal, Paper, TextField, Typography } from "@mui/material";
 import { useState } from "react";
 
-import { SprigganRpcCallback } from "../contexts/SprigganRpcContext";
-import { SaveConfigRequest, SprigganConfig } from "../types/spriggan/SprigganRpcTypes";
-import { Marketplace } from "../types/spriggan/types";
+import { GostiRpcCallback } from "../contexts/GostiRpcContext";
+import { SaveConfigRequest, GostiConfig } from "../types/gosti/GostiRpcTypes";
+import { Marketplace } from "../types/gosti/types";
 
 
 export const style = {
@@ -21,8 +21,8 @@ export const style = {
 export const AddMarketplaceModal = (
     open: boolean,
     setOpen: React.Dispatch<React.SetStateAction<boolean>>,
-    config: SprigganConfig | undefined,
-    saveConfig: SprigganRpcCallback,
+    config: GostiConfig | undefined,
+    saveConfig: GostiRpcCallback,
 ) => {
     const [marketplaceName, setMarketplaceName] = useState<string>("");
     const [marketplaceUrl, setMarketplaceUrl] = useState<string>("");
@@ -70,7 +70,7 @@ export const AddMarketplaceModal = (
                     <Grid item xs={6}>
                         <Button variant="contained" disabled={marketplaceName === "" || marketplaceUrl === "" || marketplaceUrl.startsWith("http") === false}
                             onClick={() => {
-                                const configCopy = config || {} as SprigganConfig;
+                                const configCopy = config || {} as GostiConfig;
                                 const newMarketplace: Marketplace = {
                                     displayName: marketplaceName,
                                     url: marketplaceUrl

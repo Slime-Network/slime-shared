@@ -1,7 +1,7 @@
+import { Marketplace } from './MarketplaceApiTypes';
 import type { Media } from './Media';
-import { Marketplace } from './types';
 
-export type SprigganConfig = {
+export type GostiConfig = {
 	torrentsPath: string;
 	marketplaces: Marketplace[];
 	activeMarketplace: Marketplace;
@@ -111,12 +111,12 @@ export type LoadAllLocalDataResponse = {
 export type GetConfigRequest = {};
 
 export type GetConfigResponse = {
-	config: SprigganConfig;
+	config: GostiConfig;
 	message: string;
 };
 
 export type SaveConfigRequest = {
-	config: SprigganConfig;
+	config: GostiConfig;
 };
 
 export type SaveConfigResponse = {

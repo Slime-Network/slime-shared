@@ -48,10 +48,10 @@ export const REQUIRED_NAMESPACES: ProposalTypes.RequiredNamespaces = {
 };
 
 export const METADATA: CoreTypes.Metadata = {
-	name: 'Spriggan Marketplace Dapp',
-	description: 'Connection to Spriggan Marketplace',
+	name: 'Gosti Marketplace Dapp',
+	description: 'Connection to Gosti Marketplace',
 	url: '#',
 	icons: [
-		'https://raw.githubusercontent.com/Open-Market-Dev-Club/spriggan-client-gui/f0a129cb060853fffa8f70be2be1e2724c3fff4c/public/icon.png',
+		'https://raw.githubusercontent.com/Open-Market-Dev-Club/gosti-client-gui/f0a129cb060853fffa8f70be2be1e2724c3fff4c/public/icon.png',
 	],
 };
