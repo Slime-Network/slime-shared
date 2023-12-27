@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import { GostiRpcCallback } from "../contexts/GostiRpcContext";
 import { SaveConfigRequest, GostiConfig } from "../types/gosti/GostiRpcTypes";
-import { Marketplace } from "../types/gosti/types";
+import { Marketplace } from "../types/gosti/MarketplaceApiTypes";
 
 
 export const style = {
