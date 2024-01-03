@@ -1,8 +1,7 @@
 import { Button, Grid, Modal, Paper, TextField, Typography } from "@mui/material";
 import { useState } from "react";
 
-import { GostiRpcCallback } from "../contexts/GostiRpcContext";
-import { SaveConfigRequest, GostiConfig } from "../types/gosti/GostiRpcTypes";
+import { GostiConfig } from "../types/gosti/GostiRpcTypes";
 import { Marketplace } from "../types/gosti/MarketplaceApiTypes";
 
 
@@ -22,7 +21,7 @@ export const AddMarketplaceModal = (
     open: boolean,
     setOpen: React.Dispatch<React.SetStateAction<boolean>>,
     config: GostiConfig | undefined,
-    saveConfig: GostiRpcCallback,
+    saveConfig: (config: GostiConfig) => void
 ) => {
     const [marketplaceName, setMarketplaceName] = useState<string>("");
     const [marketplaceUrl, setMarketplaceUrl] = useState<string>("");
@@ -79,7 +78,7 @@ export const AddMarketplaceModal = (
                                     configCopy.marketplaces = [];
                                 }
                                 configCopy.marketplaces.push(newMarketplace);
-                                saveConfig({ config: configCopy } as SaveConfigRequest);
+                                saveConfig(configCopy);
                                 setOpen(false);
                             }}>Add Marketplace</Button>
                     </Grid>
