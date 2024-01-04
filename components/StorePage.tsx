@@ -71,6 +71,8 @@ export default function StorePage(props: StorePageProps) {
 			const pubdid = media.publisherDid;
 			const id = media.productId;
 
+			if (!pubdid || !id) return;
+
 			const decoded = Buffer.from(bech32m.fromWords(bech32m.decode(pubdid).words)).toString("hex");
 
 			const col = sha256.create().update(decoded + id).hex();
