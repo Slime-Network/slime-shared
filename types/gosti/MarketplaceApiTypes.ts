@@ -46,7 +46,7 @@ export type GetInstallDataRequest = {
 
 export type UploadFileRequest = {
 	url: string;
-	file: ReadableStream<Uint8Array>;
+	file: File;
 };
 
 export type UploadTextRequest = {
