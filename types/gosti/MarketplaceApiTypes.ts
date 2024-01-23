@@ -55,12 +55,12 @@ export type UploadTextRequest = {
 };
 
 export type UploadResponse = {
-	hash: string;
+	id: string;
 	message: string;
 };
 
 export type GetFileRequest = {
-	hash: string;
+	id: string;
 };
 
 export type GetFileResponse = {
