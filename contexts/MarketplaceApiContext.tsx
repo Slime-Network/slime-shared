@@ -6,7 +6,7 @@ import {
 	useState,
 } from "react";
 
-import { GetSignMessageRequest, GetSignMessageResponse, GetInstallDataRequest, GetInstallDataResponse, RequestListingOrUpdateRequest, RequestListingOrUpdateResponse, SearchRequest, SearchResponse, SetMediaPublicRequest, SetMediaPublicResponse } from "../types/gosti/MarketplaceApiTypes";
+import { GetSignMessageRequest, GetSignMessageResponse, GetInstallDataRequest, GetInstallDataResponse, RequestListingOrUpdateRequest, RequestListingOrUpdateResponse, SearchRequest, SearchResponse, SetMediaPublicRequest, SetMediaPublicResponse, UploadFileRequest, UploadFileResponse } from "../types/gosti/MarketplaceApiTypes";
 import { Media } from "../types/gosti/Media";
 
 /**
@@ -18,12 +18,14 @@ interface IContext {
 	search: SearchCallback,
 	getSignMessage: GetSignMessageCallback,
 	getInstallData: InstallDataCallback,
+	uploadFile: UploadFileCallback,
 	requestListingOrUpdate: RequestListingOrUpdateCallback,
 	setMediaPublic: SetPublicStatusCallback,
 }
 
 type SearchCallback = (params: SearchRequest) => Promise<SearchResponse>;
 type InstallDataCallback = (params: GetInstallDataRequest) => Promise<GetInstallDataResponse>;
+type UploadFileCallback = (params: UploadFileRequest) => Promise<UploadFileResponse>;
 type RequestListingOrUpdateCallback = (params: RequestListingOrUpdateRequest) => Promise<RequestListingOrUpdateResponse>;
 type SetPublicStatusCallback = (params: SetMediaPublicRequest) => Promise<SetMediaPublicResponse>;
 type GetSignMessageCallback = (params: GetSignMessageRequest) => Promise<GetSignMessageResponse>;
@@ -85,6 +87,15 @@ export const MarketplaceApiContextProvider = ({ children }: {
 		}
 	};
 
+	const uploadFile = async (params: UploadFileRequest) => {
+		try {
+			const response = await axios.post(`${params.url ? params.url : apiUrl}/files/upload`, { params });
+			return { message: response.data.message } as UploadFileResponse;
+		} catch (e) {
+			return { message: "An unknown error occurred during uploadFile" } as UploadFileResponse;
+		}
+	};
+
 	const requestListingOrUpdate = async (params: RequestListingOrUpdateRequest) => {
 		try {
 			const response = await axios.post(`${params.url ? params.url : apiUrl}/listings/requestListingOrUpdate`, { params }, { headers: { 'max-http-header-size': 1_000_000_000 } });
@@ -111,6 +122,7 @@ export const MarketplaceApiContextProvider = ({ children }: {
 				search,
 				getSignMessage,
 				getInstallData,
+				uploadFile,
 				requestListingOrUpdate,
 				setMediaPublic
 			}}

@@ -44,6 +44,16 @@ export type GetInstallDataRequest = {
 	signature: string;
 };
 
+export type UploadFileRequest = {
+	url: string;
+	file: string;
+};
+
+export type UploadFileResponse = {
+	hash: string;
+	message: string;
+};
+
 export type RequestListingOrUpdateResponse = {
 	currentStatus: 'Unlisted' | 'Listed' | 'Updated' | 'Pending Approval' | 'Rejected' | 'Error';
 	message: string;

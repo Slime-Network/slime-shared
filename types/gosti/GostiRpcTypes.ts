@@ -194,7 +194,7 @@ export type MintingConfig = {
 };
 
 export type MintNftCopiesRequest = {
-	mintingConfig: MintingConfig;
+	params: MintingConfig;
 };
 
 export type MintNftCopiesResponse = {
