@@ -6,7 +6,7 @@ import {
 	useState,
 } from "react";
 
-import { GetSignMessageRequest, GetSignMessageResponse, GetInstallDataRequest, GetInstallDataResponse, RequestListingOrUpdateRequest, RequestListingOrUpdateResponse, SearchRequest, SearchResponse, SetMediaPublicRequest, SetMediaPublicResponse, UploadFileRequest, UploadFileResponse } from "../types/gosti/MarketplaceApiTypes";
+import { GetSignMessageRequest, GetSignMessageResponse, GetInstallDataRequest, GetInstallDataResponse, RequestListingOrUpdateRequest, RequestListingOrUpdateResponse, SearchRequest, SearchResponse, SetMediaPublicRequest, SetMediaPublicResponse, UploadFileRequest, UploadResponse, UploadTextRequest } from "../types/gosti/MarketplaceApiTypes";
 import { Media } from "../types/gosti/Media";
 
 /**
@@ -19,13 +19,15 @@ interface IContext {
 	getSignMessage: GetSignMessageCallback,
 	getInstallData: InstallDataCallback,
 	uploadFile: UploadFileCallback,
+	uploadText: UploadTextCallback,
 	requestListingOrUpdate: RequestListingOrUpdateCallback,
 	setMediaPublic: SetPublicStatusCallback,
 }
 
 type SearchCallback = (params: SearchRequest) => Promise<SearchResponse>;
 type InstallDataCallback = (params: GetInstallDataRequest) => Promise<GetInstallDataResponse>;
-type UploadFileCallback = (params: UploadFileRequest) => Promise<UploadFileResponse>;
+type UploadFileCallback = (params: UploadFileRequest) => Promise<UploadResponse>;
+type UploadTextCallback = (params: UploadTextRequest) => Promise<UploadResponse>;
 type RequestListingOrUpdateCallback = (params: RequestListingOrUpdateRequest) => Promise<RequestListingOrUpdateResponse>;
 type SetPublicStatusCallback = (params: SetMediaPublicRequest) => Promise<SetMediaPublicResponse>;
 type GetSignMessageCallback = (params: GetSignMessageRequest) => Promise<GetSignMessageResponse>;
@@ -87,12 +89,28 @@ export const MarketplaceApiContextProvider = ({ children }: {
 		}
 	};
 
+	const uploadText = async (params: UploadTextRequest) => {
+		try {
+			const response = await axios.post(`${params.url ? params.url : apiUrl}/files/uploadText`, { params });
+			return { id: response.data.id, message: response.data.message } as UploadResponse;
+		} catch (e) {
+			return { message: "An unknown error occurred during uploadFile" } as UploadResponse;
+		}
+	};
+
 	const uploadFile = async (params: UploadFileRequest) => {
 		try {
-			const response = await axios.post(`${params.url ? params.url : apiUrl}/files/upload`, { params });
-			return { message: response.data.message } as UploadFileResponse;
+			const formData = new FormData();
+			formData.append('file', params.file);
+			const response = await axios.post(`${params.url ? params.url : apiUrl}/files/uploadFile`, formData, {
+				headers: {
+					'Content-Type': 'multipart/form-data',
+					'max-http-header-size': 1_000_000_000
+				}
+			});
+			return { id: response.data.id, message: response.data.message } as UploadResponse;
 		} catch (e) {
-			return { message: "An unknown error occurred during uploadFile" } as UploadFileResponse;
+			return { message: "An unknown error occurred during uploadFile" } as UploadResponse;
 		}
 	};
 
@@ -123,6 +141,7 @@ export const MarketplaceApiContextProvider = ({ children }: {
 				getSignMessage,
 				getInstallData,
 				uploadFile,
+				uploadText,
 				requestListingOrUpdate,
 				setMediaPublic
 			}}
