@@ -99,9 +99,10 @@ export function WalletConnectProvider({
     const disconnect = useCallback(async () => {
         if (!client) throw new Error('WalletConnect is not initialized');
         if (!session) throw new Error('Session is not connected');
+        console.log("pairing", client.pairing);
 
         await client.disconnect({
-            topic: session.topic,
+            topic: session?.topic || "",
             reason: getSdkError('USER_DISCONNECTED'),
         });
 

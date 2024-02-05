@@ -13,18 +13,12 @@ import {
     CheckOfferValidityRequest,
     CheckOfferValidityResponse,
 } from '../types/walletconnect/rpc/CheckOfferValidity';
-import {
-    CreateNewCatWalletRequest,
-    CreateNewCatWalletResponse,
-} from '../types/walletconnect/rpc/CreateNewCatWallet';
-import {
-    CreateNewDidWalletRequest,
-    CreateNewDidWalletResponse,
-} from '../types/walletconnect/rpc/CreateNewDidWallet';
+import { CreateNewDIDWalletRequest, CreateNewDIDWalletResponse } from '../types/walletconnect/rpc/CreateNewDIDWallet';
 import {
     CreateOfferForIdsRequest,
     CreateOfferForIdsResponse,
 } from '../types/walletconnect/rpc/CreateOfferForIds';
+import { FindLostDIDRequest, FindLostDIDResponse } from '../types/walletconnect/rpc/FindLostDID';
 import {
     GetAllOffersRequest,
     GetAllOffersResponse,
@@ -41,6 +35,14 @@ import {
     GetCurrentAddressRequest,
     GetCurrentAddressResponse,
 } from '../types/walletconnect/rpc/GetCurrentAddress';
+import { GetDIDRequest, GetDIDResponse } from '../types/walletconnect/rpc/GetDID';
+import { GetDIDCurrentCoinInfoRequest, GetDIDCurrentCoinInfoResponse } from '../types/walletconnect/rpc/GetDIDCurrentCoinInfo';
+import { GetDIDInfoRequest, GetDIDInfoResponse } from '../types/walletconnect/rpc/GetDIDInfo';
+import { GetDIDInformationNeededForRecoveryRequest, GetDIDInformationNeededForRecoveryResponse } from '../types/walletconnect/rpc/GetDIDInformationNeededForRecovery';
+import { GetDIDMetadataRequest, GetDIDMetadataResponse } from '../types/walletconnect/rpc/GetDIDMetadata';
+import { GetDIDNameRequest, GetDIDNameResponse } from '../types/walletconnect/rpc/GetDIDName';
+import { GetDIDPubkeyRequest, GetDIDPubkeyResponse } from '../types/walletconnect/rpc/GetDIDPubkey';
+import { GetDIDRecoveryListRequest, GetDIDRecoveryListResponse } from '../types/walletconnect/rpc/GetDIDRecoveryList';
 import {
     GetNextAddressRequest,
     GetNextAddressResponse,
@@ -50,9 +52,9 @@ import {
     GetNftInfoResponse,
 } from '../types/walletconnect/rpc/GetNftInfo';
 import {
-    GetNftWalletsWithDidsRequest,
-    GetNftWalletsWithDidsResponse,
-} from '../types/walletconnect/rpc/GetNftWalletsWithDids';
+    GetNftWalletsWithDIDsRequest,
+    GetNftWalletsWithDIDsResponse,
+} from '../types/walletconnect/rpc/GetNftWalletsWithDIDs';
 import {
     GetNftsRequest,
     GetNftsResponse,
@@ -99,8 +101,8 @@ import {
     SendTransactionRequest,
     SendTransactionResponse,
 } from '../types/walletconnect/rpc/SendTransaction';
-import { SetDidNameRequest, SetDidNameResponse } from '../types/walletconnect/rpc/SetDidName';
-import { SetNftDidRequest, SetNftDidResponse } from '../types/walletconnect/rpc/SetNftDid';
+import { SetDIDNameRequest, SetDIDNameResponse } from '../types/walletconnect/rpc/SetDIDName';
+import { SetNftDIDRequest, SetNftDIDResponse } from '../types/walletconnect/rpc/SetNftDID';
 import {
     SignMessageByAddressRequest,
     SignMessageByAddressResponse,
@@ -111,17 +113,20 @@ import {
 } from '../types/walletconnect/rpc/SignMessageById';
 import { SpendCatRequest, SpendCatResponse } from '../types/walletconnect/rpc/SpendCat';
 import { TakeOfferRequest, TakeOfferResponse } from '../types/walletconnect/rpc/TakeOffer';
+import { TransferDIDRequest, TransferDIDResponse } from '../types/walletconnect/rpc/TransferDID';
 import {
     TransferNftRequest,
     TransferNftResponse,
 } from '../types/walletconnect/rpc/TransferNft';
+import { UpdateDIDMetadataRequest, UpdateDIDMetadataResponse } from '../types/walletconnect/rpc/UpdateDIDMetadata';
+import { UpdateDIDRecoveryIdsRequest, UpdateDIDRecoveryIdsResponse } from '../types/walletconnect/rpc/UpdateDIDRecoveryIds';
 import {
     VerifySignatureRequest,
     VerifySignatureResponse,
 } from '../types/walletconnect/rpc/VerifySignature';
 import { useWalletConnect } from './WalletConnectContext';
 
-interface JsonRpc {
+interface WalletConnectRpc {
     // Wallet
     logIn: (data: LogInRequest) => Promise<LogInResponse>;
     getWallets: (data: GetWalletsRequest) => Promise<GetWalletsResponse>;
@@ -175,9 +180,6 @@ interface JsonRpc {
     ) => Promise<GetOfferRecordResponse>;
 
     // CATs
-    createNewCatWallet: (
-        data: CreateNewCatWalletRequest
-    ) => Promise<CreateNewCatWalletResponse>;
     getCatWalletInfo: (
         data: GetCatWalletInfoRequest
     ) => Promise<GetCatWalletInfoResponse>;
@@ -195,23 +197,64 @@ interface JsonRpc {
     getNftsCount: (data: GetNftsCountRequest) => Promise<GetNftsCountResponse>;
 
     // DIDs
-    createNewDidWallet: (
-        data: CreateNewDidWalletRequest
-    ) => Promise<CreateNewDidWalletResponse>;
-    setDidName: (data: SetDidNameRequest) => Promise<SetDidNameResponse>;
-    setNftDid: (data: SetNftDidRequest) => Promise<SetNftDidResponse>;
-    getNftWalletsWithDids: (
-        data: GetNftWalletsWithDidsRequest
-    ) => Promise<GetNftWalletsWithDidsResponse>;
+    createNewDIDWallet: (
+        data: CreateNewDIDWalletRequest
+    ) => Promise<CreateNewDIDWalletResponse>;
+    // didCreateAttest: (
+    //     data: DIDCreateAttestRequest
+    // ) => Promise<CreateAttestResponse>;
+    // didCreateBackupFile: (
+    //     data: DIDCreateBackupFileRequest
+    // ) => Promise<CreateBackupFileResponse>;
+    findLostDID: (
+        data: FindLostDIDRequest
+    ) => Promise<FindLostDIDResponse>;
+    getDIDCurrentCoinInfo: (
+        data: GetDIDCurrentCoinInfoRequest
+    ) => Promise<GetDIDCurrentCoinInfoResponse>;
+    getDID: (data: any) => Promise<any>;
+    getDIDInfo: (data: GetDIDInfoRequest) => Promise<GetDIDInfoResponse>;
+    getDIDInformationNeededForRecovery: (
+        data: GetDIDInformationNeededForRecoveryRequest
+    ) => Promise<GetDIDInformationNeededForRecoveryResponse>;
+    getDIDMetadata: (
+        data: GetDIDMetadataRequest
+    ) => Promise<GetDIDMetadataResponse>;
+    getDIDPubkey: (data: GetDIDPubkeyRequest) => Promise<GetDIDPubkeyResponse>;
+    getDIDRecoveryList: (
+        data: GetDIDRecoveryListRequest
+    ) => Promise<GetDIDRecoveryListResponse>;
+    getDIDName: (
+        data: GetDIDNameRequest
+    ) => Promise<GetDIDNameResponse>;
+    // messageSpend: (
+    //     data: DIDMessageSpendRequest
+    // ) => Promise<MessageSpendResponse>;
+    // recoverySpend: (
+    //     data: DIDRecoverySpendRequest
+    // ) => Promise<RecoverySpendResponse>;
+    transferDID: (
+        data: TransferDIDRequest
+    ) => Promise<TransferDIDResponse>;
+    updateDIDMetadata: (
+        data: UpdateDIDMetadataRequest
+    ) => Promise<UpdateDIDMetadataResponse>;
+    updateDIDRecoveryIds: (
+        data: UpdateDIDRecoveryIdsRequest
+    ) => Promise<UpdateDIDRecoveryIdsResponse>;
+    setDIDName: (data: SetDIDNameRequest) => Promise<SetDIDNameResponse>;
+    setNftDID: (data: SetNftDIDRequest) => Promise<SetNftDIDResponse>;
+    getNftWalletsWithDIDs: (
+        data: GetNftWalletsWithDIDsRequest
+    ) => Promise<GetNftWalletsWithDIDsResponse>;
 }
 
-export const JsonRpcContext = createContext<JsonRpc>({} as JsonRpc);
+export const WalletConnectRpcContext = createContext<WalletConnectRpc>({} as WalletConnectRpc);
 
-export function JsonRpcProvider({ children }: PropsWithChildren) {
+export function WalletConnectRpcProvider({ children }: PropsWithChildren) {
     const { client, session, chainId, fingerprint } = useWalletConnect();
 
     async function request<T>(method: ChiaMethod, data: any): Promise<T> {
-        console.log('request', method, data);
         if (!client) throw new Error('WalletConnect is not initialized');
         if (!session) throw new Error('Session is not connected');
         if (!fingerprint) throw new Error('Fingerprint is not loaded.');
@@ -224,6 +267,7 @@ export function JsonRpcProvider({ children }: PropsWithChildren) {
                 params: { fingerprint, ...data },
             },
         });
+        console.log(`${method} result`, data, result);
 
         if ('error' in result) throw new Error(JSON.stringify(result.error));
 
@@ -363,13 +407,6 @@ export function JsonRpcProvider({ children }: PropsWithChildren) {
 
     // CATs
 
-    async function createNewCatWallet(data: CreateNewCatWalletRequest) {
-        return request<CreateNewCatWalletResponse>(
-            ChiaMethod.CreateNewCatWallet,
-            data
-        );
-    }
-
     async function getCatWalletInfo(data: GetCatWalletInfoRequest) {
         return request<GetCatWalletInfoResponse>(
             ChiaMethod.GetCatWalletInfo,
@@ -417,31 +454,126 @@ export function JsonRpcProvider({ children }: PropsWithChildren) {
     }
 
     // DIDs
-
-    async function createNewDidWallet(data: CreateNewDidWalletRequest) {
-        return request<CreateNewDidWalletResponse>(
-            ChiaMethod.CreateNewDidWallet,
+    async function createNewDIDWallet(data: CreateNewDIDWalletRequest) {
+        return request<CreateNewDIDWalletResponse>(
+            ChiaMethod.CreateNewDIDWallet,
+            data
+        );
+    }
+    // async function didCreateAttest(data: DIDCreateAttestRequest) {
+    //     return request<CreateAttestResponse>(
+    //         ChiaMethod.DIDCreateAttest,
+    //         data
+    //     );
+    // }
+    // async function didCreateBackupFile(data: DIDCreateBackupFileRequest) {
+    //     return request<CreateBackupFileResponse>(
+    //         ChiaMethod.DIDCreateBackupFile,
+    //         data
+    //     );
+    // }
+    async function findLostDID(data: FindLostDIDRequest) {
+        return request<FindLostDIDResponse>(
+            ChiaMethod.FindLostDID,
+            data
+        );
+    }
+    async function getDIDCurrentCoinInfo(data: GetDIDCurrentCoinInfoRequest) {
+        return request<GetDIDCurrentCoinInfoResponse>(
+            ChiaMethod.GetDIDCurrentCoinInfo,
+            data
+        );
+    }
+    async function getDID(data: GetDIDRequest) {
+        return request<GetDIDResponse>(
+            ChiaMethod.GetDID,
+            data
+        );
+    }
+    async function getDIDInfo(data: GetDIDInfoRequest) {
+        return request<GetDIDInfoResponse>(
+            ChiaMethod.GetDIDInfo,
+            data
+        );
+    }
+    async function getDIDInformationNeededForRecovery(data: GetDIDInformationNeededForRecoveryRequest) {
+        return request<GetDIDInformationNeededForRecoveryResponse>(
+            ChiaMethod.GetDIDInformationNeededForRecovery,
+            data
+        );
+    }
+    async function getDIDMetadata(data: GetDIDMetadataRequest) {
+        return request<GetDIDMetadataResponse>(
+            ChiaMethod.GetDIDMetadata,
+            data
+        );
+    }
+    async function getDIDPubkey(data: GetDIDPubkeyRequest) {
+        return request<GetDIDPubkeyResponse>(
+            ChiaMethod.GetDIDPubkey,
+            data
+        );
+    }
+    async function getDIDRecoveryList(data: GetDIDRecoveryListRequest) {
+        return request<GetDIDRecoveryListResponse>(
+            ChiaMethod.GetDIDRecoveryList,
+            data
+        );
+    }
+    async function getDIDName(data: GetDIDNameRequest) {
+        return request<GetDIDNameResponse>(
+            ChiaMethod.GetDIDName,
+            data
+        );
+    }
+    // async function messageSpend(data: DIDMessageSpendRequest) {
+    //     return request<MessageSpendResponse>(
+    //         ChiaMethod.MessageSpend,
+    //         data
+    //     );
+    // }
+    // async function recoverySpend(data: DIDRecoverySpendRequest) {
+    //     return request<RecoverySpendResponse>(
+    //         ChiaMethod.RecoverySpend,
+    //         data
+    //     );
+    // }
+    async function transferDID(data: TransferDIDRequest) {
+        return request<TransferDIDResponse>(
+            ChiaMethod.TransferDID,
+            data
+        );
+    }
+    async function updateDIDMetadata(data: UpdateDIDMetadataRequest) {
+        return request<UpdateDIDMetadataResponse>(
+            ChiaMethod.UpdateDIDMetadata,
+            data
+        );
+    }
+    async function updateDIDRecoveryIds(data: UpdateDIDRecoveryIdsRequest) {
+        return request<UpdateDIDRecoveryIdsResponse>(
+            ChiaMethod.UpdateDIDRecoveryIds,
             data
         );
     }
 
-    async function setDidName(data: SetDidNameRequest) {
-        return request<SetDidNameResponse>(ChiaMethod.SetDidName, data);
+    async function setDIDName(data: SetDIDNameRequest) {
+        return request<SetDIDNameResponse>(ChiaMethod.SetDIDName, data);
     }
 
-    async function setNftDid(data: SetNftDidRequest) {
-        return request<SetNftDidResponse>(ChiaMethod.SetNftDid, data);
+    async function setNftDID(data: SetNftDIDRequest) {
+        return request<SetNftDIDResponse>(ChiaMethod.SetNftDID, data);
     }
 
-    async function getNftWalletsWithDids(data: GetNftWalletsWithDidsRequest) {
-        return request<GetNftWalletsWithDidsResponse>(
-            ChiaMethod.GetNftWalletsWithDids,
+    async function getNftWalletsWithDIDs(data: GetNftWalletsWithDIDsRequest) {
+        return request<GetNftWalletsWithDIDsResponse>(
+            ChiaMethod.GetNftWalletsWithDIDs,
             data
         );
     }
 
     return (
-        <JsonRpcContext.Provider
+        <WalletConnectRpcContext.Provider
             value={{
                 // Wallet
                 logIn,
@@ -468,7 +600,6 @@ export function JsonRpcProvider({ children }: PropsWithChildren) {
                 getOfferRecord,
 
                 // CATs
-                createNewCatWallet,
                 getCatWalletInfo,
                 getCatAssetId,
                 spendCat,
@@ -482,23 +613,39 @@ export function JsonRpcProvider({ children }: PropsWithChildren) {
                 getNftsCount,
 
                 // DIDs
-                createNewDidWallet,
-                setDidName,
-                setNftDid,
-                getNftWalletsWithDids,
+                createNewDIDWallet,
+                // didCreateAttest,
+                // didCreateBackupFile,
+                findLostDID,
+                getDIDCurrentCoinInfo,
+                getDID,
+                getDIDInfo,
+                getDIDInformationNeededForRecovery,
+                getDIDMetadata,
+                getDIDPubkey,
+                getDIDRecoveryList,
+                getDIDName,
+                // messageSpend,
+                // recoverySpend,
+                transferDID,
+                updateDIDMetadata,
+                updateDIDRecoveryIds,
+                setDIDName,
+                setNftDID,
+                getNftWalletsWithDIDs,
             }}
         >
             {children}
-        </JsonRpcContext.Provider>
+        </WalletConnectRpcContext.Provider>
     );
 }
 
-export function useJsonRpc() {
-    const context = useContext(JsonRpcContext);
+export function useWalletConnectRpc() {
+    const context = useContext(WalletConnectRpcContext);
 
     if (!context)
         throw new Error(
-            'Calls to `useJsonRpc` must be used within a `JsonRpcProvider`.'
+            'Calls to `useWalletConnectRpc` must be used within a `WalletConnectRpcProvider`.'
         );
 
     return context;

@@ -1,15 +1,15 @@
 import { SpendBundle } from '../SpendBundle';
 
-export interface SetNftDidRequest {
-    walletId: number;
-    nftLauncherId: string;
-    nftCoinIds: string[];
-    did: string;
-    fee: number;
+export interface SetNftDIDRequest {
+	walletId: number;
+	nftLauncherId: string;
+	nftCoinIds: string[];
+	did: string;
+	fee: number;
 }
 
-export interface SetNftDidResponse {
-    spendBundle: SpendBundle;
-    walletId: number;
-    success: true;
+export interface SetNftDIDResponse {
+	spendBundle: SpendBundle;
+	walletId: number;
+	success: true;
 }
