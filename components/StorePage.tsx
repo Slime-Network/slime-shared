@@ -4,17 +4,22 @@ import CloseIcon from '@mui/icons-material/Close';
 import {
 	Grid, Tab, Tabs, Dialog, Container, Typography, Button,
 	CardMedia, AppBar, Toolbar, Card, Slide, IconButton, Box,
-	Stack, Divider, Autocomplete, TextField, SlideProps
+	Stack, Divider, Autocomplete, TextField, SlideProps,
 } from '@mui/material';
+import { schnorr } from '@noble/curves/secp256k1';
+import { bytesToHex } from '@noble/hashes/utils';
 import axios from "axios";
 import { bech32m } from "bech32";
 import { sha256 } from 'js-sha256';
+import { useNostrEvents, dateToUnix, useNostr } from "nostr-react";
 import * as React from 'react';
 import { Dispatch, SetStateAction, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 
-
+// import { useJsonRpc } from '../contexts/JsonRpcContext';
 import { Media } from '../types/gosti/Media';
+// import { SignMessageByIdRequest } from '../types/walletconnect/rpc/SignMessageById';
+import { getEventHash, NostrEvent } from "../utils/nostr";
 
 const Transition = React.forwardRef((props: SlideProps, ref) => <Slide direction="up" ref={ref} {...props} />);
 
@@ -66,12 +71,36 @@ export default function StorePage(props: StorePageProps) {
 	const [asset, setAsset] = React.useState('TXCH');
 	const [tab, setTab] = React.useState(0);
 
+	// const now = React.useRef(new Date());
+	const [comment, setComment] = React.useState("");
+	const [commentValid, setCommentValid] = React.useState(false);
+
+	React.useEffect(() => {
+		if (comment.length > 0) {
+			setCommentValid(false);
+		} else {
+			setCommentValid(true);
+		}
+	}, [comment]);
+
+	const { publish } = useNostr();
+	const { events } = useNostrEvents({
+		filter: {
+			since: 0,
+			kinds: [1],
+		},
+	});
+	// const did = "did:chia:1m0hde82unf3zvkv7afaykxp2er6s9psj2xwx5uerwfqlvwqu4udqhlw5qc";
+	// const { signMessageById } = useJsonRpc();
+
+	useEffect(() => {
+		console.log("events", events);
+	}, [events]);
+
 	useEffect(() => {
 		if (open) {
 			const pubdid = media.publisherDid;
 			const id = media.productId;
-
-			if (!pubdid || !id) return;
 
 			const decoded = Buffer.from(bech32m.fromWords(bech32m.decode(pubdid).words)).toString("hex");
 
@@ -87,8 +116,7 @@ export default function StorePage(props: StorePageProps) {
 					} else {
 						setPrice("Not Found");
 					}
-				}
-				);
+				});
 		}
 	}, [asset, media, open, setActiveOffer]);
 
@@ -193,6 +221,57 @@ export default function StorePage(props: StorePageProps) {
 					<Card sx={{ m: 1, p: 4, width: '100%' }}>
 						<ReactMarkdown children={media.longDescription} />
 					</Card>
+					<Grid id="commentSection" item xs={12} md={12} sx={{ m: 0, p: 0, height: '100%' }}>
+						Comments
+						{events.map((event) => (
+							<p key={event.id}>{event.pubkey} posted: {event.content}</p>
+						))}
+						<Grid id="commentSection" item xs={12} md={12} sx={{ m: 0, p: 0, height: '100%' }}>
+							<Typography variant="h6">Comments</Typography>
+							{events.map((event) => (
+								<p key={event.id}>
+									{event.pubkey} posted: {event.content}
+								</p>
+							))}
+							<TextField
+								label="Leave a comment"
+								value={comment}
+								onChange={(event) => setComment(event.target.value)}
+								fullWidth
+								multiline
+								rows={4}
+								variant="outlined"
+								margin="normal"
+							/>
+							<Button disabled={commentValid} variant="contained" onClick={async () => {
+
+								// let resp = await signMessageById({ id: did, message: "gahh" } as SignMessageByIdRequest);
+
+								const sk = schnorr.utils.randomPrivateKey(); // `sk` is a Uint8Array
+								const pk = schnorr.getPublicKey(sk);
+
+								const createdAt = dateToUnix();
+
+								const event: NostrEvent = {
+									content: comment,
+									kind: 1,
+									tags: [],
+									created_at: createdAt,
+									pubkey: bytesToHex(pk),
+									id: '',
+									sig: ''
+								};
+								event.id = getEventHash(event);
+								event.sig = bytesToHex(schnorr.sign(getEventHash(event), sk));
+								// resp = await signMessageById({ id: did, message: serializeEvent(event) } as SignMessageByIdRequest);
+
+								publish(event);
+								setComment("");
+							}}>
+								Submit
+							</Button>
+						</Grid>
+					</Grid>
 				</Grid>
 			</Container>
 		</Dialog>
