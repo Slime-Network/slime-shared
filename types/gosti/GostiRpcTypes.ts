@@ -123,13 +123,6 @@ export type SaveConfigResponse = {
 	success: boolean;
 };
 
-export type GetOwnedDataStoresRequest = {};
-
-export type GetOwnedDataStoresResponse = {
-	dataStoreIds: string[];
-	message: string;
-};
-
 export type GetPublishedMediaRequest = {
 	dataStoreId: string;
 };
@@ -146,14 +139,6 @@ export type PublishMediaRequest = {
 
 export type PublishMediaResponse = {
 	message: string;
-};
-
-export type CreateDataStoreRequest = {
-	fee: number;
-};
-
-export type CreateDataStoreResponse = {
-	dataStoreId: string;
 };
 
 export type GenerateTorrentsRequest = {
@@ -177,27 +162,5 @@ export type TorrentStatus = {
 
 export type GetTorrentStatusResponse = {
 	status: any;
-	message: string;
-};
-
-export type MintingConfig = {
-	quantity: number;
-	batchSize: number;
-	metadataUris: string[];
-	imageUris: string[];
-	licenseUris: string[];
-	publisherDid: string;
-	royaltyAddress: string;
-	royaltyPercentage: number;
-	fee: number;
-	salePrice: number;
-};
-
-export type MintNftCopiesRequest = {
-	params: MintingConfig;
-};
-
-export type MintNftCopiesResponse = {
-	status: 'minting' | 'error';
 	message: string;
 };

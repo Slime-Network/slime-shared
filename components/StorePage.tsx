@@ -16,9 +16,7 @@ import * as React from 'react';
 import { Dispatch, SetStateAction, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 
-// import { useJsonRpc } from '../contexts/JsonRpcContext';
 import { Media } from '../types/gosti/Media';
-// import { SignMessageByIdRequest } from '../types/walletconnect/rpc/SignMessageById';
 import { getEventHash, NostrEvent } from "../utils/nostr";
 
 const Transition = React.forwardRef((props: SlideProps, ref) => <Slide direction="up" ref={ref} {...props} />);
@@ -223,12 +221,12 @@ export default function StorePage(props: StorePageProps) {
 					</Card>
 					<Grid id="commentSection" item xs={12} md={12} sx={{ m: 0, p: 0, height: '100%' }}>
 						Comments
-						{events.map((event) => (
+						{events.map((event: any) => (
 							<p key={event.id}>{event.pubkey} posted: {event.content}</p>
 						))}
 						<Grid id="commentSection" item xs={12} md={12} sx={{ m: 0, p: 0, height: '100%' }}>
 							<Typography variant="h6">Comments</Typography>
-							{events.map((event) => (
+							{events.map((event: any) => (
 								<p key={event.id}>
 									{event.pubkey} posted: {event.content}
 								</p>

@@ -5,6 +5,10 @@ import {
     AddCatTokenRequest,
     AddCatTokenResponse,
 } from '../types/walletconnect/rpc/AddCatToken';
+import { AddMirrorRequest, AddMirrorResponse } from '../types/walletconnect/rpc/AddMirror';
+import { AddMissingFilesRequest, AddMissingFilesResponse } from '../types/walletconnect/rpc/AddMissingFiles';
+import { BatchUpdateRequest, BatchUpdateResponse } from '../types/walletconnect/rpc/BatchUpdate';
+import { CancelDataLayerOfferRequest, CancelDataLayerOfferResponse } from '../types/walletconnect/rpc/CancelDataLayerOffer';
 import {
     CancelOfferRequest,
     CancelOfferResponse,
@@ -13,16 +17,22 @@ import {
     CheckOfferValidityRequest,
     CheckOfferValidityResponse,
 } from '../types/walletconnect/rpc/CheckOfferValidity';
-import { CreateNewDIDWalletRequest, CreateNewDIDWalletResponse } from '../types/walletconnect/rpc/CreateNewDIDWallet';
+import { CheckPluginsRequest, CheckPluginsResponse } from '../types/walletconnect/rpc/CheckPlugins';
+import { ClearPendingRootsRequest, ClearPendingRootsResponse } from '../types/walletconnect/rpc/ClearPendingRoots';
+import { CreateDataStoreRequest, CreateDataStoreResponse } from '../types/walletconnect/rpc/CreateDataStore';
+import { CreateNewDIDWalletRequest, CreateNewDIDWalletResponse } from '../types/walletconnect/rpc/CreateNewDidWallet';
 import {
     CreateOfferForIdsRequest,
     CreateOfferForIdsResponse,
 } from '../types/walletconnect/rpc/CreateOfferForIds';
+import { DeleteKeyRequest, DeleteKeyResponse } from '../types/walletconnect/rpc/DeleteKey';
+import { DeleteMirrorRequest, DeleteMirrorResponse } from '../types/walletconnect/rpc/DeleteMirror';
 import { FindLostDIDRequest, FindLostDIDResponse } from '../types/walletconnect/rpc/FindLostDID';
 import {
     GetAllOffersRequest,
     GetAllOffersResponse,
 } from '../types/walletconnect/rpc/GetAllOffers';
+import { GetAncestorsRequest, GetAncestorsResponse } from '../types/walletconnect/rpc/GetAncestors';
 import {
     GetCatAssetIdRequest,
     GetCatAssetIdResponse,
@@ -43,6 +53,12 @@ import { GetDIDMetadataRequest, GetDIDMetadataResponse } from '../types/walletco
 import { GetDIDNameRequest, GetDIDNameResponse } from '../types/walletconnect/rpc/GetDIDName';
 import { GetDIDPubkeyRequest, GetDIDPubkeyResponse } from '../types/walletconnect/rpc/GetDIDPubkey';
 import { GetDIDRecoveryListRequest, GetDIDRecoveryListResponse } from '../types/walletconnect/rpc/GetDIDRecoveryList';
+import { GetDataLayerSyncStatusRequest, GetDataLayerSyncStatusResponse } from '../types/walletconnect/rpc/GetDataLayerSyncStatus';
+import { GetKeysRequest, GetKeysResponse } from '../types/walletconnect/rpc/GetKeys';
+import { GetKeysValuesRequest, GetKeysValuesResponse } from '../types/walletconnect/rpc/GetKeysValues';
+import { GetKvDiffRequest, GetKvDiffResponse } from '../types/walletconnect/rpc/GetKvDiff';
+import { GetLocalRootRequest, GetLocalRootResponse } from '../types/walletconnect/rpc/GetLocalRoot';
+import { GetMirrorsRequest, GetMirrorsResponse } from '../types/walletconnect/rpc/GetMirrors';
 import {
     GetNextAddressRequest,
     GetNextAddressResponse,
@@ -51,10 +67,7 @@ import {
     GetNftInfoRequest,
     GetNftInfoResponse,
 } from '../types/walletconnect/rpc/GetNftInfo';
-import {
-    GetNftWalletsWithDIDsRequest,
-    GetNftWalletsWithDIDsResponse,
-} from '../types/walletconnect/rpc/GetNftWalletsWithDIDs';
+import { GetNftWalletsWithDIDsRequest, GetNftWalletsWithDIDsResponse } from '../types/walletconnect/rpc/GetNftWalletsWithDids';
 import {
     GetNftsRequest,
     GetNftsResponse,
@@ -79,6 +92,10 @@ import {
     GetOffersCountRequest,
     GetOffersCountResponse,
 } from '../types/walletconnect/rpc/GetOffersCount';
+import { GetOwnedStoresRequest, GetOwnedStoresResponse } from '../types/walletconnect/rpc/GetOwnedStores';
+import { GetRootRequest, GetRootResponse } from '../types/walletconnect/rpc/GetRoot';
+import { GetRootHistoryRequest, GetRootHistoryResponse } from '../types/walletconnect/rpc/GetRootHistory';
+import { GetRootsRequest, GetRootsResponse } from '../types/walletconnect/rpc/GetRoots';
 import {
     GetSyncStatusRequest,
     GetSyncStatusResponse,
@@ -87,22 +104,28 @@ import {
     GetTransactionRequest,
     GetTransactionResponse,
 } from '../types/walletconnect/rpc/GetTransaction';
+import { GetValueRequest, GetValueResponse } from '../types/walletconnect/rpc/GetValue';
 import {
     GetWalletBalanceRequest,
     GetWalletBalanceResponse,
 } from '../types/walletconnect/rpc/GetWalletBalance';
 import { GetWalletsRequest, GetWalletsResponse } from '../types/walletconnect/rpc/GetWallets';
+import { InsertRequest, InsertResponse } from '../types/walletconnect/rpc/Insert';
 import { LogInRequest, LogInResponse } from '../types/walletconnect/rpc/LogIn';
+import { MakeDataLayerOfferRequest, MakeDataLayerOfferResponse } from '../types/walletconnect/rpc/MakeDataLayerOffer';
+import { MintBulkRequest, MintBulkResponse } from '../types/walletconnect/rpc/MintBulk';
 import {
     MintNftRequest,
     MintNftResponse,
 } from '../types/walletconnect/rpc/MintNft';
+import { PushTxRequest, PushTxResponse } from '../types/walletconnect/rpc/PushTx';
+import { RemoveSubscriptionsRequest, RemoveSubscriptionsResponse } from '../types/walletconnect/rpc/RemoveSubscriptions';
 import {
     SendTransactionRequest,
     SendTransactionResponse,
 } from '../types/walletconnect/rpc/SendTransaction';
-import { SetDIDNameRequest, SetDIDNameResponse } from '../types/walletconnect/rpc/SetDIDName';
-import { SetNftDIDRequest, SetNftDIDResponse } from '../types/walletconnect/rpc/SetNftDID';
+import { SetDIDNameRequest, SetDIDNameResponse } from '../types/walletconnect/rpc/SetDidName';
+import { SetNftDIDRequest, SetNftDIDResponse } from '../types/walletconnect/rpc/SetNftDid';
 import {
     SignMessageByAddressRequest,
     SignMessageByAddressResponse,
@@ -112,14 +135,19 @@ import {
     SignMessageByIdResponse,
 } from '../types/walletconnect/rpc/SignMessageById';
 import { SpendCatRequest, SpendCatResponse } from '../types/walletconnect/rpc/SpendCat';
+import { SubscribeRequest, SubscribeResponse } from '../types/walletconnect/rpc/Subscribe';
+import { SubscriptionsRequest, SubscriptionsResponse } from '../types/walletconnect/rpc/Subscriptions';
+import { TakeDataLayerOfferRequest, TakeDataLayerOfferResponse } from '../types/walletconnect/rpc/TakeDataLayerOffer';
 import { TakeOfferRequest, TakeOfferResponse } from '../types/walletconnect/rpc/TakeOffer';
 import { TransferDIDRequest, TransferDIDResponse } from '../types/walletconnect/rpc/TransferDID';
 import {
     TransferNftRequest,
     TransferNftResponse,
 } from '../types/walletconnect/rpc/TransferNft';
+import { UnsubscribeRequest, UnsubscribeResponse } from '../types/walletconnect/rpc/Unsubscribe';
 import { UpdateDIDMetadataRequest, UpdateDIDMetadataResponse } from '../types/walletconnect/rpc/UpdateDIDMetadata';
 import { UpdateDIDRecoveryIdsRequest, UpdateDIDRecoveryIdsResponse } from '../types/walletconnect/rpc/UpdateDIDRecoveryIds';
+import { VerifyOfferRequest, VerifyOfferResponse } from '../types/walletconnect/rpc/VerifyOffer';
 import {
     VerifySignatureRequest,
     VerifySignatureResponse,
@@ -142,6 +170,7 @@ interface WalletConnectRpc {
     getCurrentAddress: (
         data: GetCurrentAddressRequest
     ) => Promise<GetCurrentAddressResponse>;
+    pushTx: (data: PushTxRequest) => Promise<PushTxResponse>;
     sendTransaction: (
         data: SendTransactionRequest
     ) => Promise<SendTransactionResponse>;
@@ -192,9 +221,41 @@ interface WalletConnectRpc {
     // NFTs
     getNfts: (data: GetNftsRequest) => Promise<GetNftsResponse>;
     getNftInfo: (data: GetNftInfoRequest) => Promise<GetNftInfoResponse>;
+    mintBulk: (data: MintBulkRequest) => Promise<MintBulkResponse>;
     mintNft: (data: MintNftRequest) => Promise<MintNftResponse>;
     transferNft: (data: TransferNftRequest) => Promise<TransferNftResponse>;
     getNftsCount: (data: GetNftsCountRequest) => Promise<GetNftsCountResponse>;
+
+    // DataLayer
+    addMirror: (data: AddMirrorRequest) => Promise<AddMirrorResponse>;
+    addMissingFiles: (data: AddMissingFilesRequest) => Promise<AddMissingFilesResponse>;
+    batchUpdate: (data: BatchUpdateRequest) => Promise<BatchUpdateResponse>;
+    cancelDataLayerOffer: (data: CancelDataLayerOfferRequest) => Promise<CancelDataLayerOfferResponse>;
+    checkPlugins: (data: CheckPluginsRequest) => Promise<CheckPluginsResponse>;
+    clearPendingRoots: (data: ClearPendingRootsRequest) => Promise<ClearPendingRootsResponse>;
+    createDataStore: (data: CreateDataStoreRequest) => Promise<CreateDataStoreResponse>;
+    deleteKey: (data: DeleteKeyRequest) => Promise<DeleteKeyResponse>;
+    deleteMirror: (data: DeleteMirrorRequest) => Promise<DeleteMirrorResponse>;
+    getAncestors: (data: GetAncestorsRequest) => Promise<GetAncestorsResponse>;
+    getKeys: (data: GetKeysRequest) => Promise<GetKeysResponse>;
+    getKeysValues: (data: GetKeysValuesRequest) => Promise<GetKeysValuesResponse>;
+    getKvDiff: (data: GetKvDiffRequest) => Promise<GetKvDiffResponse>;
+    getLocalRoot: (data: GetLocalRootRequest) => Promise<GetLocalRootResponse>;
+    getMirrors: (data: GetMirrorsRequest) => Promise<GetMirrorsResponse>;
+    getOwnedStores: (data: GetOwnedStoresRequest) => Promise<GetOwnedStoresResponse>;
+    getRoot: (data: GetRootRequest) => Promise<GetRootResponse>;
+    getRoots: (data: GetRootsRequest) => Promise<GetRootsResponse>;
+    getRootHistory: (data: GetRootHistoryRequest) => Promise<GetRootHistoryResponse>;
+    getDataLayerSyncStatus: (data: GetDataLayerSyncStatusRequest) => Promise<GetDataLayerSyncStatusResponse>;
+    getValue: (data: GetValueRequest) => Promise<GetValueResponse>;
+    insert: (data: InsertRequest) => Promise<InsertResponse>;
+    makeDataLayerOffer: (data: MakeDataLayerOfferRequest) => Promise<MakeDataLayerOfferResponse>;
+    removeSubscriptions: (data: RemoveSubscriptionsRequest) => Promise<RemoveSubscriptionsResponse>;
+    subscribe: (data: SubscribeRequest) => Promise<SubscribeResponse>;
+    subscriptions: (data: SubscriptionsRequest) => Promise<SubscriptionsResponse>;
+    takeDataLayerOffer: (data: TakeDataLayerOfferRequest) => Promise<TakeDataLayerOfferResponse>;
+    unsubscribe: (data: UnsubscribeRequest) => Promise<UnsubscribeResponse>;
+    verifyOffer: (data: VerifyOfferRequest) => Promise<VerifyOfferResponse>;
 
     // DIDs
     createNewDIDWallet: (
@@ -281,6 +342,10 @@ export function WalletConnectRpcProvider({ children }: PropsWithChildren) {
 
     async function getWallets(data: GetWalletsRequest) {
         return request<GetWalletsResponse>(ChiaMethod.GetWallets, data);
+    }
+
+    async function pushTx(data: PushTxRequest) {
+        return request<PushTxResponse>(ChiaMethod.PushTx, data);
     }
 
     async function getTransaction(data: GetTransactionRequest) {
@@ -438,6 +503,10 @@ export function WalletConnectRpcProvider({ children }: PropsWithChildren) {
         return request<GetNftInfoResponse>(ChiaMethod.GetNftInfo, data);
     }
 
+    async function mintBulk(data: MintBulkRequest) {
+        return request<MintBulkResponse>(ChiaMethod.MintBulk, data);
+    }
+
     async function mintNft(data: MintNftRequest) {
         return request<MintNftResponse>(ChiaMethod.MintNft, data);
     }
@@ -451,6 +520,95 @@ export function WalletConnectRpcProvider({ children }: PropsWithChildren) {
             ChiaMethod.GetNftsCount,
             data
         );
+    }
+
+    // DataLayer
+    async function addMirror(data: AddMirrorRequest) {
+        return request<AddMirrorResponse>(ChiaMethod.AddMirror, data);
+    }
+    async function addMissingFiles(data: AddMissingFilesRequest) {
+        return request<AddMissingFilesResponse>(ChiaMethod.AddMissingFiles, data);
+    }
+    async function batchUpdate(data: BatchUpdateRequest) {
+        return request<BatchUpdateResponse>(ChiaMethod.BatchUpdate, data);
+    }
+    async function cancelDataLayerOffer(data: CancelDataLayerOfferRequest) {
+        return request<CancelDataLayerOfferResponse>(ChiaMethod.CancelDataLayerOffer, data);
+    }
+    async function checkPlugins(data: CheckPluginsRequest) {
+        return request<CheckPluginsResponse>(ChiaMethod.CheckPlugins, data);
+    }
+    async function clearPendingRoots(data: ClearPendingRootsRequest) {
+        return request<ClearPendingRootsResponse>(ChiaMethod.ClearPendingRoots, data);
+    }
+    async function createDataStore(data: CreateDataStoreRequest) {
+        return request<CreateDataStoreResponse>(ChiaMethod.CreateDataStore, data);
+    }
+    async function deleteKey(data: DeleteKeyRequest) {
+        return request<DeleteKeyResponse>(ChiaMethod.DeleteKey, data);
+    }
+    async function deleteMirror(data: DeleteMirrorRequest) {
+        return request<DeleteMirrorResponse>(ChiaMethod.DeleteMirror, data);
+    }
+    async function getAncestors(data: GetAncestorsRequest) {
+        return request<GetAncestorsResponse>(ChiaMethod.GetAncestors, data);
+    }
+    async function getKeys(data: GetKeysRequest) {
+        return request<GetKeysResponse>(ChiaMethod.GetKeys, data);
+    }
+    async function getKeysValues(data: GetKeysValuesRequest) {
+        return request<GetKeysValuesResponse>(ChiaMethod.GetKeysValues, data);
+    }
+    async function getKvDiff(data: GetKvDiffRequest) {
+        return request<GetKvDiffResponse>(ChiaMethod.GetKvDiff, data);
+    }
+    async function getLocalRoot(data: GetLocalRootRequest) {
+        return request<GetLocalRootResponse>(ChiaMethod.GetLocalRoot, data);
+    }
+    async function getMirrors(data: GetMirrorsRequest) {
+        return request<GetMirrorsResponse>(ChiaMethod.GetMirrors, data);
+    }
+    async function getOwnedStores(data: GetOwnedStoresRequest) {
+        return request<GetOwnedStoresResponse>(ChiaMethod.GetOwnedStores, data);
+    }
+    async function getRoot(data: GetRootRequest) {
+        return request<GetRootResponse>(ChiaMethod.GetRoot, data);
+    }
+    async function getRoots(data: GetRootsRequest) {
+        return request<GetRootsResponse>(ChiaMethod.GetRoots, data);
+    }
+    async function getRootHistory(data: GetRootHistoryRequest) {
+        return request<GetRootHistoryResponse>(ChiaMethod.GetRootHistory, data);
+    }
+    async function getDataLayerSyncStatus(data: GetDataLayerSyncStatusRequest) {
+        return request<GetDataLayerSyncStatusResponse>(ChiaMethod.GetDataLayerSyncStatus, data);
+    }
+    async function getValue(data: GetValueRequest) {
+        return request<GetValueResponse>(ChiaMethod.GetValue, data);
+    }
+    async function insert(data: InsertRequest) {
+        return request<InsertResponse>(ChiaMethod.Insert, data);
+    }
+    async function makeDataLayerOffer(data: MakeDataLayerOfferRequest) {
+        return request<MakeDataLayerOfferResponse>(ChiaMethod.MakeDataLayerOffer, data);
+    }
+    async function removeSubscriptions(data: RemoveSubscriptionsRequest) {
+        return request<RemoveSubscriptionsResponse>(ChiaMethod.RemoveSubscriptions, data);
+    }
+    async function subscribe(data: SubscribeRequest) {
+        return request<SubscribeResponse>(ChiaMethod.Subscribe, data);
+    }
+    async function subscriptions(data: SubscriptionsRequest) {
+        return request<SubscriptionsResponse>(ChiaMethod.Subscriptions, data);
+    }
+    async function takeDataLayerOffer(data: TakeDataLayerOfferRequest) {
+        return request<TakeDataLayerOfferResponse>(ChiaMethod.TakeDataLayerOffer, data);
+    }
+    async function unsubscribe(data: UnsubscribeRequest) {
+        return request<UnsubscribeResponse>(ChiaMethod.Unsubscribe, data);
+    }
+    async function verifyOffer(data: VerifyOfferRequest) {
+        return request<VerifyOfferResponse>(ChiaMethod.VerifyOffer, data);
     }
 
     // DIDs
@@ -578,6 +736,7 @@ export function WalletConnectRpcProvider({ children }: PropsWithChildren) {
                 // Wallet
                 logIn,
                 getWallets,
+                pushTx,
                 getTransaction,
                 getWalletBalance,
                 getCurrentAddress,
@@ -608,9 +767,41 @@ export function WalletConnectRpcProvider({ children }: PropsWithChildren) {
                 // NFTs
                 getNfts,
                 getNftInfo,
+                mintBulk,
                 mintNft,
                 transferNft,
                 getNftsCount,
+
+                // DataLayer
+                addMirror,
+                addMissingFiles,
+                batchUpdate,
+                cancelDataLayerOffer,
+                checkPlugins,
+                clearPendingRoots,
+                createDataStore,
+                deleteKey,
+                deleteMirror,
+                getAncestors,
+                getKeys,
+                getKeysValues,
+                getKvDiff,
+                getLocalRoot,
+                getMirrors,
+                getOwnedStores,
+                getRoot,
+                getRoots,
+                getRootHistory,
+                getDataLayerSyncStatus,
+                getValue,
+                insert,
+                makeDataLayerOffer,
+                removeSubscriptions,
+                subscribe,
+                subscriptions,
+                takeDataLayerOffer,
+                unsubscribe,
+                verifyOffer,
 
                 // DIDs
                 createNewDIDWallet,
