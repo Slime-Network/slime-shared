@@ -20,7 +20,7 @@ import {
 import { CheckPluginsRequest, CheckPluginsResponse } from '../types/walletconnect/rpc/CheckPlugins';
 import { ClearPendingRootsRequest, ClearPendingRootsResponse } from '../types/walletconnect/rpc/ClearPendingRoots';
 import { CreateDataStoreRequest, CreateDataStoreResponse } from '../types/walletconnect/rpc/CreateDataStore';
-import { CreateNewDIDWalletRequest, CreateNewDIDWalletResponse } from '../types/walletconnect/rpc/CreateNewDidWallet';
+import { CreateNewDIDWalletRequest, CreateNewDIDWalletResponse } from '../types/walletconnect/rpc/CreateNewDIDWallet';
 import {
     CreateOfferForIdsRequest,
     CreateOfferForIdsResponse,
@@ -124,7 +124,7 @@ import {
     SendTransactionRequest,
     SendTransactionResponse,
 } from '../types/walletconnect/rpc/SendTransaction';
-import { SetDIDNameRequest, SetDIDNameResponse } from '../types/walletconnect/rpc/SetDidName';
+import { SetDIDNameRequest, SetDIDNameResponse } from '../types/walletconnect/rpc/SetDIDName';
 import { SetNftDIDRequest, SetNftDIDResponse } from '../types/walletconnect/rpc/SetNftDid';
 import {
     SignMessageByAddressRequest,
