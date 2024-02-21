@@ -17,10 +17,14 @@ import {
 	Modal,
 	Box,
 } from '@mui/material';
+import { invoke } from '@tauri-apps/api';
 import * as React from 'react';
 
 import { infoModalStyle } from '../constants';
+import { GostiConfig } from '../types/gosti/GostiRpcTypes';
+import { Marketplace } from '../types/gosti/MarketplaceApiTypes';
 import { Profile } from '../types/gosti/Profile';
+import ImageUpload from './ImageUpload';
 
 const Transition = React.forwardRef((props: SlideProps, ref) => <Slide direction="up" ref={ref} {...props} />);
 
@@ -50,6 +54,23 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 	const [instagram, setInstagram] = React.useState<string>(profile?.metadata?.gostiInstagram || "");
 	const [linkedin, setLinkedin] = React.useState<string>(profile?.metadata?.gostiLinkedin || "");
 	const [nostrPublicKeys, setNostrPublicKeys] = React.useState<string>(profile?.metadata?.gostiNostrPublicKeys || "[]");
+
+	const [config, setConfig] = React.useState<GostiConfig | undefined>(undefined);
+
+	React.useEffect(() => {
+		async function fetchData() {
+			const configResponse: any = await invoke("get_config");
+			console.log("get_config", configResponse);
+			setConfig(configResponse.result);
+		}
+		fetchData();
+	}, []);
+
+	const [marketplaces, setMarketplaces] = React.useState<Marketplace[]>([]);
+
+	React.useEffect(() => {
+		setMarketplaces(config?.marketplaces || []);
+	}, [config]);
 
 	React.useEffect(() => {
 		if (profile) {
@@ -121,6 +142,14 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 						</Grid>
 
 						<Grid item xs={11}>
+							{ImageUpload({
+								marketplaces,
+								title: "Avatar",
+								setGui: (value) => {
+									setAvatar(value);
+								},
+								initialImage: avatar,
+							})}
 							<TextField id="AvatarTextField" sx={{ width: '100%' }} label="Avatar URL" variant="filled" defaultValue={profile?.metadata?.gostiAvatar} value={avatar} onChange={(event: any) => {
 								setAvatar(event.target.value);
 							}} />
