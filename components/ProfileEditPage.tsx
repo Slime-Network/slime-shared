@@ -268,11 +268,11 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 						<Grid item xs={12}>
 
 							<Typography variant="h6">Nostr Public Keys</Typography>
-							<Box>
+							<Box sx={{ m: 2 }}>
 								<Grid container>
 									{nostrPublicKeys.map((key, index) => (
 										<Grid item xs={6}>
-											<Chip label={`${key}`} onDelete={() => {
+											<Chip label={`${key}`} color={(key === config?.currentNostrPublicKey) ? "primary" : "default"} onDelete={() => {
 												nostrPublicKeys.splice(index, 1);
 												setNostrPublicKeys([...nostrPublicKeys]);
 											}} />
