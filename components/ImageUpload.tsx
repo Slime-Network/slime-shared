@@ -13,6 +13,7 @@ interface ImageUploadProps {
     title: string;
     setGui: (uri: string) => void;
     initialImage?: string;
+    height?: number;
 }
 
 const VisuallyHiddenInput = styled('input')({
@@ -28,7 +29,7 @@ const VisuallyHiddenInput = styled('input')({
 });
 
 const ImageUpload: React.FC<ImageUploadProps> = (props) => {
-    const { marketplaces, title, setGui, initialImage } = props;
+    const { marketplaces, title, setGui, initialImage, height } = props;
 
     const [image, setImage] = React.useState<File | null>(null);
 
@@ -70,7 +71,7 @@ const ImageUpload: React.FC<ImageUploadProps> = (props) => {
                 </Button>
             </Grid>
             <Grid key={`imageUploadPreview`} item xs={8}>
-                {!image && initialImage && <img src={initialImage} style={{ maxWidth: "-webkit-fill-available" }} alt="preview" />}
+                {!image && initialImage && <img src={initialImage} style={{ maxWidth: "-webkit-fill-available", maxHeight: `${height}px` }} alt="preview" />}
                 {image && <img src={URL.createObjectURL(image)} style={{ maxWidth: "-webkit-fill-available" }} alt="preview" />}
             </Grid>
         </Grid>

@@ -3,11 +3,8 @@ export type ProfileMetadata = {
 	gostiAvatar?: string;
 	gostiBio?: string;
 	gostiLocation?: string;
-	gostiWebsite?: string;
-	gostiTwitter?: string;
-	gostiFacebook?: string;
-	gostiInstagram?: string;
-	gostiLinkedin?: string;
+	gostiLanguages?: string;
+	gostiLinks?: string;
 	gostiNostrPublicKeys?: string;
 };
 

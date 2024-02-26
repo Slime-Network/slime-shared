@@ -16,11 +16,17 @@ import {
 	Button,
 	Modal,
 	Box,
+	Autocomplete,
+	Chip,
 } from '@mui/material';
+import { schnorr } from '@noble/curves/secp256k1';
+import { bytesToHex } from '@noble/hashes/utils';
 import { invoke } from '@tauri-apps/api';
 import * as React from 'react';
 
 import { infoModalStyle } from '../constants';
+import { Language, Languages } from '../constants/languages';
+import { SocialLink, socialLinksOptions } from '../constants/social-links';
 import { GostiConfig } from '../types/gosti/GostiRpcTypes';
 import { Marketplace } from '../types/gosti/MarketplaceApiTypes';
 import { Profile } from '../types/gosti/Profile';
@@ -48,13 +54,11 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 	const [avatar, setAvatar] = React.useState<string>(profile?.metadata?.gostiAvatar || "");
 	const [bio, setBio] = React.useState<string>(profile?.metadata?.gostiBio || "");
 	const [location, setLocation] = React.useState<string>(profile?.metadata?.gostiLocation || "");
-	const [website, setWebsite] = React.useState<string>(profile?.metadata?.gostiWebsite || "");
-	const [twitter, setTwitter] = React.useState<string>(profile?.metadata?.gostiTwitter || "");
-	const [facebook, setFacebook] = React.useState<string>(profile?.metadata?.gostiFacebook || "");
-	const [instagram, setInstagram] = React.useState<string>(profile?.metadata?.gostiInstagram || "");
-	const [linkedin, setLinkedin] = React.useState<string>(profile?.metadata?.gostiLinkedin || "");
-	const [nostrPublicKeys, setNostrPublicKeys] = React.useState<string>(profile?.metadata?.gostiNostrPublicKeys || "[]");
-
+	const [languages, setLanguages] = React.useState<Language[]>(JSON.parse(profile?.metadata?.gostiLanguages || "[]") || []);
+	const [links, setLinks] = React.useState<SocialLink[]>(JSON.parse(profile?.metadata?.gostiLinks || "[]") || []);
+	const [nostrPublicKeys, setNostrPublicKeys] = React.useState<string[]>(JSON.parse(profile?.metadata?.gostiNostrPublicKeys || "[]") || []);
+	const [tempPrivateKey, setTempPrivateKey] = React.useState<string | undefined>(undefined);
+	const [tempPublicKey, setTempPublicKey] = React.useState<string | undefined>(undefined);
 	const [config, setConfig] = React.useState<GostiConfig | undefined>(undefined);
 
 	React.useEffect(() => {
@@ -79,12 +83,9 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 			setAvatar(profile?.metadata?.gostiAvatar || "");
 			setBio(profile?.metadata?.gostiBio || "");
 			setLocation(profile?.metadata?.gostiLocation || "");
-			setWebsite(profile?.metadata?.gostiWebsite || "");
-			setTwitter(profile?.metadata?.gostiTwitter || "");
-			setFacebook(profile?.metadata?.gostiFacebook || "");
-			setInstagram(profile?.metadata?.gostiInstagram || "");
-			setLinkedin(profile?.metadata?.gostiLinkedin || "");
-			setNostrPublicKeys(profile?.metadata?.gostiNostrPublicKeys || "[]");
+			setLanguages(JSON.parse(profile?.metadata?.gostiLanguages || "[]") || []);
+			setLinks(JSON.parse(profile?.metadata?.gostiLinks || "[]") || []);
+			setNostrPublicKeys(JSON.parse(profile?.metadata?.gostiNostrPublicKeys || "[]") || []);
 		}
 	}, [profile]);
 
@@ -107,9 +108,15 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 				</AppBar>
 				<Container fixed sx={{ mt: 2 }}>
 					<Grid container>
-						<Grid item xs={8}>
+						<Grid item xs={9}>
 							<TextField id="NameTextField" sx={{ width: '100%' }} label="Profile Name" variant="filled" defaultValue={profile?.name} value={name} onChange={(event: any) => {
 								setName(event.target.value);
+							}} InputProps={{
+								endAdornment: <IconButton size="small" aria-label="info" onClick={() => {
+									setNoticeTitle("Profile Name");
+									setNoticeMessage(`This is your local name for this profile, which is only visible to you. It does not require a transaction to update.`);
+									setOpenNotice(true);
+								}}><InfoIcon /></IconButton>
 							}} />
 						</Grid>
 						<Grid item xs={3}>
@@ -118,30 +125,24 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 									onChangeName(name);
 							}}>Confirm</Button>
 						</Grid>
-						<Grid item xs={1}>
-							<IconButton size="small" aria-label="info" onClick={() => {
-								setNoticeTitle("Profile Name");
-								setNoticeMessage(`This is your local name for this profile, which is only visible to you. It does not require a transaction to update.`);
-								setOpenNotice(true);
-							}}><InfoIcon /></IconButton>
-						</Grid>
 						<Grid item xs={12}>
 							<HorizontalRule sx={{ width: '100%' }} />
 						</Grid>
-						<Grid item xs={11}>
+						<Grid item xs={12}>
 							<TextField id="DisplayNameTextField" sx={{ width: '100%' }} label="Display Name" variant="filled" defaultValue={profile?.metadata?.gostiDisplayName} value={displayName} onChange={(event: any) => {
 								setDisplayName(event.target.value);
-							}} />
-						</Grid>
-						<Grid item xs={1}>
-							<IconButton size="small" aria-label="info" onClick={() => {
-								setNoticeTitle("Profile Update Fee");
-								setNoticeMessage(`Creating or updating a profile requires a blockchain transaction. This optional fee can help speed up that transaction if volume is high.`);
-								setOpenNotice(true);
-							}}><InfoIcon /></IconButton>
+							}}
+								InputProps={{
+									endAdornment: <IconButton size="small" aria-label="info" onClick={() => {
+										setNoticeTitle("Profile Update Fee");
+										setNoticeMessage(`Creating or updating a profile requires a blockchain transaction. This optional fee can help speed up that transaction if volume is high.`);
+										setOpenNotice(true);
+									}}><InfoIcon /></IconButton>
+								}}
+							/>
 						</Grid>
 
-						<Grid item xs={11}>
+						<Grid item xs={12}>
 							{ImageUpload({
 								marketplaces,
 								title: "Avatar",
@@ -149,131 +150,176 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 									setAvatar(value);
 								},
 								initialImage: avatar,
+								height: 256,
 							})}
 							<TextField id="AvatarTextField" sx={{ width: '100%' }} label="Avatar URL" variant="filled" defaultValue={profile?.metadata?.gostiAvatar} value={avatar} onChange={(event: any) => {
 								setAvatar(event.target.value);
+							}} InputProps={{
+								endAdornment: <IconButton size="small" aria-label="info" onClick={() => {
+									setNoticeTitle("Avatar");
+									setNoticeMessage("This is the URL for your avatar, you can upload an image to our server, or enter a URL manually, to host your avatar elsewhere.");
+									setOpenNotice(true);
+								}}><InfoIcon /></IconButton>
 							}} />
 						</Grid>
-						<Grid item xs={1}>
-							<IconButton size="small" aria-label="info" onClick={() => {
-								setNoticeTitle("Profile Update Fee");
-								setNoticeMessage(`Creating or updating a profile requires a blockchain transaction. This optional fee can help speed up that transaction if volume is high.`);
-								setOpenNotice(true);
-							}}><InfoIcon /></IconButton>
+						<Grid item xs={12}>
+							<TextField id="BioTextField" sx={{ width: '100%' }}
+								label="Bio"
+								variant="filled"
+								multiline
+								maxRows={4}
+								defaultValue={profile?.metadata?.gostiBio} value={bio}
+								onChange={(event: any) => {
+									setBio(event.target.value);
+								}}
+								InputProps={{
+									endAdornment: <IconButton size="small" aria-label="info" onClick={() => {
+										setNoticeTitle("Profile Update Fee");
+										setNoticeMessage(`Creating or updating a profile requires a blockchain transaction. This optional fee can help speed up that transaction if volume is high.`);
+										setOpenNotice(true);
+									}}><InfoIcon /></IconButton>
+								}}
+							/>
 						</Grid>
-						<Grid item xs={11}>
-							<TextField id="BioTextField" sx={{ width: '100%' }} label="Bio" variant="filled" defaultValue={profile?.metadata?.gostiBio} value={bio} onChange={(event: any) => {
-								setBio(event.target.value);
-							}} />
-						</Grid>
-						<Grid item xs={1}>
-							<IconButton size="small" aria-label="info" onClick={() => {
-								setNoticeTitle("Profile Update Fee");
-								setNoticeMessage(`Creating or updating a profile requires a blockchain transaction. This optional fee can help speed up that transaction if volume is high.`);
-								setOpenNotice(true);
-							}}><InfoIcon /></IconButton>
-						</Grid>
-						<Grid item xs={11}>
+						<Grid item xs={12}>
 							<TextField id="LocationTextField" sx={{ width: '100%' }} label="Location" variant="filled" defaultValue={profile?.metadata?.gostiLocation} value={location} onChange={(event: any) => {
 								setLocation(event.target.value);
-							}} />
+							}}
+								InputProps={{
+									endAdornment: <IconButton size="small" aria-label="info" onClick={() => {
+										setNoticeTitle("Location");
+										setNoticeMessage("Your country of origin, IRL location, .");
+										setOpenNotice(true);
+									}}><InfoIcon /></IconButton>
+								}}
+							/>
 						</Grid>
-						<Grid item xs={1}>
-							<IconButton size="small" aria-label="info" onClick={() => {
-								setNoticeTitle("Profile Update Fee");
-								setNoticeMessage(`Creating or updating a profile requires a blockchain transaction. This optional fee can help speed up that transaction if volume is high.`);
-								setOpenNotice(true);
-							}}><InfoIcon /></IconButton>
-						</Grid>
-						<Grid item xs={11}>
-							<TextField id="WebsiteTextField" sx={{ width: '100%' }} label="Website" variant="filled" defaultValue={profile?.metadata?.gostiWebsite} value={website} onChange={(event: any) => {
-								setWebsite(event.target.value);
-							}} />
-						</Grid>
-						<Grid item xs={1}>
-							<IconButton size="small" aria-label="info" onClick={() => {
-								setNoticeTitle("Profile Update Fee");
-								setNoticeMessage(`Creating or updating a profile requires a blockchain transaction. This optional fee can help speed up that transaction if volume is high.`);
-								setOpenNotice(true);
-							}}><InfoIcon /></IconButton>
-						</Grid>
-						<Grid item xs={11}>
-							<TextField id="TwitterTextField" sx={{ width: '100%' }} label="Twitter" variant="filled" defaultValue={profile?.metadata?.gostiTwitter} value={twitter} onChange={(event: any) => {
-								setTwitter(event.target.value);
-							}} />
-						</Grid>
-						<Grid item xs={1}>
-							<IconButton size="small" aria-label="info" onClick={() => {
-								setNoticeTitle("Profile Update Fee");
-								setNoticeMessage(`Creating or updating a profile requires a blockchain transaction. This optional fee can help speed up that transaction if volume is high.`);
-								setOpenNotice(true);
-							}}><InfoIcon /></IconButton>
-						</Grid>
-						<Grid item xs={11}>
-							<TextField id="FacebookTextField" sx={{ width: '100%' }} label="Facebook" variant="filled" defaultValue={profile?.metadata?.gostiFacebook} value={facebook} onChange={(event: any) => {
-								setFacebook(event.target.value);
-							}} />
-						</Grid>
-						<Grid item xs={1}>
-							<IconButton size="small" aria-label="info" onClick={() => {
-								setNoticeTitle("Profile Update Fee");
-								setNoticeMessage(`Creating or updating a profile requires a blockchain transaction. This optional fee can help speed up that transaction if volume is high.`);
-								setOpenNotice(true);
-							}}><InfoIcon /></IconButton>
-						</Grid>
-						<Grid item xs={11}>
-							<TextField id="InstagramTextField" sx={{ width: '100%' }} label="Instagram" variant="filled" defaultValue={profile?.metadata?.gostiInstagram} value={instagram} onChange={(event: any) => {
-								setInstagram(event.target.value);
-							}} />
-						</Grid>
-						<Grid item xs={1}>
-							<IconButton size="small" aria-label="info" onClick={() => {
-								setNoticeTitle("Profile Update Fee");
-								setNoticeMessage(`Creating or updating a profile requires a blockchain transaction. This optional fee can help speed up that transaction if volume is high.`);
-								setOpenNotice(true);
-							}}><InfoIcon /></IconButton>
-						</Grid>
-						<Grid item xs={11}>
-							<TextField id="LinkedinTextField" sx={{ width: '100%' }} label="Linkedin" variant="filled" defaultValue={profile?.metadata?.gostiLinkedin} value={linkedin} onChange={(event: any) => {
-								setLinkedin(event.target.value);
-							}} />
-						</Grid>
-						<Grid item xs={1}>
-							<IconButton size="small" aria-label="info" onClick={() => {
-								setNoticeTitle("Profile Update Fee");
-								setNoticeMessage(`Creating or updating a profile requires a blockchain transaction. This optional fee can help speed up that transaction if volume is high.`);
-								setOpenNotice(true);
-							}}><InfoIcon /></IconButton>
+						<Grid item xs={12}>
+							<Autocomplete
+								multiple
+								id="languages"
+								options={Languages}
+								defaultValue={[]}
+								getOptionLabel={(option) => (option.native === '') ? option.english : option.native}
+								renderTags={(tagValue, getTagProps) =>
+									tagValue.map((option, index) => (
+										<Chip label={(option.native === '') ? option.english : option.native} {...getTagProps({ index })} />
+									))
+								}
+								renderInput={(params) => (
+									<TextField
+										{...params}
+										variant="filled"
+										label="Languages"
+										placeholder="+"
+									/>
+								)}
+							/>
 						</Grid>
 
+						<Grid item xs={12}>
+							<HorizontalRule sx={{ width: '100%' }} />
+						</Grid>
 
+						<Grid item xs={12}>
+							<Typography variant="h6">Socials</Typography>
+						</Grid>
+						<Grid item xs={12}>
+							<Autocomplete
+								id="AddSocialLink"
+								clearOnEscape
+								sx={{ width: '100%' }}
+								options={socialLinksOptions}
+								getOptionLabel={(link) => link.name}
+								onChange={(event: any) => {
+									console.log("AddSocialLink", event);
+									const link = socialLinksOptions.find((newLink) => newLink.name === event.target.innerText);
+									if (link) setLinks([...links, link]);
+									event.target.clear();
+								}}
+								renderInput={(params) => <TextField {...params} label="Add Social Link" variant="filled" />}
+							/>
+						</Grid>
+						{links.map((link, index) => (
+							<>
+								<Grid item xs={6}>
+									<TextField id={`LinkTextField${link.name}`} sx={{ width: '100%' }}
+										label={link.name} variant="filled"
+										defaultValue={link.link}
+										value={link.link}
+										onChange={(event: any) => {
+											links[index].link = event.target.value;
+											setLinks([...links]);
+										}}
+										InputProps={{
+											endAdornment: <IconButton size="small" aria-label="delete" onClick={() => {
+												links.splice(index, 1);
+												setLinks([...links]);
+											}}><CloseIcon /></IconButton>
+										}}
+									/>
+								</Grid>
+							</>
+						))}
+						<Grid item xs={12}>
+							<HorizontalRule sx={{ width: '100%' }} />
+						</Grid>
 
+						<Grid item xs={12}>
 
-						<Grid item xs={11}>
-							<Button disabled={!profile?.coinAvailable} id="UpdateProfileButton" variant='contained' sx={{ width: '100%' }} onClick={() => {
+							<Typography variant="h6">Nostr Public Keys</Typography>
+							<Box>
+								<Grid container>
+									{nostrPublicKeys.map((key, index) => (
+										<Grid item xs={6}>
+											<Chip label={`${key}`} onDelete={() => {
+												nostrPublicKeys.splice(index, 1);
+												setNostrPublicKeys([...nostrPublicKeys]);
+											}} />
+										</Grid>
+									))}
+								</Grid>
+							</Box>
+						</Grid>
+						<Grid item xs={12}>
+							<Button id="NostrPublicKeysButton" variant='contained' sx={{ width: '100%' }} onClick={() => {
+								console.log("NostrPublicKeysButton", nostrPublicKeys);
+								const sk = schnorr.utils.randomPrivateKey(); // `sk` is a Uint8Array
+								const pk = schnorr.getPublicKey(sk);
+								setTempPrivateKey(bytesToHex(sk));
+								setTempPublicKey(bytesToHex(pk));
+								setNostrPublicKeys([...nostrPublicKeys, bytesToHex(pk)]);
+								console.log("NostrPublicKeysButton", [...nostrPublicKeys, bytesToHex(pk)]);
+							}}
+							>Create New Nostr Key</Button>
+						</Grid>
+
+						<Grid item xs={12}>
+							<HorizontalRule sx={{ width: '100%' }} />
+						</Grid>
+
+						<Grid item xs={12}>
+							<Button disabled={!profile?.coinAvailable} id="UpdateProfileButton" variant='contained' sx={{ width: '100%' }} onClick={async () => {
 								if (profile) {
 									if (!profile.metadata) profile.metadata = {};
 									if (displayName !== "") profile.metadata.gostiDisplayName = displayName;
 									if (avatar !== "") profile.metadata.gostiAvatar = avatar;
 									if (bio !== "") profile.metadata.gostiBio = bio;
 									if (location !== "") profile.metadata.gostiLocation = location;
-									if (website !== "") profile.metadata.gostiWebsite = website;
-									if (twitter !== "") profile.metadata.gostiTwitter = twitter;
-									if (facebook !== "") profile.metadata.gostiFacebook = facebook;
-									if (instagram !== "") profile.metadata.gostiInstagram = instagram;
-									if (linkedin !== "") profile.metadata.gostiLinkedin = linkedin;
-									if (nostrPublicKeys !== "") profile.metadata.gostiNostrPublicKeys = nostrPublicKeys;
+									if (languages.length !== 0) profile.metadata.gostiLanguages = JSON.stringify(languages);
+									if (links.length !== 0) profile.metadata.gostiLinks = JSON.stringify(links);
+									if (nostrPublicKeys.length !== 0) {
+										profile.metadata.gostiNostrPublicKeys = JSON.stringify(nostrPublicKeys);
+										let resp = await invoke("add_nostr_keys", { params: { publicKey: tempPublicKey, privateKey: tempPrivateKey } });
+										console.log("add_nostr_keys", resp);
+										if (config) config.currentNostrPublicKey = tempPublicKey || "";
+										resp = await invoke("save_config", { config });
+										console.log("save_config", resp);
+									}
 
 									onUpdateMetadata(profile.metadata);
 								}
 							}}>Update Profile</Button>
-						</Grid>
-						<Grid item xs={1}>
-							<IconButton size="small" aria-label="info" onClick={() => {
-								setNoticeTitle("Profile Update Fee");
-								setNoticeMessage(`Creating or updating a profile requires a blockchain transaction. This optional fee can help speed up that transaction if volume is high.`);
-								setOpenNotice(true);
-							}}><InfoIcon /></IconButton>
 						</Grid>
 					</Grid>
 					<Modal

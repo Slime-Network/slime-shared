@@ -67,7 +67,7 @@ import {
     GetNftInfoRequest,
     GetNftInfoResponse,
 } from '../types/walletconnect/rpc/GetNftInfo';
-import { GetNftWalletsWithDIDsRequest, GetNftWalletsWithDIDsResponse } from '../types/walletconnect/rpc/GetNftWalletsWithDids';
+import { GetNftWalletsWithDIDsRequest, GetNftWalletsWithDIDsResponse } from '../types/walletconnect/rpc/GetNftWalletsWithDIDs';
 import {
     GetNftsRequest,
     GetNftsResponse,
@@ -125,7 +125,7 @@ import {
     SendTransactionResponse,
 } from '../types/walletconnect/rpc/SendTransaction';
 import { SetDIDNameRequest, SetDIDNameResponse } from '../types/walletconnect/rpc/SetDIDName';
-import { SetNftDIDRequest, SetNftDIDResponse } from '../types/walletconnect/rpc/SetNftDid';
+import { SetNftDIDRequest, SetNftDIDResponse } from '../types/walletconnect/rpc/SetNftDID';
 import {
     SignMessageByAddressRequest,
     SignMessageByAddressResponse,
