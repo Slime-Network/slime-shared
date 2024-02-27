@@ -312,7 +312,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 										profile.metadata.gostiNostrPublicKeys = JSON.stringify(nostrPublicKeys);
 										let resp = await invoke("add_nostr_keys", { params: { publicKey: tempPublicKey, privateKey: tempPrivateKey } });
 										console.log("add_nostr_keys", resp);
-										if (config) config.currentNostrPublicKey = tempPublicKey || "";
+										if (config) config.identity.currentNostrPublicKey = tempPublicKey || "";
 										resp = await invoke("save_config", { config });
 										console.log("save_config", resp);
 									}
