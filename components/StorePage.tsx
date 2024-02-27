@@ -6,16 +6,16 @@ import {
 	CardMedia, AppBar, Toolbar, Card, Slide, IconButton, Box,
 	Stack, Divider, Autocomplete, TextField, SlideProps,
 } from '@mui/material';
-import { schnorr } from '@noble/curves/secp256k1';
-import { bytesToHex } from '@noble/hashes/utils';
+import { invoke } from '@tauri-apps/api';
 import axios from "axios";
 import { bech32m } from "bech32";
 import { sha256 } from 'js-sha256';
-import { useNostrEvents, dateToUnix, useNostr } from "nostr-react";
+import { dateToUnix, useNostr, useNostrEvents } from "nostr-react";
 import * as React from 'react';
 import { Dispatch, SetStateAction, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 
+import { GostiConfig } from '../types/gosti/GostiRpcTypes';
 import { Media } from '../types/gosti/Media';
 import { getEventHash, NostrEvent } from "../utils/nostr";
 
@@ -80,7 +80,6 @@ export default function StorePage(props: StorePageProps) {
 			setCommentValid(true);
 		}
 	}, [comment]);
-
 	const { publish } = useNostr();
 	const { events } = useNostrEvents({
 		filter: {
@@ -220,10 +219,6 @@ export default function StorePage(props: StorePageProps) {
 						<ReactMarkdown children={media.longDescription} />
 					</Card>
 					<Grid id="commentSection" item xs={12} md={12} sx={{ m: 0, p: 0, height: '100%' }}>
-						Comments
-						{events.map((event: any) => (
-							<p key={event.id}>{event.pubkey} posted: {event.content}</p>
-						))}
 						<Grid id="commentSection" item xs={12} md={12} sx={{ m: 0, p: 0, height: '100%' }}>
 							<Typography variant="h6">Comments</Typography>
 							{events.map((event: any) => (
@@ -243,25 +238,32 @@ export default function StorePage(props: StorePageProps) {
 							/>
 							<Button disabled={commentValid} variant="contained" onClick={async () => {
 
-								// let resp = await signMessageById({ id: did, message: "gahh" } as SignMessageByIdRequest);
+								const config: GostiConfig = (await invoke("get_config", { params: {} }) as any).result;
+								console.log(config);
+								const pk = config.identity.currentNostrPublicKey;
 
-								const sk = schnorr.utils.randomPrivateKey(); // `sk` is a Uint8Array
-								const pk = schnorr.getPublicKey(sk);
+								if (!pk) {
+									console.log("No public key found");
+									alert("No public key found. Please set up your profile.");
+									return;
+								}
 
 								const createdAt = dateToUnix();
 
 								const event: NostrEvent = {
 									content: comment,
 									kind: 1,
-									tags: [],
+									tags: [
+										["e", media.nostrEventId],
+										["i", `chia:${config.identity.activeDID}`, config.identity.proof],
+									],
 									created_at: createdAt,
-									pubkey: bytesToHex(pk),
+									pubkey: pk,
 									id: '',
 									sig: ''
 								};
 								event.id = getEventHash(event);
-								event.sig = bytesToHex(schnorr.sign(getEventHash(event), sk));
-								// resp = await signMessageById({ id: did, message: serializeEvent(event) } as SignMessageByIdRequest);
+								event.sig = await invoke("sign_nostr", { message: event.id });
 
 								publish(event);
 								setComment("");
@@ -272,7 +274,7 @@ export default function StorePage(props: StorePageProps) {
 					</Grid>
 				</Grid>
 			</Container>
-		</Dialog>
+		</Dialog >
 	);
 };
 

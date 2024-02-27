@@ -91,6 +91,7 @@ export type Media = {
 	lastUpdated: number;
 	lastUpdatedContent: number;
 	longDescription: string;
+	nostrEventId: string;
 	password: string;
 	paymentAddress: string;
 	productId: string;

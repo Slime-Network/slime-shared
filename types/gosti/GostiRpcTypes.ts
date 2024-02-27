@@ -8,7 +8,11 @@ export type GostiConfig = {
 	mintingDataPath: string;
 	mediaDataPath: string;
 	installsPath: string;
-	currentNostrPublicKey: string;
+	identity: {
+		activeDID: string;
+		currentNostrPublicKey: string;
+		proof: string;
+	};
 };
 
 export type PingRequest = {};
