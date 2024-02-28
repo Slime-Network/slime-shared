@@ -27,9 +27,11 @@ import * as React from 'react';
 import { infoModalStyle } from '../constants';
 import { Language, Languages } from '../constants/languages';
 import { SocialLink, socialLinksOptions } from '../constants/social-links';
+import { useWalletConnectRpc } from '../contexts/WalletConnectRpcContext';
 import { GostiConfig } from '../types/gosti/GostiRpcTypes';
 import { Marketplace } from '../types/gosti/MarketplaceApiTypes';
 import { Profile } from '../types/gosti/Profile';
+import { SignMessageByIdRequest } from '../types/walletconnect/rpc/SignMessageById';
 import ImageUpload from './ImageUpload';
 
 const Transition = React.forwardRef((props: SlideProps, ref) => <Slide direction="up" ref={ref} {...props} />);
@@ -48,6 +50,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 	const [openNotice, setOpenNotice] = React.useState(false);
 	const [noticeTitle, setNoticeTitle] = React.useState<string | undefined>(undefined);
 	const [noticeMessage, setNoticeMessage] = React.useState<string | undefined>(undefined);
+	const [openImportKeysModal, setOpenImportKeysModal] = React.useState(false);
 
 	const [name, setName] = React.useState<string | undefined>(profile?.name);
 	const [displayName, setDisplayName] = React.useState<string>(profile?.metadata?.gostiDisplayName || "");
@@ -60,6 +63,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 	const [tempPrivateKey, setTempPrivateKey] = React.useState<string | undefined>(undefined);
 	const [tempPublicKey, setTempPublicKey] = React.useState<string | undefined>(undefined);
 	const [config, setConfig] = React.useState<GostiConfig | undefined>(undefined);
+	const [activeNostrPublicKey, setActiveNostrPublicKey] = React.useState<string | undefined>(profile?.metadata?.gostiActiveNostrPublicKey);
 
 	React.useEffect(() => {
 		async function fetchData() {
@@ -71,6 +75,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 	}, []);
 
 	const [marketplaces, setMarketplaces] = React.useState<Marketplace[]>([]);
+	const { signMessageById } = useWalletConnectRpc();
 
 	React.useEffect(() => {
 		setMarketplaces(config?.marketplaces || []);
@@ -78,14 +83,15 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 
 	React.useEffect(() => {
 		if (profile) {
-			setName(profile?.name);
-			setDisplayName(profile?.metadata?.gostiDisplayName || "");
-			setAvatar(profile?.metadata?.gostiAvatar || "");
-			setBio(profile?.metadata?.gostiBio || "");
-			setLocation(profile?.metadata?.gostiLocation || "");
-			setLanguages(JSON.parse(profile?.metadata?.gostiLanguages || "[]") || []);
-			setLinks(JSON.parse(profile?.metadata?.gostiLinks || "[]") || []);
-			setNostrPublicKeys(JSON.parse(profile?.metadata?.gostiNostrPublicKeys || "[]") || []);
+			if (profile.name) setName(profile?.name);
+			if (profile?.metadata?.gostiDisplayName) setDisplayName(profile?.metadata?.gostiDisplayName);
+			if (profile?.metadata?.gostiAvatar) setAvatar(profile?.metadata?.gostiAvatar);
+			if (profile?.metadata?.gostiBio) setBio(profile?.metadata?.gostiBio);
+			if (profile?.metadata?.gostiLocation) setLocation(profile?.metadata?.gostiLocation);
+			if (profile?.metadata?.gostiLanguages) setLanguages(JSON.parse(profile?.metadata?.gostiLanguages));
+			if (profile?.metadata?.gostiLinks) setLinks(JSON.parse(profile?.metadata?.gostiLinks));
+			if (profile?.metadata?.gostiNostrPublicKeys) setNostrPublicKeys(JSON.parse(profile?.metadata?.gostiNostrPublicKeys));
+			if (profile?.metadata?.gostiActiveNostrPublicKey) setActiveNostrPublicKey(profile.metadata.gostiActiveNostrPublicKey);
 		}
 	}, [profile]);
 
@@ -266,32 +272,85 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 						</Grid>
 
 						<Grid item xs={12}>
-
 							<Typography variant="h6">Nostr Public Keys</Typography>
 							<Box sx={{ m: 2 }}>
 								<Grid container>
 									{nostrPublicKeys.map((key, index) => (
 										<Grid item xs={6}>
-											<Chip label={`${key}`} color={(key === config?.identity.currentNostrPublicKey) ? "primary" : "default"} onDelete={() => {
-												nostrPublicKeys.splice(index, 1);
-												setNostrPublicKeys([...nostrPublicKeys]);
-											}} />
+											<Chip
+												label={`${key}`}
+												color={(key === activeNostrPublicKey) ? "primary" : "default"}
+												onDelete={() => {
+													nostrPublicKeys.splice(index, 1);
+													setNostrPublicKeys([...nostrPublicKeys]);
+												}}
+												onClick={async (event) => {
+													console.log("Chip", event);
+													if (config) {
+														config.identity.currentNostrPublicKey = (event.target as HTMLElement).innerText || "";
+														setActiveNostrPublicKey(config.identity.currentNostrPublicKey);
+													}
+												}}
+											/>
 										</Grid>
 									))}
 								</Grid>
 							</Box>
 						</Grid>
-						<Grid item xs={12}>
-							<Button id="NostrPublicKeysButton" variant='contained' sx={{ width: '100%' }} onClick={() => {
+						<Grid item xs={6}>
+							<Button id="NostrPublicKeysButton" variant='contained' sx={{ width: '100%' }} onClick={async () => {
 								console.log("NostrPublicKeysButton", nostrPublicKeys);
 								const sk = schnorr.utils.randomPrivateKey(); // `sk` is a Uint8Array
 								const pk = schnorr.getPublicKey(sk);
-								setTempPrivateKey(bytesToHex(sk));
-								setTempPublicKey(bytesToHex(pk));
 								setNostrPublicKeys([...nostrPublicKeys, bytesToHex(pk)]);
-								console.log("NostrPublicKeysButton", [...nostrPublicKeys, bytesToHex(pk)]);
+								setActiveNostrPublicKey(bytesToHex(pk));
+								const resp = await invoke("add_nostr_keys", { params: { publicKey: bytesToHex(pk), privateKey: bytesToHex(sk) } });
+								console.log("add_nostr_keys", resp);
 							}}
 							>Create New Nostr Key</Button>
+						</Grid>
+						<Grid item xs={6}>
+							<Button id="NostrPublicKeysImportButton" variant='contained' sx={{ width: '100%' }} onClick={() => {
+								setOpenImportKeysModal(true);
+							}}
+							>Import Existing Key Pair</Button>
+							<Modal
+								open={openImportKeysModal}
+								onClose={() => { setOpenNotice(false); }}
+								aria-labelledby="modal-modal-title"
+								aria-describedby="modal-modal-description"
+							>
+								<Box sx={infoModalStyle}>
+									<Grid container>
+										<Grid item xs={12}>
+											<TextField id="PrivateKeyTextField" sx={{ width: '100%' }} label="Private Key" variant="filled" value={tempPrivateKey} onChange={(event: any) => {
+												setTempPrivateKey(event.target.value);
+											}} />
+										</Grid>
+										<Grid item xs={12}>
+											<TextField id="PublicKeyTextField" sx={{ width: '100%' }} label="Public Key" variant="filled" value={tempPublicKey} onChange={(event: any) => {
+												setTempPublicKey(event.target.value);
+											}} />
+										</Grid>
+										<Grid item xs={6}>
+											<Button id="ImportKeysButton" variant='contained' sx={{ width: '100%' }} onClick={async () => {
+												if (tempPublicKey && tempPrivateKey) {
+													setNostrPublicKeys([...nostrPublicKeys, tempPublicKey]);
+													const resp = await invoke("add_nostr_keys", { params: { publicKey: tempPublicKey, privateKey: tempPrivateKey } });
+													console.log("add_nostr_keys", resp);
+													setActiveNostrPublicKey(tempPublicKey);
+												}
+												setOpenImportKeysModal(false);
+											}}>Add Keys</Button>
+										</Grid>
+										<Grid item xs={6}>
+											<Button id="CancelImportKeysButton" variant='contained' sx={{ width: '100%' }} onClick={() => {
+												setOpenImportKeysModal(false);
+											}}>Cancel</Button>
+										</Grid>
+									</Grid>
+								</Box>
+							</Modal>
 						</Grid>
 
 						<Grid item xs={12}>
@@ -310,10 +369,13 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 									if (links.length !== 0) profile.metadata.gostiLinks = JSON.stringify(links);
 									if (nostrPublicKeys.length !== 0) {
 										profile.metadata.gostiNostrPublicKeys = JSON.stringify(nostrPublicKeys);
-										let resp = await invoke("add_nostr_keys", { params: { publicKey: tempPublicKey, privateKey: tempPrivateKey } });
-										console.log("add_nostr_keys", resp);
-										if (config) config.identity.currentNostrPublicKey = tempPublicKey || "";
-										resp = await invoke("save_config", { config });
+										if (config) {
+											config.identity.activeDID = profile.did;
+											if (activeNostrPublicKey) profile.metadata.gostiActiveNostrPublicKey = activeNostrPublicKey;
+											const signResponse = await signMessageById({ id: profile.did, message: config.identity.currentNostrPublicKey } as SignMessageByIdRequest);
+											config.identity.proof = signResponse.signature || "";
+										}
+										const resp = await invoke("save_config", { config });
 										console.log("save_config", resp);
 									}
 

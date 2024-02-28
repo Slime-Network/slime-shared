@@ -6,6 +6,7 @@ export type ProfileMetadata = {
 	gostiLanguages?: string;
 	gostiLinks?: string;
 	gostiNostrPublicKeys?: string;
+	gostiActiveNostrPublicKey?: string;
 };
 
 export type Profile = {
