@@ -35,24 +35,29 @@ export const GostiApiContextProvider = ({ children }: {
         mediaDataPath: "./gosti-data/media/",
         mintingDataPath: "./gosti-data/minting/",
         torrentsPath: "./gosti-data/torrents/",
-        identity: { activeDID: "", currentNostrPublicKey: "", proof: "" }
+        identity: { activeDID: "", currentNostrPublicKey: "", proof: "" },
+        default: true
     });
 
     React.useEffect(() => {
-        async function updateConfig() {
-            const configResponse: any = await invoke("save_config", { config: gostiConfig });
-            console.log("save_config", configResponse);
+        const fetchConfig = async () => {
+            const configResponse: any = await invoke("get_config");
+            console.log("get_config", configResponse);
+            setGostiConfig(configResponse.result);
+        };
+
+        if (gostiConfig.default) {
+            console.log("fetchConfig");
+            fetchConfig();
         }
-        if (gostiConfig)
-            updateConfig();
-    }, [gostiConfig]);
+    }, [gostiConfig.default]);
 
     const fetchGostiConfig = async () => {
         if (gostiConfig) {
             return gostiConfig;
         }
         const configResponse: any = await invoke("get_config");
-        console.log("get_config", configResponse);
+        console.log("fetchGostiConfig", configResponse);
         setGostiConfig(configResponse.result);
         return configResponse.result;
     };

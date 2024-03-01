@@ -78,16 +78,12 @@ export type Media = {
 	mediaType: string;
 	adultTags: string[];
 	banner: string;
-	businessEmail: string;
 	capsuleImage: string;
 	contentRating: string;
 	description: string;
-	creator: string;
-	discord: string;
+	creators: string[];
 	executables: string;
-	facebook: string;
 	icon: string;
-	instagram: string;
 	lastUpdated: number;
 	lastUpdatedContent: number;
 	longDescription: string;
@@ -95,7 +91,6 @@ export type Media = {
 	password: string;
 	paymentAddress: string;
 	productId: string;
-	publisher: string;
 	publisherDid: string;
 	screenshots: string[];
 	shortDescription: string;
@@ -106,7 +101,5 @@ export type Media = {
 	torrents: string;
 	trailer: string;
 	trailerSource: string;
-	twitter: string;
 	version: string;
-	website: string;
 };

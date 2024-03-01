@@ -14,6 +14,7 @@ export type GostiConfig = {
 		proof: string;
 	};
 	nostrRelays: string[];
+	default: boolean;
 };
 
 export type PingRequest = {};
