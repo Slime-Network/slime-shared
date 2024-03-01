@@ -21,14 +21,13 @@ import {
 } from '@mui/material';
 import { schnorr } from '@noble/curves/secp256k1';
 import { bytesToHex } from '@noble/hashes/utils';
-import { invoke } from '@tauri-apps/api';
 import * as React from 'react';
 
 import { infoModalStyle } from '../constants';
 import { Language, Languages } from '../constants/languages';
 import { SocialLink, socialLinksOptions } from '../constants/social-links';
+import { useGostiApi } from '../contexts/GostiApiContext';
 import { useWalletConnectRpc } from '../contexts/WalletConnectRpcContext';
-import { GostiConfig } from '../types/gosti/GostiRpcTypes';
 import { Marketplace } from '../types/gosti/MarketplaceApiTypes';
 import { Profile } from '../types/gosti/Profile';
 import { SignMessageByIdRequest } from '../types/walletconnect/rpc/SignMessageById';
@@ -62,24 +61,16 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 	const [nostrPublicKeys, setNostrPublicKeys] = React.useState<string[]>(JSON.parse(profile?.metadata?.gostiNostrPublicKeys || "[]") || []);
 	const [tempPrivateKey, setTempPrivateKey] = React.useState<string | undefined>(undefined);
 	const [tempPublicKey, setTempPublicKey] = React.useState<string | undefined>(undefined);
-	const [config, setConfig] = React.useState<GostiConfig | undefined>(undefined);
 	const [activeNostrPublicKey, setActiveNostrPublicKey] = React.useState<string | undefined>(profile?.metadata?.gostiActiveNostrPublicKey);
-
-	React.useEffect(() => {
-		async function fetchData() {
-			const configResponse: any = await invoke("get_config");
-			console.log("get_config", configResponse);
-			setConfig(configResponse.result);
-		}
-		fetchData();
-	}, []);
 
 	const [marketplaces, setMarketplaces] = React.useState<Marketplace[]>([]);
 	const { signMessageById } = useWalletConnectRpc();
 
+	const { gostiConfig, addNostrKeypair, setGostiConfig } = useGostiApi();
+
 	React.useEffect(() => {
-		setMarketplaces(config?.marketplaces || []);
-	}, [config]);
+		setMarketplaces(gostiConfig.marketplaces);
+	}, [gostiConfig]);
 
 	React.useEffect(() => {
 		if (profile) {
@@ -206,8 +197,8 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								id="languages"
 								options={Languages}
 								defaultValue={[]}
-								getOptionLabel={(option) => (option.native === '') ? option.english : option.native}
-								renderTags={(tagValue, getTagProps) =>
+								getOptionLabel={(option: Language) => (option.native === '') ? option.english : option.native}
+								renderTags={(tagValue: Language[], getTagProps) =>
 									tagValue.map((option, index) => (
 										<Chip label={(option.native === '') ? option.english : option.native} {...getTagProps({ index })} />
 									))
@@ -236,7 +227,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								clearOnEscape
 								sx={{ width: '100%' }}
 								options={socialLinksOptions}
-								getOptionLabel={(link) => link.name}
+								getOptionLabel={(link: SocialLink) => link.name}
 								onChange={(event: any) => {
 									console.log("AddSocialLink", event);
 									const link = socialLinksOptions.find((newLink) => newLink.name === event.target.innerText);
@@ -286,9 +277,9 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 												}}
 												onClick={async (event) => {
 													console.log("Chip", event);
-													if (config) {
-														config.identity.currentNostrPublicKey = (event.target as HTMLElement).innerText || "";
-														setActiveNostrPublicKey(config.identity.currentNostrPublicKey);
+													if (gostiConfig) {
+														gostiConfig.identity.currentNostrPublicKey = (event.target as HTMLElement).innerText || "";
+														setActiveNostrPublicKey(gostiConfig.identity.currentNostrPublicKey);
 													}
 												}}
 											/>
@@ -304,7 +295,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								const pk = schnorr.getPublicKey(sk);
 								setNostrPublicKeys([...nostrPublicKeys, bytesToHex(pk)]);
 								setActiveNostrPublicKey(bytesToHex(pk));
-								const resp = await invoke("add_nostr_keys", { params: { publicKey: bytesToHex(pk), privateKey: bytesToHex(sk) } });
+								const resp = await addNostrKeypair({ publicKey: bytesToHex(pk), privateKey: bytesToHex(sk) });
 								console.log("add_nostr_keys", resp);
 							}}
 							>Create New Nostr Key</Button>
@@ -336,7 +327,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 											<Button id="ImportKeysButton" variant='contained' sx={{ width: '100%' }} onClick={async () => {
 												if (tempPublicKey && tempPrivateKey) {
 													setNostrPublicKeys([...nostrPublicKeys, tempPublicKey]);
-													const resp = await invoke("add_nostr_keys", { params: { publicKey: tempPublicKey, privateKey: tempPrivateKey } });
+													const resp = await addNostrKeypair({ publicKey: tempPublicKey, privateKey: tempPrivateKey });
 													console.log("add_nostr_keys", resp);
 													setActiveNostrPublicKey(tempPublicKey);
 												}
@@ -369,13 +360,13 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 									if (links.length !== 0) profile.metadata.gostiLinks = JSON.stringify(links);
 									if (nostrPublicKeys.length !== 0) {
 										profile.metadata.gostiNostrPublicKeys = JSON.stringify(nostrPublicKeys);
-										if (config) {
-											config.identity.activeDID = profile.did;
+										if (gostiConfig) {
+											gostiConfig.identity.activeDID = profile.did;
 											if (activeNostrPublicKey) profile.metadata.gostiActiveNostrPublicKey = activeNostrPublicKey;
-											const signResponse = await signMessageById({ id: profile.did, message: config.identity.currentNostrPublicKey } as SignMessageByIdRequest);
-											config.identity.proof = signResponse.signature || "";
+											const signResponse = await signMessageById({ id: profile.did, message: gostiConfig.identity.currentNostrPublicKey } as SignMessageByIdRequest);
+											gostiConfig.identity.proof = signResponse.signature || "";
 										}
-										const resp = await invoke("save_config", { config });
+										const resp = await setGostiConfig(gostiConfig);
 										console.log("save_config", resp);
 									}
 

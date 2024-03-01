@@ -6,16 +6,14 @@ import {
 	CardMedia, AppBar, Toolbar, Card, Slide, IconButton, Box,
 	Stack, Divider, Autocomplete, TextField, SlideProps,
 } from '@mui/material';
-import { invoke } from '@tauri-apps/api';
 import axios from "axios";
 import { bech32m } from "bech32";
 import { sha256 } from 'js-sha256';
-import { dateToUnix, useNostr, useNostrEvents } from "nostr-react";
-import * as React from 'react';
-import { Dispatch, SetStateAction, useEffect } from 'react';
+import { SimplePool } from 'nostr-tools';
+import React from 'react';
 import ReactMarkdown from 'react-markdown';
 
-import { GostiConfig } from '../types/gosti/GostiRpcTypes';
+import { useGostiApi } from '../contexts/GostiApiContext';
 import { Media } from '../types/gosti/Media';
 import { getEventHash, NostrEvent } from "../utils/nostr";
 
@@ -56,10 +54,10 @@ function TabProps(index: number) {
 
 export type StorePageProps = {
 	media: Media;
-	setActiveOffer: Dispatch<SetStateAction<string>>;
+	setActiveOffer: React.Dispatch<React.SetStateAction<string>>;
 	onBuy: () => void;
 	open: boolean,
-	setOpen: Dispatch<SetStateAction<boolean>>
+	setOpen: React.Dispatch<React.SetStateAction<boolean>>
 };
 
 export default function StorePage(props: StorePageProps) {
@@ -80,21 +78,46 @@ export default function StorePage(props: StorePageProps) {
 			setCommentValid(true);
 		}
 	}, [comment]);
-	const { publish } = useNostr();
-	const { events } = useNostrEvents({
-		filter: {
-			since: 0,
-			kinds: [1],
-		},
-	});
-	// const did = "did:chia:1m0hde82unf3zvkv7afaykxp2er6s9psj2xwx5uerwfqlvwqu4udqhlw5qc";
-	// const { signMessageById } = useJsonRpc();
 
-	useEffect(() => {
-		console.log("events", events);
-	}, [events]);
+	const { gostiConfig, signNostrMessage } = useGostiApi();
 
-	useEffect(() => {
+	const nostrPool = new SimplePool();
+
+	// const { events } = useNostrEvents({
+	// 	filter: {
+	// 		since: 0,
+	// 		kinds: [0, 1],
+	// 		ids: [media.nostrEventId],
+	// 	} as Filter,
+	// });
+
+	if (!gostiConfig.nostrRelays) {
+		gostiConfig.nostrRelays = [];
+	}
+
+	const [events, setEvents] = React.useState<NostrEvent[]>([]);
+
+	const subs = nostrPool.subscribeMany(
+		[...gostiConfig.nostrRelays],
+		[
+			{
+				authors: [],
+			},
+		],
+		{
+			onevent(event) {
+				console.log(event);
+				setEvents((prev) => [...prev, event]);
+				// this will only be called once the first time the event is received
+				// ...
+			},
+			oneose() {
+				subs.close();
+			}
+		}
+	);
+
+	React.useEffect(() => {
 		if (open) {
 			const pubdid = media.publisherDid;
 			const id = media.productId;
@@ -238,9 +261,7 @@ export default function StorePage(props: StorePageProps) {
 							/>
 							<Button disabled={commentValid} variant="contained" onClick={async () => {
 
-								const config: GostiConfig = (await invoke("get_config", { params: {} }) as any).result;
-								console.log(config);
-								const pk = config.identity.currentNostrPublicKey;
+								const pk = gostiConfig.identity.currentNostrPublicKey;
 
 								if (!pk) {
 									console.log("No public key found");
@@ -248,14 +269,14 @@ export default function StorePage(props: StorePageProps) {
 									return;
 								}
 
-								const createdAt = dateToUnix();
+								const createdAt = Math.floor(Date.now() / 1000);
 
 								const event: NostrEvent = {
 									content: comment,
 									kind: 1,
 									tags: [
-										["e", media.nostrEventId],
-										["i", `chia:${config.identity.activeDID}`, config.identity.proof],
+										["e", media.nostrEventId, gostiConfig.nostrRelays[0], "root"],
+										["i", `chia:${gostiConfig.identity.activeDID}`, gostiConfig.identity.proof],
 									],
 									created_at: createdAt,
 									pubkey: pk,
@@ -263,9 +284,9 @@ export default function StorePage(props: StorePageProps) {
 									sig: ''
 								};
 								event.id = getEventHash(event);
-								event.sig = await invoke("sign_nostr", { message: event.id });
+								event.sig = await signNostrMessage({ message: event.id });
 
-								publish(event);
+								nostrPool.publish(gostiConfig.nostrRelays, event);
 								setComment("");
 							}}>
 								Submit

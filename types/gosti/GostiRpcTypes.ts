@@ -13,6 +13,7 @@ export type GostiConfig = {
 		currentNostrPublicKey: string;
 		proof: string;
 	};
+	nostrRelays: string[];
 };
 
 export type PingRequest = {};
