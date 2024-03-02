@@ -2,7 +2,6 @@ import { Button, Grid, Modal, Paper, TextField, Typography } from "@mui/material
 import { useState } from "react";
 
 import { useGostiApi } from "../contexts/GostiApiContext";
-import { GostiConfig } from "../types/gosti/GostiRpcTypes";
 import { Marketplace } from "../types/gosti/MarketplaceApiTypes";
 
 
@@ -70,16 +69,15 @@ export const AddMarketplaceModal = (
                     <Grid item xs={6}>
                         <Button variant="contained" disabled={marketplaceName === "" || marketplaceUrl === "" || marketplaceUrl.startsWith("http") === false}
                             onClick={() => {
-                                const configCopy = gostiConfig || {} as GostiConfig;
                                 const newMarketplace: Marketplace = {
                                     displayName: marketplaceName,
                                     url: marketplaceUrl
                                 };
-                                if (configCopy.marketplaces === undefined) {
-                                    configCopy.marketplaces = [];
+                                if (gostiConfig.marketplaces === undefined) {
+                                    gostiConfig.marketplaces = [];
                                 }
-                                configCopy.marketplaces.push(newMarketplace);
-                                setGostiConfig(configCopy);
+                                gostiConfig.marketplaces.push(newMarketplace);
+                                setGostiConfig({ ...gostiConfig });
                                 setOpen(false);
                             }}>Add Marketplace</Button>
                     </Grid>

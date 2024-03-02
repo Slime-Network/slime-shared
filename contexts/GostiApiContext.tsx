@@ -40,21 +40,23 @@ export const GostiApiContextProvider = ({ children }: {
     });
 
     React.useEffect(() => {
-        console.log("setting gostiConfig", gostiConfig);
-    }, [gostiConfig]);
-
-    React.useEffect(() => {
+        console.log("fffffffffffffffffffffff", gostiConfig);
         const fetchConfig = async () => {
             const configResponse: any = await invoke("get_config");
             console.log("get_config", configResponse);
+            configResponse.result.default = false;
             setGostiConfig(configResponse.result);
         };
 
         if (gostiConfig.default) {
             console.log("fetchConfig");
             fetchConfig();
+        } else {
+            console.log("has gostiConfig", gostiConfig);
+            const configResponse: any = invoke("save_config", { config: gostiConfig });
+            console.log("save_config", configResponse);
         }
-    }, [gostiConfig.default]);
+    }, [gostiConfig]);
 
     const fetchGostiConfig = async () => {
         if (gostiConfig) {
@@ -62,6 +64,7 @@ export const GostiApiContextProvider = ({ children }: {
         }
         const configResponse: any = await invoke("get_config");
         console.log("fetchGostiConfig", configResponse);
+        configResponse.result.default = false;
         setGostiConfig(configResponse.result);
         return configResponse.result;
     };

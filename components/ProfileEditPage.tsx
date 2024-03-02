@@ -21,6 +21,7 @@ import {
 } from '@mui/material';
 import { schnorr } from '@noble/curves/secp256k1';
 import { bytesToHex } from '@noble/hashes/utils';
+import { SimplePool } from 'nostr-tools';
 import * as React from 'react';
 
 import { infoModalStyle } from '../constants';
@@ -31,6 +32,7 @@ import { useWalletConnectRpc } from '../contexts/WalletConnectRpcContext';
 import { Marketplace } from '../types/gosti/MarketplaceApiTypes';
 import { Profile } from '../types/gosti/Profile';
 import { SignMessageByIdRequest } from '../types/walletconnect/rpc/SignMessageById';
+import { NostrEvent, getEventHash } from '../utils/nostr';
 import ImageUpload from './ImageUpload';
 
 const Transition = React.forwardRef((props: SlideProps, ref) => <Slide direction="up" ref={ref} {...props} />);
@@ -66,7 +68,9 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 	const [marketplaces, setMarketplaces] = React.useState<Marketplace[]>([]);
 	const { signMessageById } = useWalletConnectRpc();
 
-	const { gostiConfig, addNostrKeypair, setGostiConfig } = useGostiApi();
+	const { gostiConfig, addNostrKeypair, signNostrMessage, setGostiConfig } = useGostiApi();
+
+	const nostrPool = new SimplePool();
 
 	React.useEffect(() => {
 		setMarketplaces(gostiConfig.marketplaces);
@@ -109,7 +113,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 							<TextField id="NameTextField" sx={{ width: '100%' }} label="Profile Name" variant="filled" defaultValue={profile?.name} value={name} onChange={(event: any) => {
 								setName(event.target.value);
 							}} InputProps={{
-								endAdornment: <IconButton size="small" aria-label="info" onClick={() => {
+								endAdornment: <IconButton size="small" onClick={() => {
 									setNoticeTitle("Profile Name");
 									setNoticeMessage(`This is your local name for this profile, which is only visible to you. It does not require a transaction to update.`);
 									setOpenNotice(true);
@@ -130,7 +134,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								setDisplayName(event.target.value);
 							}}
 								InputProps={{
-									endAdornment: <IconButton size="small" aria-label="info" onClick={() => {
+									endAdornment: <IconButton size="small" onClick={() => {
 										setNoticeTitle("Profile Update Fee");
 										setNoticeMessage(`Creating or updating a profile requires a blockchain transaction. This optional fee can help speed up that transaction if volume is high.`);
 										setOpenNotice(true);
@@ -152,7 +156,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 							<TextField id="AvatarTextField" sx={{ width: '100%' }} label="Avatar URL" variant="filled" defaultValue={profile?.metadata?.gostiAvatar} value={avatar} onChange={(event: any) => {
 								setAvatar(event.target.value);
 							}} InputProps={{
-								endAdornment: <IconButton size="small" aria-label="info" onClick={() => {
+								endAdornment: <IconButton size="small" onClick={() => {
 									setNoticeTitle("Avatar");
 									setNoticeMessage("This is the URL for your avatar, you can upload an image to our server, or enter a URL manually, to host your avatar elsewhere.");
 									setOpenNotice(true);
@@ -170,7 +174,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 									setBio(event.target.value);
 								}}
 								InputProps={{
-									endAdornment: <IconButton size="small" aria-label="info" onClick={() => {
+									endAdornment: <IconButton size="small" onClick={() => {
 										setNoticeTitle("Profile Update Fee");
 										setNoticeMessage(`Creating or updating a profile requires a blockchain transaction. This optional fee can help speed up that transaction if volume is high.`);
 										setOpenNotice(true);
@@ -183,7 +187,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								setLocation(event.target.value);
 							}}
 								InputProps={{
-									endAdornment: <IconButton size="small" aria-label="info" onClick={() => {
+									endAdornment: <IconButton size="small" onClick={() => {
 										setNoticeTitle("Location");
 										setNoticeMessage("Your country of origin, IRL location, .");
 										setOpenNotice(true);
@@ -200,7 +204,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								getOptionLabel={(option: Language) => (option.native === '') ? option.english : option.native}
 								renderTags={(tagValue: Language[], getTagProps) =>
 									tagValue.map((option, index) => (
-										<Chip label={(option.native === '') ? option.english : option.native} {...getTagProps({ index })} />
+										<Chip size='small' label={(option.native === '') ? option.english : option.native} {...getTagProps({ index })} />
 									))
 								}
 								renderInput={(params) => (
@@ -356,6 +360,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 									if (avatar !== "") profile.metadata.gostiAvatar = avatar;
 									if (bio !== "") profile.metadata.gostiBio = bio;
 									if (location !== "") profile.metadata.gostiLocation = location;
+									console.log("languages", languages);
 									if (languages.length !== 0) profile.metadata.gostiLanguages = JSON.stringify(languages);
 									if (links.length !== 0) profile.metadata.gostiLinks = JSON.stringify(links);
 									if (nostrPublicKeys.length !== 0) {
@@ -366,11 +371,37 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 											const signResponse = await signMessageById({ id: profile.did, message: gostiConfig.identity.currentNostrPublicKey } as SignMessageByIdRequest);
 											gostiConfig.identity.proof = signResponse.signature || "";
 										}
-										const resp = await setGostiConfig(gostiConfig);
+										const resp = await setGostiConfig({ ...gostiConfig });
 										console.log("save_config", resp);
 									}
 
 									onUpdateMetadata(profile.metadata);
+
+									const pk = gostiConfig.identity.currentNostrPublicKey;
+
+									if (!pk) {
+										console.log("No public key found");
+										alert("No public key found. Please set up your profile.");
+										return;
+									}
+
+									const createdAt = Math.floor(Date.now() / 1000);
+
+									const event: NostrEvent = {
+										content: JSON.stringify({ ...profile.metadata, name: profile.metadata.gostiDisplayName, about: profile.metadata.gostiBio, picture: profile.metadata.gostiAvatar }),
+										kind: 0,
+										tags: [
+											["i", `chia:${gostiConfig.identity.activeDID}`, gostiConfig.identity.proof],
+										],
+										created_at: createdAt,
+										pubkey: pk,
+										id: '',
+										sig: ''
+									};
+									event.id = getEventHash(event);
+									event.sig = await signNostrMessage({ message: event.id });
+
+									nostrPool.publish(gostiConfig.nostrRelays, event);
 								}
 							}}>Update Profile</Button>
 						</Grid>
