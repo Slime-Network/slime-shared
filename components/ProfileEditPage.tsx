@@ -66,9 +66,10 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 	const [activeNostrPublicKey, setActiveNostrPublicKey] = React.useState<string | undefined>(profile?.metadata?.gostiActiveNostrPublicKey);
 
 	const [marketplaces, setMarketplaces] = React.useState<Marketplace[]>([]);
+	const [hasPrivateKey, setHasPrivateKey] = React.useState<Map<string, boolean>>(new Map());
 	const { signMessageById } = useWalletConnectRpc();
 
-	const { gostiConfig, addNostrKeypair, signNostrMessage, setGostiConfig } = useGostiApi();
+	const { gostiConfig, addNostrKeypair, hasNostrPrivateKey, signNostrMessage, setGostiConfig } = useGostiApi();
 
 	const nostrPool = new SimplePool();
 
@@ -79,20 +80,29 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 	React.useEffect(() => {
 		if (profile) {
 			if (profile.name) setName(profile?.name);
-			if (profile?.metadata?.gostiDisplayName) setDisplayName(profile?.metadata?.gostiDisplayName);
-			if (profile?.metadata?.gostiAvatar) setAvatar(profile?.metadata?.gostiAvatar);
-			if (profile?.metadata?.gostiBio) setBio(profile?.metadata?.gostiBio);
-			if (profile?.metadata?.gostiLocation) setLocation(profile?.metadata?.gostiLocation);
-			if (profile?.metadata?.gostiLanguages) setLanguages(JSON.parse(profile?.metadata?.gostiLanguages));
-			if (profile?.metadata?.gostiLinks) setLinks(JSON.parse(profile?.metadata?.gostiLinks));
-			if (profile?.metadata?.gostiNostrPublicKeys) setNostrPublicKeys(JSON.parse(profile?.metadata?.gostiNostrPublicKeys));
-			if (profile?.metadata?.gostiActiveNostrPublicKey) setActiveNostrPublicKey(profile.metadata.gostiActiveNostrPublicKey);
+			if (profile.metadata.gostiDisplayName) setDisplayName(profile.metadata.gostiDisplayName);
+			if (profile.metadata.gostiAvatar) setAvatar(profile.metadata.gostiAvatar);
+			if (profile.metadata.gostiBio) setBio(profile.metadata.gostiBio);
+			if (profile.metadata.gostiLocation) setLocation(profile.metadata.gostiLocation);
+			if (profile.metadata.gostiLanguages) setLanguages(JSON.parse(profile.metadata.gostiLanguages));
+			if (profile.metadata.gostiLinks) setLinks(JSON.parse(profile.metadata.gostiLinks));
+			if (profile.metadata.gostiNostrPublicKeys) setNostrPublicKeys(JSON.parse(profile.metadata.gostiNostrPublicKeys));
+			if (profile.metadata.gostiActiveNostrPublicKey) setActiveNostrPublicKey(profile.metadata.gostiActiveNostrPublicKey);
 		}
 	}, [profile]);
 
 	const handleClose = () => {
 		setOpen(false);
 	};
+
+	React.useEffect(() => {
+		nostrPublicKeys.forEach(async (key) => {
+			const result = await hasNostrPrivateKey({ publicKey: key });
+			hasPrivateKey.set(key, result);
+			setHasPrivateKey(new Map(hasPrivateKey));
+		});
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- This is intentional
+	}, [hasNostrPrivateKey, nostrPublicKeys]);
 
 	return (
 		<Paper>
@@ -267,14 +277,18 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 						</Grid>
 
 						<Grid item xs={12}>
-							<Typography variant="h6">Nostr Public Keys</Typography>
+							<Typography variant="h6">Nostr Public Keys<IconButton size="small" onClick={() => {
+								setNoticeTitle("Nostr Public Keys");
+								setNoticeMessage("Your list of public keys for Nostr, the social media parts of Gosti. All of your Nostr keys are linked to your same profile and can be used interchangeably. Your Private keys are stored locally on your device for security, so it is possible to loose old keys. You may also want to create a different key-pair for each device, for security and ease of use. Green means your active public key, Grey is an inactive key, and Red means you do not have the private key on this device. Click on an inactive key to activate it, or to add a missing private key.");
+								setOpenNotice(true);
+							}}><InfoIcon /></IconButton></Typography>
 							<Box sx={{ m: 2 }}>
 								<Grid container>
 									{nostrPublicKeys.map((key, index) => (
 										<Grid item xs={6}>
 											<Chip
 												label={`${key}`}
-												color={(key === activeNostrPublicKey) ? "primary" : "default"}
+												color={(hasPrivateKey.get(key)) ? (key === activeNostrPublicKey) ? "primary" : "default" : "error"}
 												onDelete={() => {
 													nostrPublicKeys.splice(index, 1);
 													setNostrPublicKeys([...nostrPublicKeys]);
@@ -299,6 +313,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								const pk = schnorr.getPublicKey(sk);
 								setNostrPublicKeys([...nostrPublicKeys, bytesToHex(pk)]);
 								setActiveNostrPublicKey(bytesToHex(pk));
+
 								const resp = await addNostrKeypair({ publicKey: bytesToHex(pk), privateKey: bytesToHex(sk) });
 								console.log("add_nostr_keys", resp);
 							}}

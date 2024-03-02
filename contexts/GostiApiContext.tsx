@@ -13,6 +13,7 @@ interface IContext {
     setGostiConfig: React.Dispatch<React.SetStateAction<GostiConfig>>,
     signNostrMessage: (params: { message: string }) => Promise<string>,
     addNostrKeypair: (params: { publicKey: string, privateKey: string }) => Promise<string>,
+    hasNostrPrivateKey: (params: { publicKey: string }) => Promise<boolean>,
     getOperatingSystem: () => Promise<string>,
 }
 
@@ -40,7 +41,6 @@ export const GostiApiContextProvider = ({ children }: {
     });
 
     React.useEffect(() => {
-        console.log("fffffffffffffffffffffff", gostiConfig);
         const fetchConfig = async () => {
             const configResponse: any = await invoke("get_config");
             console.log("get_config", configResponse);
@@ -83,7 +83,19 @@ export const GostiApiContextProvider = ({ children }: {
     const addNostrKeypair = async (params: { publicKey: string, privateKey: string }) => {
         let result = "";
         try {
-            result = await invoke("add_nostr_keypair", params);
+            console.log("addNostrKeypair", params);
+            result = await invoke("add_nostr_keypair", { params });
+        }
+        catch (e) {
+            console.error(e);
+        }
+        return result;
+    };
+
+    const hasNostrPrivateKey = async (params: { publicKey: string }) => {
+        let result = false;
+        try {
+            result = await invoke("has_nostr_private_key", { params });
         }
         catch (e) {
             console.error(e);
@@ -110,6 +122,7 @@ export const GostiApiContextProvider = ({ children }: {
                 setGostiConfig,
                 signNostrMessage,
                 addNostrKeypair,
+                hasNostrPrivateKey,
                 getOperatingSystem
             }}
         >
