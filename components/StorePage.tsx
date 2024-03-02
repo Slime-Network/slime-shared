@@ -14,8 +14,12 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 
 import { useGostiApi } from '../contexts/GostiApiContext';
+import { useWalletConnectRpc } from '../contexts/WalletConnectRpcContext';
 import { Media } from '../types/gosti/Media';
+import { ProfileMetadata } from '../types/gosti/Profile';
+import { GetDIDInfoRequest } from '../types/walletconnect/rpc/GetDIDInfo';
 import { getEventHash, NostrEvent } from "../utils/nostr";
+import { GostiComment } from './Comment';
 
 const Transition = React.forwardRef((props: SlideProps, ref) => <Slide direction="up" ref={ref} {...props} />);
 
@@ -66,6 +70,7 @@ export default function StorePage(props: StorePageProps) {
 	const [price, setPrice] = React.useState("");
 	const [asset, setAsset] = React.useState('TXCH');
 	const [tab, setTab] = React.useState(0);
+	const [profiles, setProfiles] = React.useState<Map<string, ProfileMetadata>>(new Map<string, ProfileMetadata>());
 
 	// const now = React.useRef(new Date());
 	const [comment, setComment] = React.useState("");
@@ -80,42 +85,59 @@ export default function StorePage(props: StorePageProps) {
 	}, [comment]);
 
 	const { gostiConfig, signNostrMessage } = useGostiApi();
+	const { getDIDInfo } = useWalletConnectRpc();
 
-	const nostrPool = new SimplePool();
-
-	// const { events } = useNostrEvents({
-	// 	filter: {
-	// 		since: 0,
-	// 		kinds: [0, 1],
-	// 		ids: [media.nostrEventId],
-	// 	} as Filter,
-	// });
+	const [events, setEvents] = React.useState<NostrEvent[]>([]);
 
 	if (!gostiConfig.nostrRelays) {
 		gostiConfig.nostrRelays = [];
 	}
 
-	const [events, setEvents] = React.useState<NostrEvent[]>([]);
+	React.useEffect(() => {
+		const fetchComments = async () => {
+			const nostrPool = new SimplePool();
+			if (open) {
 
-	const subs = nostrPool.subscribeMany(
-		[...gostiConfig.nostrRelays],
-		[
-			{
-				authors: [],
-			},
-		],
-		{
-			onevent(event) {
-				console.log(event);
-				setEvents((prev) => [...prev, event]);
-				// this will only be called once the first time the event is received
-				// ...
-			},
-			oneose() {
-				subs.close();
+				console.log("subscribing to nostr");
+				const subs = nostrPool.subscribeMany(
+					[...gostiConfig.nostrRelays],
+					[
+						{
+							"#e": [media.nostrEventId],
+						},
+					],
+					{
+						onevent(event) {
+							events.push(event);
+							setEvents([...events]);
+							event.tags.forEach(async (tag) => {
+								if (tag[0] === "i" && tag[1].split(":")[0] === "chia") {
+									const did = tag[1].slice(5, tag[1].length);
+									if (profiles.has(did)) {
+										return;
+									}
+									console.log("comment did ", did);
+									const foundProfile = await getDIDInfo({ coinId: did } as GetDIDInfoRequest);
+									console.log("foundProfile ", foundProfile);
+									if (foundProfile) {
+										profiles.set(did, foundProfile.metadata as ProfileMetadata);
+										setProfiles(new Map(profiles));
+									}
+								}
+							});
+						},
+						oneose() {
+							subs.close();
+						}
+					}
+				);
 			}
-		}
-	);
+		};
+		fetchComments();
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- need to ignore events updates
+	}, [gostiConfig, open]);
+
+
 
 	React.useEffect(() => {
 		if (open) {
@@ -245,9 +267,7 @@ export default function StorePage(props: StorePageProps) {
 						<Grid id="commentSection" item xs={12} md={12} sx={{ m: 0, p: 0, height: '100%' }}>
 							<Typography variant="h6">Comments</Typography>
 							{events.map((event: any) => (
-								<p key={event.id}>
-									{event.pubkey} posted: {event.content}
-								</p>
+								<GostiComment event={event} profiles={profiles} key={event.id} />
 							))}
 							<TextField
 								label="Leave a comment"
@@ -286,6 +306,7 @@ export default function StorePage(props: StorePageProps) {
 								event.id = getEventHash(event);
 								event.sig = await signNostrMessage({ message: event.id });
 
+								const nostrPool = new SimplePool();
 								nostrPool.publish(gostiConfig.nostrRelays, event);
 								setComment("");
 							}}>

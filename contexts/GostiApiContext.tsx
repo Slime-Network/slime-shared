@@ -40,6 +40,10 @@ export const GostiApiContextProvider = ({ children }: {
     });
 
     React.useEffect(() => {
+        console.log("setting gostiConfig", gostiConfig);
+    }, [gostiConfig]);
+
+    React.useEffect(() => {
         const fetchConfig = async () => {
             const configResponse: any = await invoke("get_config");
             console.log("get_config", configResponse);
@@ -65,7 +69,7 @@ export const GostiApiContextProvider = ({ children }: {
     const signNostrMessage = async (params: { message: string }) => {
         let sig = "";
         try {
-            sig = await invoke("get_sign_nostr_message", params);
+            sig = await invoke("sign_nostr_message", params);
         }
         catch (e) {
             console.error(e);
