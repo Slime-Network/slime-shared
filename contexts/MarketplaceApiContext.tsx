@@ -3,18 +3,16 @@ import {
 	createContext,
 	ReactNode,
 	useContext,
-	useState,
 } from "react";
 
 import { GetSignMessageRequest, GetSignMessageResponse, GetInstallDataRequest, GetInstallDataResponse, RequestListingOrUpdateRequest, RequestListingOrUpdateResponse, SearchRequest, SearchResponse, SetMediaPublicRequest, SetMediaPublicResponse, UploadFileRequest, UploadResponse, UploadTextRequest } from "../types/gosti/MarketplaceApiTypes";
 import { Media } from "../types/gosti/Media";
+import { useGostiApi } from "./GostiApiContext";
 
 /**
  * Types
  */
 interface IContext {
-	apiUrl: string,
-	setApiUrl: React.Dispatch<React.SetStateAction<string>>,
 	search: SearchCallback,
 	getSignMessage: GetSignMessageCallback,
 	getInstallData: InstallDataCallback,
@@ -43,7 +41,7 @@ export const MarketplaceApiContext = createContext<IContext>({} as IContext);
 export const MarketplaceApiContextProvider = ({ children }: {
 	children: ReactNode | ReactNode[];
 }) => {
-	const [apiUrl, setApiUrl] = useState('http://api.spriggan.club');
+	const { gostiConfig } = useGostiApi();
 
 	const hitsToGameList = (hits: any) => {
 		const games = new Array<Media>();
@@ -58,7 +56,7 @@ export const MarketplaceApiContextProvider = ({ children }: {
 
 	const search = async (params: SearchRequest) => {
 		try {
-			const response = await axios.get(`${apiUrl}/listings/search`, { params });
+			const response = await axios.get(`${gostiConfig.activeMarketplace.url}/listings/search`, { params });
 			return {
 				results: hitsToGameList(response.data.hits.hits),
 				message: response.data.message
@@ -73,7 +71,7 @@ export const MarketplaceApiContextProvider = ({ children }: {
 
 	const getSignMessage = async (params: GetSignMessageRequest) => {
 		try {
-			const response = await axios.get(`${apiUrl}/listings/getSignMessage`, { params });
+			const response = await axios.get(`${gostiConfig.activeMarketplace.url}/listings/getSignMessage`, { params });
 			return { message: response.data.message } as GetSignMessageResponse;
 		} catch (e) {
 			return { message: "An unknown error occurred during getSignMessage" } as GetSignMessageResponse;
@@ -82,7 +80,7 @@ export const MarketplaceApiContextProvider = ({ children }: {
 
 	const getInstallData = async (params: GetInstallDataRequest) => {
 		try {
-			const response = await axios.get(`${apiUrl}/listings/getInstallData`, { params });
+			const response = await axios.get(`${gostiConfig.activeMarketplace.url}/listings/getInstallData`, { params });
 			return { installData: hitsToGameList(response.data.hits.hits)[0], message: response.data.message } as GetInstallDataResponse;
 		} catch (e) {
 			return { message: "An unknown error occurred during getInstallData" } as GetInstallDataResponse;
@@ -91,7 +89,7 @@ export const MarketplaceApiContextProvider = ({ children }: {
 
 	const uploadText = async (params: UploadTextRequest) => {
 		try {
-			const response = await axios.post(`${params.url ? params.url : apiUrl}/files/uploadText`, { params });
+			const response = await axios.post(`${params.url ? params.url : gostiConfig.activeMarketplace.url}/files/uploadText`, { params });
 			return { id: response.data.id, message: response.data.message } as UploadResponse;
 		} catch (e) {
 			return { message: "An unknown error occurred during uploadFile" } as UploadResponse;
@@ -102,7 +100,7 @@ export const MarketplaceApiContextProvider = ({ children }: {
 		try {
 			const formData = new FormData();
 			formData.append('file', params.file);
-			const response = await axios.post(`${params.url ? params.url : apiUrl}/files/uploadFile`, formData, {
+			const response = await axios.post(`${params.url ? params.url : gostiConfig.activeMarketplace.url}/files/uploadFile`, formData, {
 				headers: {
 					'Content-Type': 'multipart/form-data',
 					'max-http-header-size': 1_000_000_000
@@ -116,7 +114,7 @@ export const MarketplaceApiContextProvider = ({ children }: {
 
 	const requestListingOrUpdate = async (params: RequestListingOrUpdateRequest) => {
 		try {
-			const response = await axios.post(`${params.url ? params.url : apiUrl}/listings/requestListingOrUpdate`, { params }, { headers: { 'max-http-header-size': 1_000_000_000 } });
+			const response = await axios.post(`${params.url ? params.url : gostiConfig.activeMarketplace.url}/listings/requestListingOrUpdate`, { params }, { headers: { 'max-http-header-size': 1_000_000_000 } });
 			return { currentStatus: response.data.currentStatus, message: response.data.message } as RequestListingOrUpdateResponse;
 		} catch (e) {
 			return { currentStatus: "Error", message: "An unknown error occurred during requestListingOrUpdate" } as RequestListingOrUpdateResponse;
@@ -125,7 +123,7 @@ export const MarketplaceApiContextProvider = ({ children }: {
 
 	const setMediaPublic = async (params: SetMediaPublicRequest) => {
 		try {
-			const response = await axios.get(`${params.url ? params.url : apiUrl}/listings/setMediaPublic`, { params });
+			const response = await axios.get(`${params.url ? params.url : gostiConfig.activeMarketplace.url}/listings/setMediaPublic`, { params });
 			return { currentStatus: response.data.currentStatus, message: response.data.message } as SetMediaPublicResponse;
 		} catch (e) {
 			return { currentStatus: "Error", message: "An unknown error occurred during setMediaPublic" } as RequestListingOrUpdateResponse;
@@ -135,8 +133,6 @@ export const MarketplaceApiContextProvider = ({ children }: {
 	return (
 		<MarketplaceApiContext.Provider
 			value={{
-				apiUrl,
-				setApiUrl,
 				search,
 				getSignMessage,
 				getInstallData,

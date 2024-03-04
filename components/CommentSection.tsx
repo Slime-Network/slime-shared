@@ -31,7 +31,7 @@ export const CommentSection = (props: CommentSectionProps) => {
 	}
 
 	React.useEffect(() => {
-		const fetchComments = async () => {
+		const subscribeToComments = async () => {
 			const nostrPool = new SimplePool();
 			const subs = nostrPool.subscribeMany(
 				[...gostiConfig.nostrRelays],
@@ -58,8 +58,10 @@ export const CommentSection = (props: CommentSectionProps) => {
 								if (nostrProfile.length > 0) {
 									const quickProfile = JSON.parse(nostrProfile[0].content);
 									console.log("quickProfile", quickProfile, event.pubkey, did);
-									if (quickProfile)
+									if (quickProfile) {
 										profiles.set(did, quickProfile as ProfileMetadata);
+										setProfiles(new Map(profiles));
+									}
 									return;
 								}
 								const foundProfile = await getDIDInfo({ coinId: did } as GetDIDInfoRequest);
@@ -76,8 +78,8 @@ export const CommentSection = (props: CommentSectionProps) => {
 				}
 			);
 		};
-		if (open) {
-			fetchComments();
+		if (open && events.length === 0) {
+			subscribeToComments();
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps -- need to ignore events updates
 	}, [gostiConfig, open]);
@@ -122,7 +124,7 @@ export const CommentSection = (props: CommentSectionProps) => {
 	return (
 		<Paper elevation={1} sx={{ m: 2, p: 2, width: "100%" }}>
 			<Grid id="commentSection" item sx={{ m: 0, p: 0, height: '100%' }}>
-				<Box sx={{ m: 2, p: 2 }}>
+				<Box sx={{ p: 2 }}>
 					<CommentBox onSubmit={handleSubmitComment} />
 				</Box>
 				{events.sort(

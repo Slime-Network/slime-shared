@@ -1,4 +1,4 @@
-import { Grid, Typography, Paper, Stack, Button, Box } from "@mui/material";
+import { Grid, Typography, Paper, Stack, Button, Box, Divider } from "@mui/material";
 import { NostrEvent } from "nostr-tools";
 import React from "react";
 import ReactMarkdown from "react-markdown";
@@ -37,26 +37,26 @@ export const GostiComment = (
     }, [event, profiles]);
 
     return (
-        <Box sx={{ m: 2 }}>
+        <Box>
             <Stack justifyContent={"flex-start"} alignContent={"center"} direction="row">
-                <Paper elevation={2} sx={{ m: 2, textAlign: "center" }}>
-                    <Stack justifyContent={"center"} alignContent={"center"} direction="column">
-                        {ProfilePFP({ imgSrc: profile?.gostiAvatar, size: 64 })}
-                        {/* <Divider sx={{ m: 2 }} orientation="horizontal" /> */}
+                <Paper elevation={2} sx={{ m: 2, p: 2, width: "100%" }}>
+                    <Stack justifyContent={"center"} alignContent={"center"} direction="row">
+                        <Stack justifyContent={"center"} alignContent={"center"} direction="column">
+                            {ProfilePFP({ imgSrc: profile?.gostiAvatar, size: 64 })}
+                        </Stack>
+                        <Divider sx={{ height: 70, m: 2 }} orientation="vertical" />
+                        <Grid container>
+                            <Grid item xs={12}>
+                                <Button size="small" sx={{ textTransform: "unset" }} onClick={() => {
+                                    setOpenProfileView(true);
+                                }}><Typography variant="h6">{(profile?.gostiDisplayName) ? profile?.gostiDisplayName : `${did.slice(0, 13)}...${did.slice(64, did.length)}`}</Typography></Button>
+                                <ProfileViewModal open={openProfileView} setOpen={setOpenProfileView} did={did} />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <ReactMarkdown children={event.content} />
+                            </Grid>
+                        </Grid>
                     </Stack>
-                </Paper>
-                <Paper elevation={2} sx={{ m: 2, marginLeft: 0, p: 2, width: "100%" }}>
-                    <Grid container>
-                        <Grid item xs={12}>
-                            <Button size="small" sx={{ textTransform: "unset" }} onClick={() => {
-                                setOpenProfileView(true);
-                            }}><Typography variant="h6">{(profile?.gostiDisplayName) ? profile?.gostiDisplayName : `${did.slice(0, 13)}...${did.slice(64, did.length)}`}</Typography></Button>
-                            <ProfileViewModal open={openProfileView} setOpen={setOpenProfileView} did={did} />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <ReactMarkdown children={event.content} />
-                        </Grid>
-                    </Grid>
                 </Paper>
             </Stack>
         </Box>

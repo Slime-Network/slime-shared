@@ -5,7 +5,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {
 	Grid, Tab, Tabs, Dialog, Container, Typography, Button,
 	AppBar, Toolbar, Slide, Paper, IconButton, Box,
-	Stack, Divider, Autocomplete, TextField, SlideProps,
+	Stack, Divider, Autocomplete, TextField, SlideProps, Chip,
 } from '@mui/material';
 import axios from "axios";
 import { bech32m } from "bech32";
@@ -16,9 +16,9 @@ import { Slide as Slideshow } from 'react-slideshow-image';
 
 import { useWalletConnectRpc } from '../contexts/WalletConnectRpcContext';
 import { Media } from '../types/gosti/Media';
+import { TakeOfferRequest } from '../types/walletconnect/rpc/TakeOffer';
 import { CommentSection } from './CommentSection';
 import 'react-slideshow-image/dist/styles.css';
-import { TakeOfferRequest } from '../types/walletconnect/rpc/TakeOffer';
 
 
 const Transition = React.forwardRef((props: SlideProps, ref) => <Slide direction="up" ref={ref} {...props} />);
@@ -163,7 +163,7 @@ export default function StorePage(props: StorePageProps) {
 						<TabPanel value={tab} index={1}>
 							<Box sx={{ height: '100%' }}>
 								<Slideshow>
-									{media.screenshots.map((screenshot, index) => (
+									{media.screenshots && media.screenshots.map((screenshot, index) => (
 										<div key={index} style={{
 											display: "flex",
 											alignItems: "center",
@@ -190,7 +190,9 @@ export default function StorePage(props: StorePageProps) {
 									</Box>
 									<Box>
 										<Divider />
-										<Typography>{media.tags}</Typography>
+										{media.tags.map((tag, index) => (
+											<Chip size="small" label={tag} key={index} sx={{ m: 1 }} />
+										))}
 									</Box>
 								</Stack>
 							</Paper>
