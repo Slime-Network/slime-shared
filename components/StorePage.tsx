@@ -1,25 +1,25 @@
 import { Buffer } from 'buffer';
 
 import CloseIcon from '@mui/icons-material/Close';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {
 	Grid, Tab, Tabs, Dialog, Container, Typography, Button,
-	CardMedia, AppBar, Toolbar, Card, Slide, IconButton, Box,
+	AppBar, Toolbar, Slide, Paper, IconButton, Box,
 	Stack, Divider, Autocomplete, TextField, SlideProps,
 } from '@mui/material';
 import axios from "axios";
 import { bech32m } from "bech32";
 import { sha256 } from 'js-sha256';
-import { SimplePool } from 'nostr-tools';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import { Slide as Slideshow } from 'react-slideshow-image';
 
-import { useGostiApi } from '../contexts/GostiApiContext';
 import { useWalletConnectRpc } from '../contexts/WalletConnectRpcContext';
 import { Media } from '../types/gosti/Media';
-import { ProfileMetadata } from '../types/gosti/Profile';
-import { GetDIDInfoRequest } from '../types/walletconnect/rpc/GetDIDInfo';
-import { getEventHash, NostrEvent } from "../utils/nostr";
-import { GostiComment } from './Comment';
+import { CommentSection } from './CommentSection';
+import 'react-slideshow-image/dist/styles.css';
+import { TakeOfferRequest } from '../types/walletconnect/rpc/TakeOffer';
+
 
 const Transition = React.forwardRef((props: SlideProps, ref) => <Slide direction="up" ref={ref} {...props} />);
 
@@ -58,89 +58,29 @@ function TabProps(index: number) {
 
 export type StorePageProps = {
 	media: Media;
-	setActiveOffer: React.Dispatch<React.SetStateAction<string>>;
-	onBuy: () => void;
 	open: boolean,
 	setOpen: React.Dispatch<React.SetStateAction<boolean>>
 };
 
 export default function StorePage(props: StorePageProps) {
-	const { media, setActiveOffer, onBuy, open, setOpen } = props;
+	const { media, open, setOpen } = props;
+
+	const [activeOffer, setActiveOffer] = React.useState<any | undefined>({});
 
 	const [price, setPrice] = React.useState("");
 	const [asset, setAsset] = React.useState('TXCH');
 	const [tab, setTab] = React.useState(0);
-	const [profiles, setProfiles] = React.useState<Map<string, ProfileMetadata>>(new Map<string, ProfileMetadata>());
 
-	// const now = React.useRef(new Date());
-	const [comment, setComment] = React.useState("");
-	const [commentValid, setCommentValid] = React.useState(false);
+	const { takeOffer } = useWalletConnectRpc();
 
-	React.useEffect(() => {
-		if (comment.length > 0) {
-			setCommentValid(false);
-		} else {
-			setCommentValid(true);
-		}
-	}, [comment]);
-
-	const { gostiConfig, signNostrMessage } = useGostiApi();
-	const { getDIDInfo } = useWalletConnectRpc();
-
-	const [events, setEvents] = React.useState<NostrEvent[]>([]);
-
-	if (!gostiConfig.nostrRelays) {
-		gostiConfig.nostrRelays = [];
-	}
-
-	React.useEffect(() => {
-		const fetchComments = async () => {
-			const nostrPool = new SimplePool();
-			if (open) {
-
-				console.log("subscribing to nostr");
-				const subs = nostrPool.subscribeMany(
-					[...gostiConfig.nostrRelays],
-					[
-						{
-							"#e": [media.nostrEventId],
-						},
-					],
-					{
-						onevent(event) {
-							events.push(event);
-							setEvents([...events]);
-							event.tags.forEach(async (tag) => {
-								if (tag[0] === "i" && tag[1].split(":")[0] === "chia") {
-									const did = tag[1].slice(5, tag[1].length);
-									if (profiles.has(did)) {
-										return;
-									}
-									console.log("comment did ", did);
-									const foundProfile = await getDIDInfo({ coinId: did } as GetDIDInfoRequest);
-									console.log("foundProfile ", foundProfile);
-									if (foundProfile) {
-										profiles.set(did, foundProfile.metadata as ProfileMetadata);
-										setProfiles(new Map(profiles));
-									}
-								}
-							});
-						},
-						oneose() {
-							subs.close();
-						}
-					}
-				);
-			}
-		};
-		fetchComments();
-		// eslint-disable-next-line react-hooks/exhaustive-deps -- need to ignore events updates
-	}, [gostiConfig, open]);
-
-
+	const onBuy = () => {
+		console.log("Buying", activeOffer);
+		takeOffer({ offer: activeOffer } as TakeOfferRequest);
+	};
 
 	React.useEffect(() => {
 		if (open) {
+			console.log("screenshots", media.screenshots);
 			const pubdid = media.publisherDid;
 			const id = media.productId;
 
@@ -209,37 +149,57 @@ export default function StorePage(props: StorePageProps) {
 						<Tab label="Screenshots" {...TabProps(1)} />
 					</Tabs>
 				</AppBar>
-				<Grid container height={420} sx={{ width: '100%', m: 0 }}>
-					<Grid id="mediaSection" item xs={12} md={8} sx={{ m: 0, p: 0, height: '100%' }}>
+				<Grid container height={420} sx={{ width: '100%' }}>
+					<Grid id="mediaSection" item xs={12} md={8} sx={{ height: '100%' }}>
 						<TabPanel value={tab} index={0}>
-							<Card sx={{ m: 0, p: 2, height: '100%' }} >
-								<CardMedia
-									component="iframe"
-									src={(media.trailerSource === 'youtube') ? `https://www.youtube.com/embed/${media.trailer}?autoplay=1&origin=http://.com` : ""}
-									height={'360'}
+							<Box sx={{ height: '100%' }}>
+								<iframe
+									src={`https://www.youtube.com/embed/${media.trailer}?autoplay=1&origin=http://.com`}
+									height={'370'}
+									width={'100%'}
 								/>
-							</Card>
+							</Box>
 						</TabPanel>
 						<TabPanel value={tab} index={1}>
-							{price}
+							<Box sx={{ height: '100%' }}>
+								<Slideshow>
+									{media.screenshots.map((screenshot, index) => (
+										<div key={index} style={{
+											display: "flex",
+											alignItems: "center",
+											justifyContent: "center",
+											backgroundSize: "cover",
+											height: "370px",
+											backgroundImage: `url(${screenshot})`,
+										}} />
+									))}
+								</Slideshow>
+							</Box>
 						</TabPanel>
 					</Grid>
 					<Grid id="infoSection" item xs={12} md={4} sx={{ height: '100%' }}>
 						<Stack sx={{ height: '100%' }}>
-							<Card sx={{ p: 1, m: 1, height: '60%' }}>
-								<Typography p={1} variant="h5">{media.title}</Typography>
-								<Divider />
-								<Typography p={2}>{media.description}</Typography>
-								<Divider />
-								<Typography p={2}>{media.tags}</Typography>
-							</Card>
-							<Card sx={{ m: 1, height: '40%' }}>
+							<Paper elevation={1} sx={{ height: '60%', p: 2, m: 2 }}>
+								<Stack justifyContent={'space-between'} alignContent={"center"} direction="column" height={"100%"}>
+									<Box>
+										<Typography variant="h5">{media.title}</Typography>
+										<Divider />
+									</Box>
+									<Box>
+										<Typography height={"100%"}>{media.description}</Typography>
+									</Box>
+									<Box>
+										<Divider />
+										<Typography>{media.tags}</Typography>
+									</Box>
+								</Stack>
+							</Paper>
+							<Paper elevation={1} sx={{ height: '40%', p: 2, m: 2 }}>
 								<Grid container>
-									<Grid p={2} item sx={{ width: .5 }}>
-										<Typography p={2}>{price} {asset}</Typography>
-										<Button fullWidth={true} variant="contained" onClick={onBuy}>Buy</Button>
+									<Grid item xs={6}>
+										<Typography alignItems={"center"} sx={{ m: 2 }}>{price} {asset}</Typography>
 									</Grid>
-									<Grid p={4} item sx={{ width: .5 }}>
+									<Grid item xs={6}>
 										<Autocomplete
 											id="asset-combo-box"
 											disableClearable
@@ -247,7 +207,7 @@ export default function StorePage(props: StorePageProps) {
 											freeSolo
 											defaultValue='XCH'
 											options={assets}
-											sx={{ width: 150 }}
+											sx={{ m: 2 }}
 											renderInput={(params) => <TextField {...params} />}
 											onChange={(event: any, newAsset: string | null) => {
 												if (newAsset && newAsset !== asset) {
@@ -256,64 +216,25 @@ export default function StorePage(props: StorePageProps) {
 											}}
 										/>
 									</Grid>
+									<Grid item xs={10}>
+										<Button disabled={activeOffer} fullWidth={true} variant="contained" onClick={onBuy}>Buy</Button>
+									</Grid>
+									<Grid item xs={2}>
+										<IconButton onClick={() => {
+											navigator.clipboard.writeText(activeOffer);
+										}}><ContentCopyIcon /></IconButton>
+									</Grid>
 								</Grid>
-							</Card>
+							</Paper>
 						</Stack>
 					</Grid>
-					<Card sx={{ m: 1, p: 4, width: '100%' }}>
+					<Paper elevation={1} sx={{ width: '100%', p: 2, m: 2 }}>
 						<ReactMarkdown children={media.longDescription} />
-					</Card>
-					<Grid id="commentSection" item xs={12} md={12} sx={{ m: 0, p: 0, height: '100%' }}>
-						<Grid id="commentSection" item xs={12} md={12} sx={{ m: 0, p: 0, height: '100%' }}>
-							<Typography variant="h6">Comments</Typography>
-							{events.map((event: any) => (
-								<GostiComment event={event} profiles={profiles} key={event.id} />
-							))}
-							<TextField
-								label="Leave a comment"
-								value={comment}
-								onChange={(event) => setComment(event.target.value)}
-								fullWidth
-								multiline
-								rows={4}
-								variant="outlined"
-								margin="normal"
-							/>
-							<Button disabled={commentValid} variant="contained" onClick={async () => {
-
-								const pk = gostiConfig.identity.currentNostrPublicKey;
-
-								if (!pk) {
-									console.log("No public key found");
-									alert("No public key found. Please set up your profile.");
-									return;
-								}
-
-								const createdAt = Math.floor(Date.now() / 1000);
-
-								const event: NostrEvent = {
-									content: comment,
-									kind: 1,
-									tags: [
-										["e", media.nostrEventId, gostiConfig.nostrRelays[0], "root"],
-										["i", `chia:${gostiConfig.identity.activeDID}`, gostiConfig.identity.proof],
-									],
-									created_at: createdAt,
-									pubkey: pk,
-									id: '',
-									sig: ''
-								};
-								event.id = getEventHash(event);
-								event.sig = await signNostrMessage({ message: event.id });
-
-								const nostrPool = new SimplePool();
-								nostrPool.publish(gostiConfig.nostrRelays, event);
-								setComment("");
-							}}>
-								Submit
-							</Button>
-						</Grid>
-					</Grid>
+					</Paper>
+					{CommentSection({
+						media,
+						open
+					})}
 				</Grid>
 			</Container>
 		</Dialog >
