@@ -58,6 +58,7 @@ export enum ChiaMethod {
 	Insert = 'chia_insert',
 	MakeDataLayerOffer = 'chia_makeDataLayerOffer',
 	RemoveSubscriptions = 'chia_removeSubscriptions',
+	RequestPermissions = 'chia_requestPermissions',
 	Subscribe = 'chia_subscribe',
 	Subscriptions = 'chia_subscriptions',
 	TakeDataLayerOffer = 'chia_takeDataLayerOffer',

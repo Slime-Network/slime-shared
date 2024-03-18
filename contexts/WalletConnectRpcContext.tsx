@@ -120,6 +120,7 @@ import {
 } from '../types/walletconnect/rpc/MintNft';
 import { PushTxRequest, PushTxResponse } from '../types/walletconnect/rpc/PushTx';
 import { RemoveSubscriptionsRequest, RemoveSubscriptionsResponse } from '../types/walletconnect/rpc/RemoveSubscriptions';
+import { RequestPermissionsRequest, RequestPermissionsResponse } from '../types/walletconnect/rpc/RequestPermissions';
 import {
     SendTransactionRequest,
     SendTransactionResponse,
@@ -308,6 +309,10 @@ interface WalletConnectRpc {
     getNftWalletsWithDIDs: (
         data: GetNftWalletsWithDIDsRequest
     ) => Promise<GetNftWalletsWithDIDsResponse>;
+
+    requestPermissions: (
+        data: RequestPermissionsRequest
+    ) => Promise<RequestPermissionsResponse>;
 }
 
 export const WalletConnectRpcContext = createContext<WalletConnectRpc>({} as WalletConnectRpc);
@@ -730,6 +735,13 @@ export function WalletConnectRpcProvider({ children }: PropsWithChildren) {
         );
     }
 
+    async function requestPermissions(data: RequestPermissionsRequest) {
+        return request<RequestPermissionsResponse>(
+            ChiaMethod.RequestPermissions,
+            data
+        );
+    }
+
     return (
         <WalletConnectRpcContext.Provider
             value={{
@@ -824,6 +836,7 @@ export function WalletConnectRpcProvider({ children }: PropsWithChildren) {
                 setDIDName,
                 setNftDID,
                 getNftWalletsWithDIDs,
+                requestPermissions,
             }}
         >
             {children}
