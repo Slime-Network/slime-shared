@@ -3,5 +3,5 @@ export interface RequestPermissionsRequest {
 }
 
 export interface RequestPermissionsResponse {
-	message: string;
+	success: boolean;
 }
