@@ -98,7 +98,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 	React.useEffect(() => {
 		nostrPublicKeys.forEach(async (key) => {
 			const result = await hasNostrPrivateKey({ publicKey: key });
-			hasPrivateKey.set(key, result);
+			hasPrivateKey.set(key, result.hasPrivateKey);
 			setHasPrivateKey(new Map(hasPrivateKey));
 		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps -- This is intentional
@@ -414,7 +414,9 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 										sig: ''
 									};
 									event.id = getEventHash(event);
-									event.sig = await signNostrMessage({ message: event.id });
+									const signResp = await signNostrMessage({ message: event.id });
+									console.log("signResp", signResp);
+									event.sig = signResp.signature;
 
 									nostrPool.publish(gostiConfig.nostrRelays, event);
 								}

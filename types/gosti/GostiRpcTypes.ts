@@ -17,10 +17,40 @@ export type GostiConfig = {
 	default: boolean;
 };
 
-export type PingRequest = {};
-
-export type PingResponse = {
+export type SignNostrMessageRequest = {
 	message: string;
+};
+
+export type SignNostrMessageResponse = {
+	status: 'signed' | 'error';
+	message: string;
+	signature: string;
+};
+
+export type AddNostrKeypairRequest = {
+	publicKey: string;
+	privateKey: string;
+};
+
+export type AddNostrKeypairResponse = {
+	status: 'added' | 'error';
+	message: string;
+};
+
+export type HasNostrPrivateKeyRequest = {
+	publicKey: string;
+};
+
+export type HasNostrPrivateKeyResponse = {
+	status: 'hasPrivateKey' | 'error';
+	message: string;
+	hasPrivateKey: boolean;
+};
+
+export type GetOperatingSystemResponse = {
+	status: 'found' | 'error';
+	message: string;
+	platform: 'windows' | 'mac' | 'linux' | 'error';
 };
 
 export type DownloadMediaRequest = {
@@ -59,14 +89,14 @@ export type UninstallMediaResponse = {
 	message: string;
 };
 
-export type PlayMediaRequest = {
+export type LaunchMediaRequest = {
 	media: Media;
 };
 
-export type PlayMediaResponse = {
-	pid: string;
+export type LaunchMediaResponse = {
 	status: 'playing' | 'error';
 	message: string;
+	pid: string;
 };
 
 export type GetInstallStatusRequest = {
@@ -86,32 +116,27 @@ export type InstallStatus = {
 };
 
 export type GetInstallStatusResponse = {
-	status: InstallStatus;
+	status: 'found' | 'error';
 	message: string;
+	installStatus: InstallStatus;
 };
 
-export type GetLocalDataRequest = {
+export type GetLocalMediaMetadataRequest = {
 	productId: string;
 };
 
-export type GetLocalDataResponse = {
+export type GetLocalMediaMetadataResponse = {
+	status: 'found' | 'notFound' | 'error';
 	media: Media;
 	message: string;
 };
 
-export type SaveLocalDataRequest = {
+export type SaveLocalMediaMetadataRequest = {
 	media: Media;
 };
 
-export type SaveLocalDataResponse = {
+export type SaveLocalMediaMetadataResponse = {
 	status: 'saved' | 'error';
-	message: string;
-};
-
-export type LoadAllLocalDataRequest = {};
-
-export type LoadAllLocalDataResponse = {
-	media: Media[];
 	message: string;
 };
 
@@ -127,7 +152,8 @@ export type SaveConfigRequest = {
 };
 
 export type SaveConfigResponse = {
-	success: boolean;
+	status: 'saved' | 'error';
+	message: string;
 };
 
 export type GetPublishedMediaRequest = {
@@ -136,15 +162,6 @@ export type GetPublishedMediaRequest = {
 
 export type GetPublishedMediaResponse = {
 	media: Media[];
-};
-
-export type PublishMediaRequest = {
-	dataStoreId: string;
-	media: Media;
-	fee: number;
-};
-
-export type PublishMediaResponse = {
 	message: string;
 };
 
