@@ -109,7 +109,9 @@ export const ChatBox = (props: ChatBoxProps) => {
 			sig: ''
 		};
 		event.id = getEventHash(event);
-		event.sig = await signNostrMessage({ message: event.id });
+		const signResp = await signNostrMessage({ message: event.id });
+		console.log("signResp", signResp);
+		event.sig = signResp.signature;
 
 		const nostrPool = new SimplePool();
 		const resp = await nostrPool.publish(gostiConfig.nostrRelays, event);
