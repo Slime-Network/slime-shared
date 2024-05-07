@@ -33,6 +33,7 @@ import { Marketplace } from '../types/gosti/MarketplaceApiTypes';
 import { Profile } from '../types/gosti/Profile';
 import { SignMessageByIdRequest } from '../types/walletconnect/rpc/SignMessageById';
 import { NostrEvent, getEventHash } from '../utils/nostr';
+import { FeeDialogModal } from './FeeDialogModal';
 import ImageUpload from './ImageUpload';
 
 const Transition = React.forwardRef((props: SlideProps, ref) => <Slide direction="up" ref={ref} {...props} />);
@@ -48,22 +49,32 @@ export type ProfileEditPageProps = {
 export function ProfileEditPage(props: ProfileEditPageProps) {
 	const { profile, onChangeName, onUpdateMetadata, open, setOpen } = props;
 
+	const [fee, setFee] = React.useState<number>(50_000);
+
 	const [openNotice, setOpenNotice] = React.useState(false);
 	const [noticeTitle, setNoticeTitle] = React.useState<string | undefined>(undefined);
 	const [noticeMessage, setNoticeMessage] = React.useState<string | undefined>(undefined);
 	const [openImportKeysModal, setOpenImportKeysModal] = React.useState(false);
 
+	const [openFeeDialog, setOpenFeeDialog] = React.useState(false);
+
 	const [name, setName] = React.useState<string | undefined>(profile?.name);
-	const [displayName, setDisplayName] = React.useState<string>(profile?.metadata?.gostiDisplayName || "");
-	const [avatar, setAvatar] = React.useState<string>(profile?.metadata?.gostiAvatar || "");
-	const [bio, setBio] = React.useState<string>(profile?.metadata?.gostiBio || "");
-	const [location, setLocation] = React.useState<string>(profile?.metadata?.gostiLocation || "");
-	const [languages, setLanguages] = React.useState<Language[]>(JSON.parse(profile?.metadata?.gostiLanguages || "[]") || []);
-	const [links, setLinks] = React.useState<SocialLink[]>(JSON.parse(profile?.metadata?.gostiLinks || "[]") || []);
-	const [nostrPublicKeys, setNostrPublicKeys] = React.useState<string[]>(JSON.parse(profile?.metadata?.gostiNostrPublicKeys || "[]") || []);
+	const [displayName, setDisplayName] = React.useState<string>(profile?.metadata?.gostiDisplayName || '');
+	const [avatar, setAvatar] = React.useState<string>(profile?.metadata?.gostiAvatar || '');
+	const [bio, setBio] = React.useState<string>(profile?.metadata?.gostiBio || '');
+	const [location, setLocation] = React.useState<string>(profile?.metadata?.gostiLocation || '');
+	const [languages, setLanguages] = React.useState<Language[]>(
+		JSON.parse(profile?.metadata?.gostiLanguages || '[]') || []
+	);
+	const [links, setLinks] = React.useState<SocialLink[]>(JSON.parse(profile?.metadata?.gostiLinks || '[]') || []);
+	const [nostrPublicKeys, setNostrPublicKeys] = React.useState<string[]>(
+		JSON.parse(profile?.metadata?.gostiNostrPublicKeys || '[]') || []
+	);
 	const [tempPrivateKey, setTempPrivateKey] = React.useState<string | undefined>(undefined);
 	const [tempPublicKey, setTempPublicKey] = React.useState<string | undefined>(undefined);
-	const [activeNostrPublicKey, setActiveNostrPublicKey] = React.useState<string | undefined>(profile?.metadata?.gostiActiveNostrPublicKey);
+	const [activeNostrPublicKey, setActiveNostrPublicKey] = React.useState<string | undefined>(
+		profile?.metadata?.gostiActiveNostrPublicKey
+	);
 
 	const [marketplaces, setMarketplaces] = React.useState<Marketplace[]>([]);
 	const [hasPrivateKey, setHasPrivateKey] = React.useState<Map<string, boolean>>(new Map());
@@ -87,7 +98,8 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 			if (profile.metadata.gostiLanguages) setLanguages(JSON.parse(profile.metadata.gostiLanguages));
 			if (profile.metadata.gostiLinks) setLinks(JSON.parse(profile.metadata.gostiLinks));
 			if (profile.metadata.gostiNostrPublicKeys) setNostrPublicKeys(JSON.parse(profile.metadata.gostiNostrPublicKeys));
-			if (profile.metadata.gostiActiveNostrPublicKey) setActiveNostrPublicKey(profile.metadata.gostiActiveNostrPublicKey);
+			if (profile.metadata.gostiActiveNostrPublicKey)
+				setActiveNostrPublicKey(profile.metadata.gostiActiveNostrPublicKey);
 		}
 	}, [profile]);
 
@@ -97,8 +109,11 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 
 	React.useEffect(() => {
 		nostrPublicKeys.forEach(async (key) => {
+			console.log('checking for key', key);
 			const result = await hasNostrPrivateKey({ publicKey: key });
-			hasPrivateKey.set(key, result.hasPrivateKey);
+			console.log('checking for key res', key, result);
+
+			hasPrivateKey.set(key, result);
 			setHasPrivateKey(new Map(hasPrivateKey));
 		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps -- This is intentional
@@ -120,35 +135,76 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 				<Container fixed sx={{ mt: 2 }}>
 					<Grid container>
 						<Grid item xs={9}>
-							<TextField id="NameTextField" sx={{ width: '100%' }} label="Profile Name" variant="filled" defaultValue={profile?.name} value={name} onChange={(event: any) => {
-								setName(event.target.value);
-							}} InputProps={{
-								endAdornment: <IconButton size="small" onClick={() => {
-									setNoticeTitle("Profile Name");
-									setNoticeMessage(`This is your local name for this profile, which is only visible to you. It does not require a transaction to update.`);
-									setOpenNotice(true);
-								}}><InfoIcon /></IconButton>
-							}} />
+							<TextField
+								id="NameTextField"
+								sx={{ width: '100%' }}
+								label="Profile Name"
+								variant="filled"
+								defaultValue={profile?.name}
+								value={name}
+								onChange={(event: any) => {
+									setName(event.target.value);
+								}}
+								InputProps={{
+									endAdornment: (
+										<IconButton
+											size="small"
+											onClick={() => {
+												setNoticeTitle('Profile Name');
+												setNoticeMessage(
+													`This is your local name for this profile, which is only visible to you. It does not require a transaction to update.`
+												);
+												setOpenNotice(true);
+											}}
+										>
+											<InfoIcon />
+										</IconButton>
+									),
+								}}
+							/>
 						</Grid>
 						<Grid item xs={3}>
-							<Button id="NameConfirmButton" disabled={!name} variant='contained' sx={{ width: '100%', height: "100%" }} onClick={() => {
-								if (name)
-									onChangeName(name);
-							}}>Confirm</Button>
+							<Button
+								id="NameConfirmButton"
+								disabled={!name}
+								variant="contained"
+								sx={{ width: '100%', height: '100%' }}
+								onClick={() => {
+									if (name) onChangeName(name);
+								}}
+							>
+								Confirm
+							</Button>
 						</Grid>
 						<Grid item xs={12}>
 							<HorizontalRule sx={{ width: '100%' }} />
 						</Grid>
 						<Grid item xs={12}>
-							<TextField id="DisplayNameTextField" sx={{ width: '100%' }} label="Display Name" variant="filled" defaultValue={profile?.metadata?.gostiDisplayName} value={displayName} onChange={(event: any) => {
-								setDisplayName(event.target.value);
-							}}
+							<TextField
+								id="DisplayNameTextField"
+								sx={{ width: '100%' }}
+								label="Display Name"
+								variant="filled"
+								defaultValue={profile?.metadata?.gostiDisplayName}
+								value={displayName}
+								onChange={(event: any) => {
+									setDisplayName(event.target.value);
+								}}
 								InputProps={{
-									endAdornment: <IconButton size="small" onClick={() => {
-										setNoticeTitle("Profile Update Fee");
-										setNoticeMessage(`Creating or updating a profile requires a blockchain transaction. This optional fee can help speed up that transaction if volume is high.`);
-										setOpenNotice(true);
-									}}><InfoIcon /></IconButton>
+									endAdornment: (
+										<IconButton
+											size="small"
+											onClick={() => {
+												setNoticeTitle('Profile Update Fee');
+												setNoticeMessage(
+													`Creating or updating a profile requires a blockchain transaction. This optional fee can help speed up that transaction if volume is high.`
+												);
+												setOpenNotice(true);
+											}}
+										>
+											<InfoIcon />
+										</IconButton>
+									),
 								}}
 							/>
 						</Grid>
@@ -156,52 +212,96 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 						<Grid item xs={12}>
 							{ImageUpload({
 								marketplaces,
-								title: "Avatar",
+								title: 'Avatar',
 								setGui: (value) => {
 									setAvatar(value);
 								},
 								initialImage: avatar,
 								height: 256,
 							})}
-							<TextField id="AvatarTextField" sx={{ width: '100%' }} label="Avatar URL" variant="filled" defaultValue={profile?.metadata?.gostiAvatar} value={avatar} onChange={(event: any) => {
-								setAvatar(event.target.value);
-							}} InputProps={{
-								endAdornment: <IconButton size="small" onClick={() => {
-									setNoticeTitle("Avatar");
-									setNoticeMessage("This is the URL for your avatar, you can upload an image to our server, or enter a URL manually, to host your avatar elsewhere.");
-									setOpenNotice(true);
-								}}><InfoIcon /></IconButton>
-							}} />
-						</Grid>
-						<Grid item xs={12}>
-							<TextField id="BioTextField" sx={{ width: '100%' }}
-								label="Bio"
+							<TextField
+								id="AvatarTextField"
+								sx={{ width: '100%' }}
+								label="Avatar URL"
 								variant="filled"
-								multiline
-								maxRows={4}
-								defaultValue={profile?.metadata?.gostiBio} value={bio}
+								defaultValue={profile?.metadata?.gostiAvatar}
+								value={avatar}
 								onChange={(event: any) => {
-									setBio(event.target.value);
+									setAvatar(event.target.value);
 								}}
 								InputProps={{
-									endAdornment: <IconButton size="small" onClick={() => {
-										setNoticeTitle("Profile Update Fee");
-										setNoticeMessage(`Creating or updating a profile requires a blockchain transaction. This optional fee can help speed up that transaction if volume is high.`);
-										setOpenNotice(true);
-									}}><InfoIcon /></IconButton>
+									endAdornment: (
+										<IconButton
+											size="small"
+											onClick={() => {
+												setNoticeTitle('Avatar');
+												setNoticeMessage(
+													'This is the URL for your avatar, you can upload an image to our server, or enter a URL manually, to host your avatar elsewhere.'
+												);
+												setOpenNotice(true);
+											}}
+										>
+											<InfoIcon />
+										</IconButton>
+									),
 								}}
 							/>
 						</Grid>
 						<Grid item xs={12}>
-							<TextField id="LocationTextField" sx={{ width: '100%' }} label="Location" variant="filled" defaultValue={profile?.metadata?.gostiLocation} value={location} onChange={(event: any) => {
-								setLocation(event.target.value);
-							}}
+							<TextField
+								id="BioTextField"
+								sx={{ width: '100%' }}
+								label="Bio"
+								variant="filled"
+								multiline
+								maxRows={4}
+								defaultValue={profile?.metadata?.gostiBio}
+								value={bio}
+								onChange={(event: any) => {
+									setBio(event.target.value);
+								}}
 								InputProps={{
-									endAdornment: <IconButton size="small" onClick={() => {
-										setNoticeTitle("Location");
-										setNoticeMessage("Your country of origin, IRL location, .");
-										setOpenNotice(true);
-									}}><InfoIcon /></IconButton>
+									endAdornment: (
+										<IconButton
+											size="small"
+											onClick={() => {
+												setNoticeTitle('Profile Update Fee');
+												setNoticeMessage(
+													`Creating or updating a profile requires a blockchain transaction. This optional fee can help speed up that transaction if volume is high.`
+												);
+												setOpenNotice(true);
+											}}
+										>
+											<InfoIcon />
+										</IconButton>
+									),
+								}}
+							/>
+						</Grid>
+						<Grid item xs={12}>
+							<TextField
+								id="LocationTextField"
+								sx={{ width: '100%' }}
+								label="Location"
+								variant="filled"
+								defaultValue={profile?.metadata?.gostiLocation}
+								value={location}
+								onChange={(event: any) => {
+									setLocation(event.target.value);
+								}}
+								InputProps={{
+									endAdornment: (
+										<IconButton
+											size="small"
+											onClick={() => {
+												setNoticeTitle('Location');
+												setNoticeMessage('Your country of origin, IRL location, .');
+												setOpenNotice(true);
+											}}
+										>
+											<InfoIcon />
+										</IconButton>
+									),
 								}}
 							/>
 						</Grid>
@@ -211,20 +311,17 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								id="languages"
 								options={Languages}
 								defaultValue={[]}
-								getOptionLabel={(option: Language) => (option.native === '') ? option.english : option.native}
+								getOptionLabel={(option: Language) => (option.native === '' ? option.english : option.native)}
 								renderTags={(tagValue: Language[], getTagProps) =>
 									tagValue.map((option, index) => (
-										<Chip size='small' label={(option.native === '') ? option.english : option.native} {...getTagProps({ index })} />
+										<Chip
+											size="small"
+											label={option.native === '' ? option.english : option.native}
+											{...getTagProps({ index })}
+										/>
 									))
 								}
-								renderInput={(params) => (
-									<TextField
-										{...params}
-										variant="filled"
-										label="Languages"
-										placeholder="+"
-									/>
-								)}
+								renderInput={(params) => <TextField {...params} variant="filled" label="Languages" placeholder="+" />}
 							/>
 						</Grid>
 
@@ -243,7 +340,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								options={socialLinksOptions}
 								getOptionLabel={(link: SocialLink) => link.name}
 								onChange={(event: any) => {
-									console.log("AddSocialLink", event);
+									console.log('AddSocialLink', event);
 									const link = socialLinksOptions.find((newLink) => newLink.name === event.target.innerText);
 									if (link) setLinks([...links, link]);
 									event.target.clear();
@@ -254,8 +351,11 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 						{links.map((link, index) => (
 							<>
 								<Grid item xs={6}>
-									<TextField id={`LinkTextField${link.name}`} sx={{ width: '100%' }}
-										label={link.name} variant="filled"
+									<TextField
+										id={`LinkTextField${link.name}`}
+										sx={{ width: '100%' }}
+										label={link.name}
+										variant="filled"
 										defaultValue={link.link}
 										value={link.link}
 										onChange={(event: any) => {
@@ -263,10 +363,18 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 											setLinks([...links]);
 										}}
 										InputProps={{
-											endAdornment: <IconButton size="small" aria-label="delete" onClick={() => {
-												links.splice(index, 1);
-												setLinks([...links]);
-											}}><CloseIcon /></IconButton>
+											endAdornment: (
+												<IconButton
+													size="small"
+													aria-label="delete"
+													onClick={() => {
+														links.splice(index, 1);
+														setLinks([...links]);
+													}}
+												>
+													<CloseIcon />
+												</IconButton>
+											),
 										}}
 									/>
 								</Grid>
@@ -277,27 +385,42 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 						</Grid>
 
 						<Grid item xs={12}>
-							<Typography variant="h6">Nostr Public Keys<IconButton size="small" onClick={() => {
-								setNoticeTitle("Nostr Public Keys");
-								setNoticeMessage("Your list of public keys for Nostr, the social media parts of Gosti. All of your Nostr keys are linked to your same profile and can be used interchangeably. Your Private keys are stored locally on your device for security, so it is possible to loose old keys. You may also want to create a different key-pair for each device, for security and ease of use. Green means your active public key, Grey is an inactive key, and Red means you do not have the private key on this device. Click on an inactive key to activate it, or to add a missing private key.");
-								setOpenNotice(true);
-							}}><InfoIcon /></IconButton></Typography>
+							<Typography variant="h6">
+								Nostr Public Keys
+								<IconButton
+									size="small"
+									onClick={() => {
+										setNoticeTitle('Nostr Public Keys');
+										setNoticeMessage(
+											'Your list of public keys for Nostr, the social media parts of Gosti. All of your Nostr keys are linked to your same profile and can be used interchangeably. Your Private keys are stored locally on your device for security, so it is possible to loose old keys. You may also want to create a different key-pair for each device, for security and ease of use. Green means your active public key, Grey is an inactive key, and Red means you do not have the private key on this device. Click on an inactive key to activate it, or to add a missing private key.'
+										);
+										setOpenNotice(true);
+									}}
+								>
+									<InfoIcon />
+								</IconButton>
+							</Typography>
 							<Box sx={{ m: 2 }}>
 								<Grid container>
 									{nostrPublicKeys.map((key, index) => (
 										<Grid item xs={6}>
 											<Chip
 												label={`${key}`}
-												color={(hasPrivateKey.get(key)) ? (key === activeNostrPublicKey) ? "primary" : "default" : "error"}
+												color={
+													hasPrivateKey.get(key) ? (key === activeNostrPublicKey ? 'primary' : 'default') : 'error'
+												}
 												onDelete={() => {
 													nostrPublicKeys.splice(index, 1);
 													setNostrPublicKeys([...nostrPublicKeys]);
 												}}
 												onClick={async (event) => {
-													console.log("Chip", event);
+													console.log('hasPrivateKey', hasPrivateKey);
+													console.log('Chip', event);
 													if (gostiConfig) {
-														gostiConfig.identity.currentNostrPublicKey = (event.target as HTMLElement).innerText || "";
+														gostiConfig.identity.currentNostrPublicKey = (event.target as HTMLElement).innerText || '';
+														console.log('new active key', gostiConfig.identity.currentNostrPublicKey);
 														setActiveNostrPublicKey(gostiConfig.identity.currentNostrPublicKey);
+														setGostiConfig({ ...gostiConfig });
 													}
 												}}
 											/>
@@ -307,56 +430,101 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 							</Box>
 						</Grid>
 						<Grid item xs={6}>
-							<Button id="NostrPublicKeysButton" variant='contained' sx={{ width: '100%' }} onClick={async () => {
-								console.log("NostrPublicKeysButton", nostrPublicKeys);
-								const sk = schnorr.utils.randomPrivateKey(); // `sk` is a Uint8Array
-								const pk = schnorr.getPublicKey(sk);
-								setNostrPublicKeys([...nostrPublicKeys, bytesToHex(pk)]);
-								setActiveNostrPublicKey(bytesToHex(pk));
+							<Button
+								id="NostrPublicKeysButton"
+								variant="contained"
+								sx={{ width: '100%' }}
+								onClick={async () => {
+									console.log('NostrPublicKeysButton', nostrPublicKeys);
+									const sk = schnorr.utils.randomPrivateKey(); // `sk` is a Uint8Array
+									const pk = schnorr.getPublicKey(sk);
+									setNostrPublicKeys([...nostrPublicKeys, bytesToHex(pk)]);
+									setActiveNostrPublicKey(bytesToHex(pk));
 
-								const resp = await addNostrKeypair({ publicKey: bytesToHex(pk), privateKey: bytesToHex(sk) });
-								console.log("add_nostr_keys", resp);
-							}}
-							>Create New Nostr Key</Button>
+									const resp = await addNostrKeypair({ publicKey: bytesToHex(pk), privateKey: bytesToHex(sk) });
+									console.log('add_nostr_keys', resp);
+								}}
+							>
+								Create New Nostr Key
+							</Button>
 						</Grid>
 						<Grid item xs={6}>
-							<Button id="NostrPublicKeysImportButton" variant='contained' sx={{ width: '100%' }} onClick={() => {
-								setOpenImportKeysModal(true);
-							}}
-							>Import Existing Key Pair</Button>
+							<Button
+								id="NostrPublicKeysImportButton"
+								variant="contained"
+								sx={{ width: '100%' }}
+								onClick={() => {
+									setOpenImportKeysModal(true);
+								}}
+							>
+								Import Existing Key Pair
+							</Button>
 							<Modal
 								open={openImportKeysModal}
-								onClose={() => { setOpenNotice(false); }}
+								onClose={() => {
+									setOpenNotice(false);
+								}}
 								aria-labelledby="modal-modal-title"
 								aria-describedby="modal-modal-description"
 							>
 								<Box sx={infoModalStyle}>
 									<Grid container>
 										<Grid item xs={12}>
-											<TextField id="PrivateKeyTextField" sx={{ width: '100%' }} label="Private Key" variant="filled" value={tempPrivateKey} onChange={(event: any) => {
-												setTempPrivateKey(event.target.value);
-											}} />
+											<TextField
+												id="PrivateKeyTextField"
+												sx={{ width: '100%' }}
+												label="Private Key"
+												variant="filled"
+												value={tempPrivateKey}
+												onChange={(event: any) => {
+													setTempPrivateKey(event.target.value);
+												}}
+											/>
 										</Grid>
 										<Grid item xs={12}>
-											<TextField id="PublicKeyTextField" sx={{ width: '100%' }} label="Public Key" variant="filled" value={tempPublicKey} onChange={(event: any) => {
-												setTempPublicKey(event.target.value);
-											}} />
+											<TextField
+												id="PublicKeyTextField"
+												sx={{ width: '100%' }}
+												label="Public Key"
+												variant="filled"
+												value={tempPublicKey}
+												onChange={(event: any) => {
+													setTempPublicKey(event.target.value);
+												}}
+											/>
 										</Grid>
 										<Grid item xs={6}>
-											<Button id="ImportKeysButton" variant='contained' sx={{ width: '100%' }} onClick={async () => {
-												if (tempPublicKey && tempPrivateKey) {
-													setNostrPublicKeys([...nostrPublicKeys, tempPublicKey]);
-													const resp = await addNostrKeypair({ publicKey: tempPublicKey, privateKey: tempPrivateKey });
-													console.log("add_nostr_keys", resp);
-													setActiveNostrPublicKey(tempPublicKey);
-												}
-												setOpenImportKeysModal(false);
-											}}>Add Keys</Button>
+											<Button
+												id="ImportKeysButton"
+												variant="contained"
+												sx={{ width: '100%' }}
+												onClick={async () => {
+													if (tempPublicKey && tempPrivateKey) {
+														setNostrPublicKeys([...nostrPublicKeys, tempPublicKey]);
+														const resp = await addNostrKeypair({
+															publicKey: tempPublicKey,
+															privateKey: tempPrivateKey,
+														});
+														console.log('add_nostr_keys', resp);
+														setActiveNostrPublicKey(tempPublicKey);
+													}
+													setOpenImportKeysModal(false);
+												}}
+											>
+												Add Keys
+											</Button>
 										</Grid>
 										<Grid item xs={6}>
-											<Button id="CancelImportKeysButton" variant='contained' sx={{ width: '100%' }} onClick={() => {
-												setOpenImportKeysModal(false);
-											}}>Cancel</Button>
+											<Button
+												id="CancelImportKeysButton"
+												variant="contained"
+												sx={{ width: '100%' }}
+												onClick={() => {
+													setOpenImportKeysModal(false);
+												}}
+											>
+												Cancel
+											</Button>
 										</Grid>
 									</Grid>
 								</Box>
@@ -368,64 +536,90 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 						</Grid>
 
 						<Grid item xs={12}>
-							<Button disabled={!profile?.coinAvailable} id="UpdateProfileButton" variant='contained' sx={{ width: '100%' }} onClick={async () => {
-								if (profile) {
-									if (!profile.metadata) profile.metadata = {};
-									if (displayName !== "") profile.metadata.gostiDisplayName = displayName;
-									if (avatar !== "") profile.metadata.gostiAvatar = avatar;
-									if (bio !== "") profile.metadata.gostiBio = bio;
-									if (location !== "") profile.metadata.gostiLocation = location;
-									console.log("languages", languages);
-									if (languages.length !== 0) profile.metadata.gostiLanguages = JSON.stringify(languages);
-									if (links.length !== 0) profile.metadata.gostiLinks = JSON.stringify(links);
-									if (nostrPublicKeys.length !== 0) {
-										profile.metadata.gostiNostrPublicKeys = JSON.stringify(nostrPublicKeys);
-										if (gostiConfig) {
-											gostiConfig.identity.activeDID = profile.did;
-											if (activeNostrPublicKey) profile.metadata.gostiActiveNostrPublicKey = activeNostrPublicKey;
-											const signResponse = await signMessageById({ id: profile.did, message: gostiConfig.identity.currentNostrPublicKey } as SignMessageByIdRequest);
-											gostiConfig.identity.proof = signResponse.signature || "";
+							<FeeDialogModal
+								open={openFeeDialog}
+								setOpen={setOpenFeeDialog}
+								fee={fee}
+								setFee={setFee}
+								action={async () => {
+									if (profile) {
+										if (!profile.metadata) profile.metadata = {};
+										if (displayName !== '') profile.metadata.gostiDisplayName = displayName;
+										if (avatar !== '') profile.metadata.gostiAvatar = avatar;
+										if (bio !== '') profile.metadata.gostiBio = bio;
+										if (location !== '') profile.metadata.gostiLocation = location;
+										console.log('languages', languages);
+										if (languages.length !== 0) profile.metadata.gostiLanguages = JSON.stringify(languages);
+										if (links.length !== 0) profile.metadata.gostiLinks = JSON.stringify(links);
+										if (nostrPublicKeys.length !== 0) {
+											profile.metadata.gostiNostrPublicKeys = JSON.stringify(nostrPublicKeys);
+											if (gostiConfig) {
+												gostiConfig.identity.activeDID = profile.did;
+												if (activeNostrPublicKey) profile.metadata.gostiActiveNostrPublicKey = activeNostrPublicKey;
+												console.log('here 1');
+												const signResponse = await signMessageById({
+													id: profile.did,
+													message: gostiConfig.identity.currentNostrPublicKey,
+												} as SignMessageByIdRequest);
+												gostiConfig.identity.proof = signResponse.signature || '';
+											}
+											const resp = await setGostiConfig({ ...gostiConfig });
+											console.log('save_config', resp);
 										}
-										const resp = await setGostiConfig({ ...gostiConfig });
-										console.log("save_config", resp);
+
+										onUpdateMetadata(profile.metadata);
+
+										const pk = gostiConfig.identity.currentNostrPublicKey;
+
+										if (!pk) {
+											console.log('No public key found');
+											alert('No public key found. Please set up your profile.');
+											return;
+										}
+
+										const createdAt = Math.floor(Date.now() / 1000);
+
+										const event: NostrEvent = {
+											content: JSON.stringify({
+												...profile.metadata,
+												name: profile.metadata.gostiDisplayName,
+												about: profile.metadata.gostiBio,
+												picture: profile.metadata.gostiAvatar,
+											}),
+											kind: 0,
+											tags: [['i', `chia:${gostiConfig.identity.activeDID}`, gostiConfig.identity.proof]],
+											created_at: createdAt,
+											pubkey: pk,
+											id: '',
+											sig: '',
+										};
+										event.id = getEventHash(event);
+										const signResp = await signNostrMessage({ message: event.id });
+										console.log('signResp', signResp);
+										event.sig = signResp.signature;
+
+										nostrPool.publish(gostiConfig.nostrRelays, event);
 									}
-
-									onUpdateMetadata(profile.metadata);
-
-									const pk = gostiConfig.identity.currentNostrPublicKey;
-
-									if (!pk) {
-										console.log("No public key found");
-										alert("No public key found. Please set up your profile.");
-										return;
-									}
-
-									const createdAt = Math.floor(Date.now() / 1000);
-
-									const event: NostrEvent = {
-										content: JSON.stringify({ ...profile.metadata, name: profile.metadata.gostiDisplayName, about: profile.metadata.gostiBio, picture: profile.metadata.gostiAvatar }),
-										kind: 0,
-										tags: [
-											["i", `chia:${gostiConfig.identity.activeDID}`, gostiConfig.identity.proof],
-										],
-										created_at: createdAt,
-										pubkey: pk,
-										id: '',
-										sig: ''
-									};
-									event.id = getEventHash(event);
-									const signResp = await signNostrMessage({ message: event.id });
-									console.log("signResp", signResp);
-									event.sig = signResp.signature;
-
-									nostrPool.publish(gostiConfig.nostrRelays, event);
-								}
-							}}>Update Profile</Button>
+								}}
+							/>
+							<Button
+								disabled={!profile?.coinAvailable}
+								id="UpdateProfileButton"
+								variant="contained"
+								sx={{ width: '100%' }}
+								onClick={() => {
+									setOpenFeeDialog(true);
+								}}
+							>
+								Update Profile
+							</Button>
 						</Grid>
 					</Grid>
 					<Modal
 						open={openNotice}
-						onClose={() => { setOpenNotice(false); }}
+						onClose={() => {
+							setOpenNotice(false);
+						}}
 						aria-labelledby="modal-modal-title"
 						aria-describedby="modal-modal-description"
 					>
@@ -440,6 +634,6 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 					</Modal>
 				</Container>
 			</Dialog>
-		</Paper >
+		</Paper>
 	);
 }
