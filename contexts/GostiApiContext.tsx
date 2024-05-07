@@ -86,7 +86,7 @@ export const GostiApiContextProvider = ({ children }: { children: ReactNode | Re
 			fetchConfig();
 		} else {
 			console.log('has gostiConfig', gostiConfig);
-			const configResponse: any = invoke('save_config', { config: gostiConfig });
+			const configResponse: any = invoke('save_config', { newConfig: gostiConfig });
 			console.log('save_config', configResponse);
 		}
 	}, [gostiConfig]);

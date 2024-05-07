@@ -537,6 +537,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 
 						<Grid item xs={12}>
 							<FeeDialogModal
+								messageBefore="Update Profile"
 								open={openFeeDialog}
 								setOpen={setOpenFeeDialog}
 								fee={fee}
