@@ -3,12 +3,28 @@ import { Buffer } from 'buffer';
 import CloseIcon from '@mui/icons-material/Close';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {
-	Grid, Tab, Tabs, Dialog, Container, Typography, Button,
-	AppBar, Toolbar, Slide, Paper, IconButton, Box,
-	Stack, Divider, Autocomplete, TextField, SlideProps, Chip,
+	Grid,
+	Tab,
+	Tabs,
+	Dialog,
+	Container,
+	Typography,
+	Button,
+	AppBar,
+	Toolbar,
+	Slide,
+	Paper,
+	IconButton,
+	Box,
+	Stack,
+	Divider,
+	Autocomplete,
+	TextField,
+	SlideProps,
+	Chip,
 } from '@mui/material';
-import axios from "axios";
-import { bech32m } from "bech32";
+import axios from 'axios';
+import { bech32m } from 'bech32';
 import { sha256 } from 'js-sha256';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -20,13 +36,12 @@ import { TakeOfferRequest } from '../types/walletconnect/rpc/TakeOffer';
 import { CommentSection } from './CommentSection';
 import 'react-slideshow-image/dist/styles.css';
 
-
 const Transition = React.forwardRef((props: SlideProps, ref) => <Slide direction="up" ref={ref} {...props} />);
 
 export type TabPanelProps = {
-	children: any,
-	index: number,
-	value: number,
+	children: any;
+	index: number;
+	value: number;
 };
 
 function TabPanel(props: TabPanelProps) {
@@ -58,8 +73,8 @@ function TabProps(index: number) {
 
 export type StorePageProps = {
 	media: Media;
-	open: boolean,
-	setOpen: React.Dispatch<React.SetStateAction<boolean>>
+	open: boolean;
+	setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export default function StorePage(props: StorePageProps) {
@@ -67,44 +82,48 @@ export default function StorePage(props: StorePageProps) {
 
 	const [activeOffer, setActiveOffer] = React.useState<any | undefined>({});
 
-	const [price, setPrice] = React.useState("");
+	const [price, setPrice] = React.useState('');
 	const [asset, setAsset] = React.useState('TXCH');
 	const [tab, setTab] = React.useState(0);
 
 	const { takeOffer } = useWalletConnectRpc();
 
 	const onBuy = () => {
-		console.log("Buying", activeOffer);
+		console.log('Buying', activeOffer);
 		takeOffer({ offer: activeOffer } as TakeOfferRequest);
 	};
 
 	React.useEffect(() => {
 		if (open) {
-			console.log("screenshots", media.screenshots);
+			console.log('screenshots', media.screenshots);
 			const pubdid = media.publisherDid;
 			const id = media.productId;
 
-			const decoded = Buffer.from(bech32m.fromWords(bech32m.decode(pubdid).words)).toString("hex");
+			const decoded = Buffer.from(bech32m.fromWords(bech32m.decode(pubdid).words)).toString('hex');
 
-			const col = sha256.create().update(decoded + id).hex();
-			const collectionID = bech32m.encode("col", bech32m.toWords(Buffer.from(col, "hex")));
+			const col = sha256
+				.create()
+				.update(decoded + id)
+				.hex();
+			const collectionID = bech32m.encode('col', bech32m.toWords(Buffer.from(col, 'hex')));
 
-			axios.get(`https://api-testnet.dexie.space/v1/offers`, { params: { requested: asset, offered: collectionID, page_size: 1 } })
-				.then(res => {
+			axios
+				.get(`https://api-testnet.dexie.space/v1/offers`, {
+					params: { requested: asset, offered: collectionID, page_size: 1 },
+				})
+				.then((res) => {
 					console.log(res);
 					if (res.data.offers.length > 0) {
 						setActiveOffer(res.data.offers[0].offer);
 						setPrice(res.data.offers[0].requested[0].amount);
 					} else {
-						setPrice("Not Found");
+						setPrice('Not Found');
 					}
 				});
 		}
 	}, [asset, media, open, setActiveOffer]);
 
-	const assets = [
-		'TXCH', 'USDS', 'SBX'
-	];
+	const assets = ['TXCH', 'USDS', 'SBX'];
 
 	const handleClose = () => {
 		setOpen(false);
@@ -115,20 +134,10 @@ export default function StorePage(props: StorePageProps) {
 	};
 
 	return (
-		<Dialog
-			fullScreen
-			open={open}
-			onClose={handleClose}
-			TransitionComponent={Transition}
-		>
+		<Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={Transition}>
 			<AppBar sx={{ position: 'relative' }}>
 				<Toolbar>
-					<IconButton
-						edge="start"
-						color="inherit"
-						onClick={handleClose}
-						aria-label="close"
-					>
+					<IconButton edge="start" color="inherit" onClick={handleClose} aria-label="close">
 						<CloseIcon />
 					</IconButton>
 					<Typography sx={{ ml: 2, flex: 1 }} variant="h6">
@@ -163,16 +172,20 @@ export default function StorePage(props: StorePageProps) {
 						<TabPanel value={tab} index={1}>
 							<Box sx={{ height: '100%' }}>
 								<Slideshow>
-									{media.screenshots && media.screenshots.map((screenshot, index) => (
-										<div key={index} style={{
-											display: "flex",
-											alignItems: "center",
-											justifyContent: "center",
-											backgroundSize: "cover",
-											height: "370px",
-											backgroundImage: `url(${screenshot})`,
-										}} />
-									))}
+									{media.screenshots &&
+										media.screenshots.map((screenshot, index) => (
+											<div
+												key={index}
+												style={{
+													display: 'flex',
+													alignItems: 'center',
+													justifyContent: 'center',
+													backgroundSize: 'cover',
+													height: '370px',
+													backgroundImage: `url(${screenshot})`,
+												}}
+											/>
+										))}
 								</Slideshow>
 							</Box>
 						</TabPanel>
@@ -180,26 +193,27 @@ export default function StorePage(props: StorePageProps) {
 					<Grid id="infoSection" item xs={12} md={4} sx={{ height: '100%' }}>
 						<Stack sx={{ height: '100%' }}>
 							<Paper elevation={1} sx={{ height: '60%', p: 2, m: 2 }}>
-								<Stack justifyContent={'space-between'} alignContent={"center"} direction="column" height={"100%"}>
+								<Stack justifyContent={'space-between'} alignContent={'center'} direction="column" height={'100%'}>
 									<Box>
 										<Typography variant="h5">{media.title}</Typography>
 										<Divider />
 									</Box>
 									<Box>
-										<Typography height={"100%"}>{media.description}</Typography>
+										<Typography height={'100%'}>{media.description}</Typography>
 									</Box>
 									<Box>
 										<Divider />
-										{media.tags.map((tag, index) => (
-											<Chip size="small" label={tag} key={index} sx={{ m: 1 }} />
-										))}
+										{media.tags &&
+											media.tags.map((tag, index) => <Chip size="small" label={tag} key={index} sx={{ m: 1 }} />)}
 									</Box>
 								</Stack>
 							</Paper>
 							<Paper elevation={1} sx={{ height: '40%', p: 2, m: 2 }}>
 								<Grid container>
 									<Grid item xs={6}>
-										<Typography alignItems={"center"} sx={{ m: 2 }}>{price} {asset}</Typography>
+										<Typography alignItems={'center'} sx={{ m: 2 }}>
+											{price} {asset}
+										</Typography>
 									</Grid>
 									<Grid item xs={6}>
 										<Autocomplete
@@ -207,7 +221,7 @@ export default function StorePage(props: StorePageProps) {
 											disableClearable
 											disablePortal
 											freeSolo
-											defaultValue='XCH'
+											defaultValue="XCH"
 											options={assets}
 											sx={{ m: 2 }}
 											renderInput={(params) => <TextField {...params} />}
@@ -219,12 +233,18 @@ export default function StorePage(props: StorePageProps) {
 										/>
 									</Grid>
 									<Grid item xs={10}>
-										<Button disabled={activeOffer} fullWidth={true} variant="contained" onClick={onBuy}>Buy</Button>
+										<Button disabled={activeOffer} fullWidth={true} variant="contained" onClick={onBuy}>
+											Buy
+										</Button>
 									</Grid>
 									<Grid item xs={2}>
-										<IconButton onClick={() => {
-											navigator.clipboard.writeText(activeOffer);
-										}}><ContentCopyIcon /></IconButton>
+										<IconButton
+											onClick={() => {
+												navigator.clipboard.writeText(activeOffer);
+											}}
+										>
+											<ContentCopyIcon />
+										</IconButton>
 									</Grid>
 								</Grid>
 							</Paper>
@@ -235,11 +255,10 @@ export default function StorePage(props: StorePageProps) {
 					</Paper>
 					{CommentSection({
 						media,
-						open
+						open,
 					})}
 				</Grid>
 			</Container>
-		</Dialog >
+		</Dialog>
 	);
-};
-
+}
