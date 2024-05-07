@@ -113,7 +113,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 			const result = await hasNostrPrivateKey({ publicKey: key });
 			console.log('checking for key res', key, result);
 
-			hasPrivateKey.set(key, result);
+			hasPrivateKey.set(key, result.hasPrivateKey);
 			setHasPrivateKey(new Map(hasPrivateKey));
 		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps -- This is intentional
