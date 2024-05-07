@@ -10,7 +10,6 @@ import { GetDIDInfoRequest } from '../types/walletconnect/rpc/GetDIDInfo';
 import { GostiComment } from './Comment';
 import { CommentBox } from './CommentBox';
 
-
 export interface CommentSectionProps {
 	media: Media;
 	open: boolean;
@@ -37,7 +36,7 @@ export const CommentSection = (props: CommentSectionProps) => {
 				[...gostiConfig.nostrRelays],
 				[
 					{
-						"#e": [media.nostrEventId],
+						'#e': [media.nostrEventId],
 					},
 				],
 				{
@@ -49,15 +48,15 @@ export const CommentSection = (props: CommentSectionProps) => {
 								kinds: [0],
 								authors: [event.pubkey],
 							});
-							if (tag[0] === "i" && tag[1].split(":")[0] === "chia") {
+							if (tag[0] === 'i' && tag[1].split(':')[0] === 'chia') {
 								const did = tag[1].slice(5, tag[1].length);
 								if (profiles.has(did)) {
-									console.log("profile already found", did);
+									console.log('profile already found', did);
 									return;
 								}
 								if (nostrProfile.length > 0) {
 									const quickProfile = JSON.parse(nostrProfile[0].content);
-									console.log("quickProfile", quickProfile, event.pubkey, did);
+									console.log('quickProfile', quickProfile, event.pubkey, did);
 									if (quickProfile) {
 										profiles.set(did, quickProfile as ProfileMetadata);
 										setProfiles(new Map(profiles));
@@ -74,7 +73,7 @@ export const CommentSection = (props: CommentSectionProps) => {
 					},
 					oneose() {
 						subs.close();
-					}
+					},
 				}
 			);
 		};
@@ -84,14 +83,12 @@ export const CommentSection = (props: CommentSectionProps) => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps -- need to ignore events updates
 	}, [gostiConfig, open]);
 
-
 	const handleSubmitComment = async (comment: string) => {
-
 		const pk = gostiConfig.identity.currentNostrPublicKey;
 
 		if (!pk) {
-			console.log("No public key found");
-			alert("No public key found. Please set up your profile.");
+			console.log('No public key found');
+			alert('No public key found. Please set up your profile.');
 			return;
 		}
 
@@ -101,22 +98,22 @@ export const CommentSection = (props: CommentSectionProps) => {
 			content: comment,
 			kind: 1,
 			tags: [
-				["e", media.nostrEventId, gostiConfig.nostrRelays[0], "root"],
-				["i", `chia:${gostiConfig.identity.activeDID}`, gostiConfig.identity.proof],
+				['e', media.nostrEventId, gostiConfig.nostrRelays[0], 'root'],
+				['i', `chia:${gostiConfig.identity.activeDID}`, gostiConfig.identity.proof],
 			],
 			created_at: createdAt,
 			pubkey: pk,
 			id: '',
-			sig: ''
+			sig: '',
 		};
 		event.id = getEventHash(event);
 		const signResp = await signNostrMessage({ message: event.id });
-		console.log("signResp", signResp);
+		console.log('signResp', signResp);
 		event.sig = signResp.signature;
 
 		const nostrPool = new SimplePool();
 		const resp = await nostrPool.publish(gostiConfig.nostrRelays, event);
-		console.log("publish resp", resp);
+		console.log('publish resp', resp);
 		if (resp) {
 			events.push(event);
 			setEvents([...events]);
@@ -124,16 +121,16 @@ export const CommentSection = (props: CommentSectionProps) => {
 	};
 
 	return (
-		<Paper elevation={1} sx={{ m: 2, p: 2, width: "100%" }}>
+		<Paper elevation={1} sx={{ m: 2, p: 2, width: '100%' }}>
 			<Grid id="commentSection" item sx={{ m: 0, p: 0, height: '100%' }}>
 				<Box sx={{ p: 2 }}>
 					<CommentBox onSubmit={handleSubmitComment} />
 				</Box>
-				{events.sort(
-					(a, b) => b.created_at - a.created_at
-				).map((event: any) => (
-					<GostiComment event={event} profiles={profiles} key={event.id} />
-				))}
+				{events
+					.sort((a, b) => b.created_at - a.created_at)
+					.map((event: any) => (
+						<GostiComment event={event} profiles={profiles} key={event.id} />
+					))}
 			</Grid>
 		</Paper>
 	);

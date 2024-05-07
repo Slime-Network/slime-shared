@@ -220,6 +220,8 @@ export function WalletConnectRpcProvider({ children }: PropsWithChildren) {
 		if (!session) throw new Error('Session is not connected');
 		if (!fingerprint) throw new Error('Fingerprint is not loaded.');
 
+		console.log(`${method} request`, data);
+
 		const result = await client!.request<{ data: T } | { error: any }>({
 			topic: session!.topic,
 			chainId,
