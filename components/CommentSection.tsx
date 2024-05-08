@@ -33,7 +33,7 @@ export const CommentSection = (props: CommentSectionProps) => {
 		const subscribeToComments = async () => {
 			const nostrPool = new SimplePool();
 			const subs = nostrPool.subscribeMany(
-				[...gostiConfig.nostrRelays],
+				[...gostiConfig.nostrRelays.map((relay) => relay.url)],
 				[
 					{
 						'#e': [media.nostrEventId],
@@ -44,10 +44,13 @@ export const CommentSection = (props: CommentSectionProps) => {
 						events.push(event);
 						setEvents([...events]);
 						event.tags.forEach(async (tag) => {
-							const nostrProfile = await nostrPool.querySync(gostiConfig.nostrRelays, {
-								kinds: [0],
-								authors: [event.pubkey],
-							});
+							const nostrProfile = await nostrPool.querySync(
+								gostiConfig.nostrRelays.map((relay) => relay.url),
+								{
+									kinds: [0],
+									authors: [event.pubkey],
+								}
+							);
 							if (tag[0] === 'i' && tag[1].split(':')[0] === 'chia') {
 								const did = tag[1].slice(5, tag[1].length);
 								if (profiles.has(did)) {
@@ -84,7 +87,7 @@ export const CommentSection = (props: CommentSectionProps) => {
 	}, [gostiConfig, open]);
 
 	const handleSubmitComment = async (comment: string) => {
-		const pk = gostiConfig.identity.currentNostrPublicKey;
+		const pk = gostiConfig.activeIdentity.currentNostrPublicKey;
 
 		if (!pk) {
 			console.log('No public key found');
@@ -98,8 +101,8 @@ export const CommentSection = (props: CommentSectionProps) => {
 			content: comment,
 			kind: 1,
 			tags: [
-				['e', media.nostrEventId, gostiConfig.nostrRelays[0], 'root'],
-				['i', `chia:${gostiConfig.identity.activeDID}`, gostiConfig.identity.proof],
+				['e', media.nostrEventId, gostiConfig.nostrRelays[0].url, 'root'],
+				['i', `chia:${gostiConfig.activeIdentity.did}`, gostiConfig.activeIdentity.proof],
 			],
 			created_at: createdAt,
 			pubkey: pk,
@@ -112,7 +115,10 @@ export const CommentSection = (props: CommentSectionProps) => {
 		event.sig = signResp.signature;
 
 		const nostrPool = new SimplePool();
-		const resp = await nostrPool.publish(gostiConfig.nostrRelays, event);
+		const resp = await nostrPool.publish(
+			gostiConfig.nostrRelays.map((relay) => relay.url),
+			event
+		);
 		console.log('publish resp', resp);
 		if (resp) {
 			events.push(event);

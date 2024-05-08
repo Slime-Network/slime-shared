@@ -31,7 +31,7 @@ export const ChatBox = (props: ChatBoxProps) => {
 		const subscribeToComments = async () => {
 			const nostrPool = new SimplePool();
 			const subs = nostrPool.subscribeMany(
-				[...gostiConfig.nostrRelays],
+				[...gostiConfig.nostrRelays.map((relay) => relay.url)],
 				[
 					{
 						// "#e": [media.nostrEventId],
@@ -43,10 +43,13 @@ export const ChatBox = (props: ChatBoxProps) => {
 						events.push(event);
 						setEvents([...events]);
 						event.tags.forEach(async (tag) => {
-							const nostrProfile = await nostrPool.querySync(gostiConfig.nostrRelays, {
-								kinds: [0],
-								authors: [event.pubkey],
-							});
+							const nostrProfile = await nostrPool.querySync(
+								gostiConfig.nostrRelays.map((relay) => relay.url),
+								{
+									kinds: [0],
+									authors: [event.pubkey],
+								}
+							);
 							if (tag[0] === 'i' && tag[1].split(':')[0] === 'chia') {
 								console.log('tag', tag);
 								const did = tag[1].slice(5, tag[1].length);
@@ -84,7 +87,7 @@ export const ChatBox = (props: ChatBoxProps) => {
 	}, [gostiConfig, open]);
 
 	const handleSubmitComment = async (comment: string) => {
-		const pk = gostiConfig.identity.currentNostrPublicKey;
+		const pk = gostiConfig.activeIdentity.currentNostrPublicKey;
 
 		if (!pk) {
 			console.log('No public key found');
@@ -97,7 +100,7 @@ export const ChatBox = (props: ChatBoxProps) => {
 		const event: NostrEvent = {
 			content: comment,
 			kind: 1,
-			tags: [['i', `chia:${gostiConfig.identity.activeDID}`, gostiConfig.identity.proof]],
+			tags: [['i', `chia:${gostiConfig.activeIdentity.did}`, gostiConfig.activeIdentity.proof]],
 			created_at: createdAt,
 			pubkey: pk,
 			id: '',
@@ -109,7 +112,10 @@ export const ChatBox = (props: ChatBoxProps) => {
 		event.sig = signResp.signature;
 
 		const nostrPool = new SimplePool();
-		const resp = await nostrPool.publish(gostiConfig.nostrRelays, event);
+		const resp = await nostrPool.publish(
+			gostiConfig.nostrRelays.map((relay) => relay.url),
+			event
+		);
 		console.log('publish resp', resp);
 		if (resp) {
 			events.push(event);

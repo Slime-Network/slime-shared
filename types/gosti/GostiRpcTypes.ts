@@ -1,4 +1,4 @@
-import { Marketplace } from './MarketplaceApiTypes';
+import { Marketplace, NostrRelay } from './MarketplaceApiTypes';
 import type { Media } from './Media';
 
 export type GostiConfig = {
@@ -8,13 +8,16 @@ export type GostiConfig = {
 	mintingDataPath: string;
 	mediaDataPath: string;
 	installsPath: string;
-	identity: {
-		activeDID: string;
-		currentNostrPublicKey: string;
-		proof: string;
-	};
-	nostrRelays: string[];
+	activeIdentity: Identity;
+	identities: Identity[];
+	nostrRelays: NostrRelay[];
 	default: boolean;
+};
+
+export type Identity = {
+	did: string;
+	currentNostrPublicKey: string;
+	proof: string;
 };
 
 export type SignNostrMessageRequest = {

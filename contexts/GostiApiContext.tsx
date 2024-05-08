@@ -59,17 +59,15 @@ export const GostiApiContext = createContext<IContext>({} as IContext);
  */
 export const GostiApiContextProvider = ({ children }: { children: ReactNode | ReactNode[] }) => {
 	const [gostiConfig, setGostiConfig] = React.useState<GostiConfig>({
-		nostrRelays: ['ws://api.gosti.network:7000'],
-		activeMarketplace: { displayName: 'LocalHost', url: 'http://localhost:5233' },
+		nostrRelays: [{ displayName: 'Gosti Relay 1', url: 'ws://api.gosti.network:7000' }],
+		activeMarketplace: { displayName: 'Gosti Marketplace', url: 'http://api.gosti.network' },
 		installsPath: './gosti-data/installs/',
-		marketplaces: [
-			{ displayName: 'Localhost', url: 'http://localhost:5233' },
-			{ displayName: 'Gosti Marketplace', url: 'http://api.gosti.network' },
-		],
+		marketplaces: [{ displayName: 'Gosti Marketplace', url: 'http://api.gosti.network' }],
 		mediaDataPath: './gosti-data/media/',
 		mintingDataPath: './gosti-data/minting/',
 		torrentsPath: './gosti-data/torrents/',
-		identity: { activeDID: '', currentNostrPublicKey: '', proof: '' },
+		activeIdentity: { did: '', currentNostrPublicKey: '', proof: '' },
+		identities: [],
 		default: true,
 	});
 

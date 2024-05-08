@@ -5,6 +5,11 @@ export type Marketplace = {
 	url: string;
 };
 
+export type NostrRelay = {
+	displayName: string;
+	url: string;
+};
+
 export enum SortOptions {
 	DateAsc,
 	DateDesc,

@@ -25,7 +25,7 @@ export const CommentBox = (props: CommentBoxProps) => {
 	const { gostiConfig } = useGostiApi();
 
 	React.useEffect(() => {
-		getDIDInfo({ coinId: gostiConfig.identity.activeDID } as GetDIDInfoRequest).then((res) => {
+		getDIDInfo({ coinId: gostiConfig.activeIdentity.did } as GetDIDInfoRequest).then((res) => {
 			setProfile(res.metadata as ProfileMetadata);
 		});
 	}, [getDIDInfo, gostiConfig]);

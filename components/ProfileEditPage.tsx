@@ -67,7 +67,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 		JSON.parse(profile?.metadata?.gostiLanguages || '[]') || []
 	);
 	const [links, setLinks] = React.useState<SocialLink[]>(JSON.parse(profile?.metadata?.gostiLinks || '[]') || []);
-	const [nostrPublicKeys, setNostrPublicKeys] = React.useState<string[]>(
+	const [nostrPublicKeys, setNostrPublicKeys] = React.useState<any[]>(
 		JSON.parse(profile?.metadata?.gostiNostrPublicKeys || '[]') || []
 	);
 	const [tempPrivateKey, setTempPrivateKey] = React.useState<string | undefined>(undefined);
@@ -108,13 +108,19 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 	};
 
 	React.useEffect(() => {
+		console.log('nostrPublicKeys', nostrPublicKeys);
 		nostrPublicKeys.forEach(async (key) => {
-			console.log('checking for key', key);
-			const result = await hasNostrPrivateKey({ publicKey: key });
-			console.log('checking for key res', key, result);
+			console.log('key3', key);
+			const result = await hasNostrPrivateKey({ publicKey: key.key });
+			console.log('result pk', result);
 
-			hasPrivateKey.set(key, result.hasPrivateKey);
+			hasPrivateKey.set(key.key, result.hasPrivateKey);
 			setHasPrivateKey(new Map(hasPrivateKey));
+			if (activeNostrPublicKey) {
+				if (activeNostrPublicKey === key.key && !result.hasPrivateKey) {
+					setActiveNostrPublicKey(undefined);
+				}
+			}
 		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps -- This is intentional
 	}, [hasNostrPrivateKey, nostrPublicKeys]);
@@ -405,22 +411,26 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 									{nostrPublicKeys.map((key, index) => (
 										<Grid item xs={6}>
 											<Chip
-												label={`${key}`}
+												label={`${key.key}`}
 												color={
-													hasPrivateKey.get(key) ? (key === activeNostrPublicKey ? 'primary' : 'default') : 'error'
+													hasPrivateKey.get(key.key)
+														? key.key === activeNostrPublicKey
+															? 'primary'
+															: 'default'
+														: 'error'
 												}
 												onDelete={() => {
 													nostrPublicKeys.splice(index, 1);
 													setNostrPublicKeys([...nostrPublicKeys]);
 												}}
 												onClick={async (event) => {
-													console.log('hasPrivateKey', hasPrivateKey);
-													console.log('Chip', event);
-													if (gostiConfig) {
-														gostiConfig.identity.currentNostrPublicKey = (event.target as HTMLElement).innerText || '';
-														console.log('new active key', gostiConfig.identity.currentNostrPublicKey);
-														setActiveNostrPublicKey(gostiConfig.identity.currentNostrPublicKey);
-														setGostiConfig({ ...gostiConfig });
+													console.log('Chip', event, key);
+													console.log('hasPrivateKey', hasPrivateKey, hasPrivateKey.get(key.key));
+													console.log('activeNostrPublicKey', activeNostrPublicKey);
+													if (hasPrivateKey.get(key.key)) {
+														setActiveNostrPublicKey(key.key);
+													} else {
+														alert('You do not have the private key for this public key.');
 													}
 												}}
 											/>
@@ -438,7 +448,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 									console.log('NostrPublicKeysButton', nostrPublicKeys);
 									const sk = schnorr.utils.randomPrivateKey(); // `sk` is a Uint8Array
 									const pk = schnorr.getPublicKey(sk);
-									setNostrPublicKeys([...nostrPublicKeys, bytesToHex(pk)]);
+									setNostrPublicKeys([...nostrPublicKeys, { key: bytesToHex(pk), proof: '' }]);
 									setActiveNostrPublicKey(bytesToHex(pk));
 
 									const resp = await addNostrKeypair({ publicKey: bytesToHex(pk), privateKey: bytesToHex(sk) });
@@ -500,7 +510,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 												sx={{ width: '100%' }}
 												onClick={async () => {
 													if (tempPublicKey && tempPrivateKey) {
-														setNostrPublicKeys([...nostrPublicKeys, tempPublicKey]);
+														setNostrPublicKeys([...nostrPublicKeys, { key: tempPublicKey, proof: '' }]);
 														const resp = await addNostrKeypair({
 															publicKey: tempPublicKey,
 															privateKey: tempPrivateKey,
@@ -543,63 +553,76 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								fee={fee}
 								setFee={setFee}
 								action={async () => {
+									if (!activeNostrPublicKey) {
+										alert('Please select an active Nostr public key.');
+										return;
+									}
 									if (profile) {
 										if (!profile.metadata) profile.metadata = {};
 										if (displayName !== '') profile.metadata.gostiDisplayName = displayName;
 										if (avatar !== '') profile.metadata.gostiAvatar = avatar;
 										if (bio !== '') profile.metadata.gostiBio = bio;
 										if (location !== '') profile.metadata.gostiLocation = location;
-										console.log('languages', languages);
 										if (languages.length !== 0) profile.metadata.gostiLanguages = JSON.stringify(languages);
 										if (links.length !== 0) profile.metadata.gostiLinks = JSON.stringify(links);
+
 										if (nostrPublicKeys.length !== 0) {
-											profile.metadata.gostiNostrPublicKeys = JSON.stringify(nostrPublicKeys);
-											if (gostiConfig) {
-												gostiConfig.identity.activeDID = profile.did;
-												if (activeNostrPublicKey) profile.metadata.gostiActiveNostrPublicKey = activeNostrPublicKey;
-												console.log('here 1');
-												const signResponse = await signMessageById({
-													id: profile.did,
-													message: gostiConfig.identity.currentNostrPublicKey,
-												} as SignMessageByIdRequest);
-												gostiConfig.identity.proof = signResponse.signature || '';
-											}
+											const provenKeys = await Promise.all(
+												nostrPublicKeys.map(async (key) => {
+													if (key.proof === '') {
+														const signResponse = await signMessageById({
+															id: profile.did,
+															message: key.key,
+														} as SignMessageByIdRequest);
+														return { key: key.key, proof: signResponse.signature };
+													}
+													return key;
+												})
+											);
+
+											console.log('provenKeys', provenKeys);
+
+											profile.metadata.gostiNostrPublicKeys = JSON.stringify(provenKeys);
+
+											profile.metadata.gostiActiveNostrPublicKey = activeNostrPublicKey;
+
 											const resp = await setGostiConfig({ ...gostiConfig });
 											console.log('save_config', resp);
+
+											onUpdateMetadata(profile.metadata);
+
+											const createdAt = Math.floor(Date.now() / 1000);
+
+											const event: NostrEvent = {
+												content: JSON.stringify({
+													...profile.metadata,
+													name: profile.metadata.gostiDisplayName,
+													about: profile.metadata.gostiBio,
+													picture: profile.metadata.gostiAvatar,
+												}),
+												kind: 0,
+												tags: [
+													[
+														'i',
+														`chia:${profile.did}`,
+														provenKeys.find((key) => key.key === activeNostrPublicKey).proof,
+													],
+												],
+												created_at: createdAt,
+												pubkey: activeNostrPublicKey,
+												id: '',
+												sig: '',
+											};
+											event.id = getEventHash(event);
+											const signResp = await signNostrMessage({ message: event.id });
+											console.log('signResp', signResp);
+											event.sig = signResp.signature;
+
+											nostrPool.publish(
+												gostiConfig.nostrRelays.map((relay) => relay.url),
+												event
+											);
 										}
-
-										onUpdateMetadata(profile.metadata);
-
-										const pk = gostiConfig.identity.currentNostrPublicKey;
-
-										if (!pk) {
-											console.log('No public key found');
-											alert('No public key found. Please set up your profile.');
-											return;
-										}
-
-										const createdAt = Math.floor(Date.now() / 1000);
-
-										const event: NostrEvent = {
-											content: JSON.stringify({
-												...profile.metadata,
-												name: profile.metadata.gostiDisplayName,
-												about: profile.metadata.gostiBio,
-												picture: profile.metadata.gostiAvatar,
-											}),
-											kind: 0,
-											tags: [['i', `chia:${gostiConfig.identity.activeDID}`, gostiConfig.identity.proof]],
-											created_at: createdAt,
-											pubkey: pk,
-											id: '',
-											sig: '',
-										};
-										event.id = getEventHash(event);
-										const signResp = await signNostrMessage({ message: event.id });
-										console.log('signResp', signResp);
-										event.sig = signResp.signature;
-
-										nostrPool.publish(gostiConfig.nostrRelays, event);
 									}
 								}}
 							/>
