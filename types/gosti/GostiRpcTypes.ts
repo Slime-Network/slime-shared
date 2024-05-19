@@ -11,6 +11,7 @@ export type GostiConfig = {
 	activeIdentity: Identity;
 	identities: Identity[];
 	nostrRelays: NostrRelay[];
+	torrentClientPort: number;
 	default: boolean;
 };
 
@@ -189,5 +190,14 @@ export type TorrentStatus = {
 
 export type GetTorrentStatusResponse = {
 	status: any;
+	message: string;
+};
+
+export type GetUrlDataHashRequest = {
+	url: string;
+};
+
+export type GetUrlDataHashResponse = {
+	hash: string;
 	message: string;
 };

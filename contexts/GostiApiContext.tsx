@@ -26,6 +26,10 @@ import {
 	UninstallMediaRequest,
 	UninstallMediaResponse,
 	GetOperatingSystemResponse,
+	GenerateTorrentsRequest,
+	GenerateTorrentsResponse,
+	GetUrlDataHashRequest,
+	GetUrlDataHashResponse,
 } from '../types/gosti/GostiRpcTypes';
 
 /**
@@ -47,6 +51,8 @@ interface IContext {
 	installMedia: (params: InstallMediaRequest) => Promise<InstallMediaResponse>;
 	uninstallMedia: (params: UninstallMediaRequest) => Promise<UninstallMediaResponse>;
 	launchMedia: (params: LaunchMediaRequest) => Promise<LaunchMediaResponse>;
+	generateTorrents: (params: GenerateTorrentsRequest) => Promise<GenerateTorrentsResponse>;
+	getUrlDataHash: (params: GetUrlDataHashRequest) => Promise<GetUrlDataHashResponse>;
 }
 
 /**
@@ -68,6 +74,7 @@ export const GostiApiContextProvider = ({ children }: { children: ReactNode | Re
 		torrentsPath: './gosti-data/torrents/',
 		activeIdentity: { did: '', currentNostrPublicKey: '', proof: '' },
 		identities: [],
+		torrentClientPort: 5235,
 		default: true,
 	});
 
@@ -102,7 +109,7 @@ export const GostiApiContextProvider = ({ children }: { children: ReactNode | Re
 
 	const signNostrMessage = async (params: SignNostrMessageRequest) => {
 		try {
-			return (await invoke('sign_nostr_message', params)) as SignNostrMessageResponse;
+			return (await invoke('sign_nostr_message', { params })) as SignNostrMessageResponse;
 		} catch (e) {
 			console.error(e);
 			return { signature: '', message: e, status: 'error' } as SignNostrMessageResponse;
@@ -138,7 +145,7 @@ export const GostiApiContextProvider = ({ children }: { children: ReactNode | Re
 
 	const getInstallStatus = async (params: GetInstallStatusRequest) => {
 		try {
-			return (await invoke('get_install_status', params)) as GetInstallStatusResponse;
+			return (await invoke('get_install_status', { params })) as GetInstallStatusResponse;
 		} catch (e) {
 			console.error(e);
 			return { message: e, status: 'error' } as GetInstallStatusResponse;
@@ -147,7 +154,7 @@ export const GostiApiContextProvider = ({ children }: { children: ReactNode | Re
 
 	const getLocalMediaMetadata = async (params: GetLocalMediaMetadataRequest) => {
 		try {
-			return (await invoke('get_local_media_metadata', params)) as GetLocalMediaMetadataResponse;
+			return (await invoke('get_local_media_metadata', { params })) as GetLocalMediaMetadataResponse;
 		} catch (e) {
 			console.error(e);
 			return { media: {}, message: e, status: 'error' } as GetLocalMediaMetadataResponse;
@@ -156,7 +163,7 @@ export const GostiApiContextProvider = ({ children }: { children: ReactNode | Re
 
 	const saveLocalMediaMetadata = async (params: SaveLocalMediaMetadataRequest) => {
 		try {
-			return (await invoke('save_local_media_metadata', params)) as SaveLocalMediaMetadataResponse;
+			return (await invoke('save_local_media_metadata', { params })) as SaveLocalMediaMetadataResponse;
 		} catch (e) {
 			console.error(e);
 			return { message: e, status: 'error' } as SaveLocalMediaMetadataResponse;
@@ -165,7 +172,7 @@ export const GostiApiContextProvider = ({ children }: { children: ReactNode | Re
 
 	const downloadMedia = async (params: DownloadMediaRequest) => {
 		try {
-			return (await invoke('download_media', params)) as DownloadMediaResponse;
+			return (await invoke('download_media', { params })) as DownloadMediaResponse;
 		} catch (e) {
 			console.error(e);
 			return { message: e, status: 'error' } as DownloadMediaResponse;
@@ -174,7 +181,7 @@ export const GostiApiContextProvider = ({ children }: { children: ReactNode | Re
 
 	const deleteMedia = async (params: DeleteMediaRequest) => {
 		try {
-			return (await invoke('delete_media', params)) as DeleteMediaResponse;
+			return (await invoke('delete_media', { params })) as DeleteMediaResponse;
 		} catch (e) {
 			console.error(e);
 			return { message: e, status: 'error' } as DeleteMediaResponse;
@@ -183,7 +190,7 @@ export const GostiApiContextProvider = ({ children }: { children: ReactNode | Re
 
 	const installMedia = async (params: InstallMediaRequest) => {
 		try {
-			return (await invoke('install_media', params)) as InstallMediaResponse;
+			return (await invoke('install_media', { params })) as InstallMediaResponse;
 		} catch (e) {
 			console.error(e);
 			return { message: e, status: 'error' } as InstallMediaResponse;
@@ -192,7 +199,7 @@ export const GostiApiContextProvider = ({ children }: { children: ReactNode | Re
 
 	const uninstallMedia = async (params: UninstallMediaRequest) => {
 		try {
-			return (await invoke('uninstall_media', params)) as UninstallMediaResponse;
+			return (await invoke('uninstall_media', { params })) as UninstallMediaResponse;
 		} catch (e) {
 			console.error(e);
 			return { message: e, status: 'error' } as UninstallMediaResponse;
@@ -201,10 +208,28 @@ export const GostiApiContextProvider = ({ children }: { children: ReactNode | Re
 
 	const launchMedia = async (params: LaunchMediaRequest) => {
 		try {
-			return (await invoke('launch_media', params)) as LaunchMediaResponse;
+			return (await invoke('launch_media', { params })) as LaunchMediaResponse;
 		} catch (e) {
 			console.error(e);
 			return { message: e, status: 'error' } as LaunchMediaResponse;
+		}
+	};
+
+	const generateTorrents = async (params: GenerateTorrentsRequest) => {
+		try {
+			return (await invoke('generate_torrents', { params })) as GenerateTorrentsResponse;
+		} catch (e) {
+			console.error(e);
+			return { message: e, status: 'error' } as unknown as GenerateTorrentsResponse;
+		}
+	};
+
+	const getUrlDataHash = async (params: GetUrlDataHashRequest) => {
+		try {
+			return (await invoke('get_url_data_hash', { params })) as GetUrlDataHashResponse;
+		} catch (e) {
+			console.error(e);
+			return { message: e, status: 'error' } as unknown as GetUrlDataHashResponse;
 		}
 	};
 
@@ -226,6 +251,8 @@ export const GostiApiContextProvider = ({ children }: { children: ReactNode | Re
 				installMedia,
 				uninstallMedia,
 				launchMedia,
+				generateTorrents,
+				getUrlDataHash,
 			}}
 		>
 			{children}
