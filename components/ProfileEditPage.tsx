@@ -27,10 +27,10 @@ import * as React from 'react';
 import { infoModalStyle } from '../constants';
 import { Language, Languages } from '../constants/languages';
 import { SocialLink, socialLinksOptions } from '../constants/social-links';
-import { useGostiApi } from '../contexts/GostiApiContext';
+import { useSlimeApi } from '../contexts/SlimeApiContext';
 import { useWalletConnectRpc } from '../contexts/WalletConnectRpcContext';
-import { Marketplace } from '../types/gosti/MarketplaceApiTypes';
-import { Profile } from '../types/gosti/Profile';
+import { Marketplace } from '../types/slime/MarketplaceApiTypes';
+import { Profile } from '../types/slime/Profile';
 import { SignMessageByIdRequest } from '../types/walletconnect/rpc/SignMessageById';
 import { NostrEvent, getEventHash } from '../utils/nostr';
 import { FeeDialogModal } from './FeeDialogModal';
@@ -59,47 +59,47 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 	const [openFeeDialog, setOpenFeeDialog] = React.useState(false);
 
 	const [name, setName] = React.useState<string | undefined>(profile?.name);
-	const [displayName, setDisplayName] = React.useState<string>(profile?.metadata?.gostiDisplayName || '');
-	const [avatar, setAvatar] = React.useState<string>(profile?.metadata?.gostiAvatar || '');
-	const [bio, setBio] = React.useState<string>(profile?.metadata?.gostiBio || '');
-	const [location, setLocation] = React.useState<string>(profile?.metadata?.gostiLocation || '');
+	const [displayName, setDisplayName] = React.useState<string>(profile?.metadata?.slimeDisplayName || '');
+	const [avatar, setAvatar] = React.useState<string>(profile?.metadata?.slimeAvatar || '');
+	const [bio, setBio] = React.useState<string>(profile?.metadata?.slimeBio || '');
+	const [location, setLocation] = React.useState<string>(profile?.metadata?.slimeLocation || '');
 	const [languages, setLanguages] = React.useState<Language[]>(
-		JSON.parse(profile?.metadata?.gostiLanguages || '[]') || []
+		JSON.parse(profile?.metadata?.slimeLanguages || '[]') || []
 	);
-	const [links, setLinks] = React.useState<SocialLink[]>(JSON.parse(profile?.metadata?.gostiLinks || '[]') || []);
+	const [links, setLinks] = React.useState<SocialLink[]>(JSON.parse(profile?.metadata?.slimeLinks || '[]') || []);
 	const [nostrPublicKeys, setNostrPublicKeys] = React.useState<any[]>(
-		JSON.parse(profile?.metadata?.gostiNostrPublicKeys || '[]') || []
+		JSON.parse(profile?.metadata?.slimeNostrPublicKeys || '[]') || []
 	);
 	const [tempPrivateKey, setTempPrivateKey] = React.useState<string | undefined>(undefined);
 	const [tempPublicKey, setTempPublicKey] = React.useState<string | undefined>(undefined);
 	const [activeNostrPublicKey, setActiveNostrPublicKey] = React.useState<string | undefined>(
-		profile?.metadata?.gostiActiveNostrPublicKey
+		profile?.metadata?.slimeActiveNostrPublicKey
 	);
 
 	const [marketplaces, setMarketplaces] = React.useState<Marketplace[]>([]);
 	const [hasPrivateKey, setHasPrivateKey] = React.useState<Map<string, boolean>>(new Map());
 	const { signMessageById } = useWalletConnectRpc();
 
-	const { gostiConfig, addNostrKeypair, hasNostrPrivateKey, signNostrMessage, setGostiConfig } = useGostiApi();
+	const { slimeConfig, addNostrKeypair, hasNostrPrivateKey, signNostrMessage, setSlimeConfig } = useSlimeApi();
 
 	const nostrPool = new SimplePool();
 
 	React.useEffect(() => {
-		setMarketplaces(gostiConfig.marketplaces);
-	}, [gostiConfig]);
+		setMarketplaces(slimeConfig.marketplaces);
+	}, [slimeConfig]);
 
 	React.useEffect(() => {
 		if (profile) {
 			if (profile.name) setName(profile?.name);
-			if (profile.metadata.gostiDisplayName) setDisplayName(profile.metadata.gostiDisplayName);
-			if (profile.metadata.gostiAvatar) setAvatar(profile.metadata.gostiAvatar);
-			if (profile.metadata.gostiBio) setBio(profile.metadata.gostiBio);
-			if (profile.metadata.gostiLocation) setLocation(profile.metadata.gostiLocation);
-			if (profile.metadata.gostiLanguages) setLanguages(JSON.parse(profile.metadata.gostiLanguages));
-			if (profile.metadata.gostiLinks) setLinks(JSON.parse(profile.metadata.gostiLinks));
-			if (profile.metadata.gostiNostrPublicKeys) setNostrPublicKeys(JSON.parse(profile.metadata.gostiNostrPublicKeys));
-			if (profile.metadata.gostiActiveNostrPublicKey)
-				setActiveNostrPublicKey(profile.metadata.gostiActiveNostrPublicKey);
+			if (profile.metadata.slimeDisplayName) setDisplayName(profile.metadata.slimeDisplayName);
+			if (profile.metadata.slimeAvatar) setAvatar(profile.metadata.slimeAvatar);
+			if (profile.metadata.slimeBio) setBio(profile.metadata.slimeBio);
+			if (profile.metadata.slimeLocation) setLocation(profile.metadata.slimeLocation);
+			if (profile.metadata.slimeLanguages) setLanguages(JSON.parse(profile.metadata.slimeLanguages));
+			if (profile.metadata.slimeLinks) setLinks(JSON.parse(profile.metadata.slimeLinks));
+			if (profile.metadata.slimeNostrPublicKeys) setNostrPublicKeys(JSON.parse(profile.metadata.slimeNostrPublicKeys));
+			if (profile.metadata.slimeActiveNostrPublicKey)
+				setActiveNostrPublicKey(profile.metadata.slimeActiveNostrPublicKey);
 		}
 	}, [profile]);
 
@@ -191,7 +191,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								sx={{ width: '100%' }}
 								label="Display Name"
 								variant="filled"
-								defaultValue={profile?.metadata?.gostiDisplayName}
+								defaultValue={profile?.metadata?.slimeDisplayName}
 								value={displayName}
 								onChange={(event: any) => {
 									setDisplayName(event.target.value);
@@ -230,7 +230,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								sx={{ width: '100%' }}
 								label="Avatar URL"
 								variant="filled"
-								defaultValue={profile?.metadata?.gostiAvatar}
+								defaultValue={profile?.metadata?.slimeAvatar}
 								value={avatar}
 								onChange={(event: any) => {
 									setAvatar(event.target.value);
@@ -261,7 +261,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								variant="filled"
 								multiline
 								maxRows={4}
-								defaultValue={profile?.metadata?.gostiBio}
+								defaultValue={profile?.metadata?.slimeBio}
 								value={bio}
 								onChange={(event: any) => {
 									setBio(event.target.value);
@@ -290,7 +290,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								sx={{ width: '100%' }}
 								label="Location"
 								variant="filled"
-								defaultValue={profile?.metadata?.gostiLocation}
+								defaultValue={profile?.metadata?.slimeLocation}
 								value={location}
 								onChange={(event: any) => {
 									setLocation(event.target.value);
@@ -398,7 +398,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 									onClick={() => {
 										setNoticeTitle('Nostr Public Keys');
 										setNoticeMessage(
-											'Your list of public keys for Nostr, the social media parts of Gosti. All of your Nostr keys are linked to your same profile and can be used interchangeably. Your Private keys are stored locally on your device for security, so it is possible to loose old keys. You may also want to create a different key-pair for each device, for security and ease of use. Green means your active public key, Grey is an inactive key, and Red means you do not have the private key on this device. Click on an inactive key to activate it, or to add a missing private key.'
+											'Your list of public keys for Nostr, the social media parts of Slime. All of your Nostr keys are linked to your same profile and can be used interchangeably. Your Private keys are stored locally on your device for security, so it is possible to loose old keys. You may also want to create a different key-pair for each device, for security and ease of use. Green means your active public key, Grey is an inactive key, and Red means you do not have the private key on this device. Click on an inactive key to activate it, or to add a missing private key.'
 										);
 										setOpenNotice(true);
 									}}
@@ -559,12 +559,12 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 									}
 									if (profile) {
 										if (!profile.metadata) profile.metadata = {};
-										if (displayName !== '') profile.metadata.gostiDisplayName = displayName;
-										if (avatar !== '') profile.metadata.gostiAvatar = avatar;
-										if (bio !== '') profile.metadata.gostiBio = bio;
-										if (location !== '') profile.metadata.gostiLocation = location;
-										if (languages.length !== 0) profile.metadata.gostiLanguages = JSON.stringify(languages);
-										if (links.length !== 0) profile.metadata.gostiLinks = JSON.stringify(links);
+										if (displayName !== '') profile.metadata.slimeDisplayName = displayName;
+										if (avatar !== '') profile.metadata.slimeAvatar = avatar;
+										if (bio !== '') profile.metadata.slimeBio = bio;
+										if (location !== '') profile.metadata.slimeLocation = location;
+										if (languages.length !== 0) profile.metadata.slimeLanguages = JSON.stringify(languages);
+										if (links.length !== 0) profile.metadata.slimeLinks = JSON.stringify(links);
 
 										if (nostrPublicKeys.length !== 0) {
 											const provenKeys = await Promise.all(
@@ -582,11 +582,11 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 
 											console.log('provenKeys', provenKeys);
 
-											profile.metadata.gostiNostrPublicKeys = JSON.stringify(provenKeys);
+											profile.metadata.slimeNostrPublicKeys = JSON.stringify(provenKeys);
 
-											profile.metadata.gostiActiveNostrPublicKey = activeNostrPublicKey;
+											profile.metadata.slimeActiveNostrPublicKey = activeNostrPublicKey;
 
-											const resp = await setGostiConfig({ ...gostiConfig });
+											const resp = await setSlimeConfig({ ...slimeConfig });
 											console.log('save_config', resp);
 
 											onUpdateMetadata(profile.metadata);
@@ -596,9 +596,9 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 											const event: NostrEvent = {
 												content: JSON.stringify({
 													...profile.metadata,
-													name: profile.metadata.gostiDisplayName,
-													about: profile.metadata.gostiBio,
-													picture: profile.metadata.gostiAvatar,
+													name: profile.metadata.slimeDisplayName,
+													about: profile.metadata.slimeBio,
+													picture: profile.metadata.slimeAvatar,
 												}),
 												kind: 0,
 												tags: [
@@ -619,7 +619,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 											event.sig = signResp.signature;
 
 											nostrPool.publish(
-												gostiConfig.nostrRelays.map((relay) => relay.url),
+												slimeConfig.nostrRelays.map((relay) => relay.url),
 												event
 											);
 										}

@@ -1,7 +1,7 @@
 import { Marketplace, NostrRelay } from './MarketplaceApiTypes';
 import type { Media } from './Media';
 
-export type GostiConfig = {
+export type SlimeConfig = {
 	torrentsPath: string;
 	marketplaces: Marketplace[];
 	activeMarketplace: Marketplace;
@@ -147,12 +147,12 @@ export type SaveLocalMediaMetadataResponse = {
 export type GetConfigRequest = {};
 
 export type GetConfigResponse = {
-	config: GostiConfig;
+	config: SlimeConfig;
 	message: string;
 };
 
 export type SaveConfigRequest = {
-	config: GostiConfig;
+	config: SlimeConfig;
 };
 
 export type SaveConfigResponse = {

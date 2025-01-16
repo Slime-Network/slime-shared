@@ -1,8 +1,8 @@
 import { Button, Grid, Modal, Paper, TextField, Typography } from '@mui/material';
 import React, { useState } from 'react';
 
-import { useGostiApi } from '../contexts/GostiApiContext';
-import { NostrRelay } from '../types/gosti/MarketplaceApiTypes';
+import { useSlimeApi } from '../contexts/SlimeApiContext';
+import { NostrRelay } from '../types/slime/MarketplaceApiTypes';
 
 export const style = {
 	position: 'absolute' as 'absolute',
@@ -27,7 +27,7 @@ export const AddRelayModal = (props: AddRelayModalProps) => {
 	const [RelayName, setRelayName] = useState<string>('');
 	const [RelayUrl, setRelayUrl] = useState<string>('');
 
-	const { gostiConfig, setGostiConfig } = useGostiApi();
+	const { slimeConfig, setSlimeConfig } = useSlimeApi();
 
 	return (
 		<Modal
@@ -82,11 +82,11 @@ export const AddRelayModal = (props: AddRelayModalProps) => {
 									displayName: RelayName,
 									url: RelayUrl,
 								};
-								if (gostiConfig.nostrRelays === undefined) {
-									gostiConfig.nostrRelays = [];
+								if (slimeConfig.nostrRelays === undefined) {
+									slimeConfig.nostrRelays = [];
 								}
-								gostiConfig.nostrRelays.push(newRelay);
-								setGostiConfig({ ...gostiConfig });
+								slimeConfig.nostrRelays.push(newRelay);
+								setSlimeConfig({ ...slimeConfig });
 								setOpen(false);
 							}}
 						>

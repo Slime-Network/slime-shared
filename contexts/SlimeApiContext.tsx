@@ -4,7 +4,7 @@ import React, { ReactNode, createContext } from 'react';
 import {
 	DownloadMediaRequest,
 	DownloadMediaResponse,
-	GostiConfig,
+	SlimeConfig,
 	SignNostrMessageRequest,
 	SignNostrMessageResponse,
 	AddNostrKeypairRequest,
@@ -30,15 +30,15 @@ import {
 	GenerateTorrentsResponse,
 	GetUrlDataHashRequest,
 	GetUrlDataHashResponse,
-} from '../types/gosti/GostiRpcTypes';
+} from '../types/slime/SlimeRpcTypes';
 
 /**
  * Types
  */
 interface IContext {
-	gostiConfig: GostiConfig;
-	fetchGostiConfig: () => Promise<GostiConfig>;
-	setGostiConfig: React.Dispatch<React.SetStateAction<GostiConfig>>;
+	slimeConfig: SlimeConfig;
+	fetchSlimeConfig: () => Promise<SlimeConfig>;
+	setSlimeConfig: React.Dispatch<React.SetStateAction<SlimeConfig>>;
 	signNostrMessage: (params: SignNostrMessageRequest) => Promise<SignNostrMessageResponse>;
 	addNostrKeypair: (params: AddNostrKeypairRequest) => Promise<AddNostrKeypairResponse>;
 	hasNostrPrivateKey: (params: HasNostrPrivateKeyRequest) => Promise<HasNostrPrivateKeyResponse>;
@@ -58,20 +58,20 @@ interface IContext {
 /**
  * Context
  */
-export const GostiApiContext = createContext<IContext>({} as IContext);
+export const SlimeApiContext = createContext<IContext>({} as IContext);
 
 /**
  * Provider
  */
-export const GostiApiContextProvider = ({ children }: { children: ReactNode | ReactNode[] }) => {
-	const [gostiConfig, setGostiConfig] = React.useState<GostiConfig>({
-		nostrRelays: [{ displayName: 'Gosti Relay 1', url: 'ws://api.gosti.network:7000' }],
-		activeMarketplace: { displayName: 'Gosti Marketplace', url: 'http://api.gosti.network' },
-		installsPath: './gosti-data/installs/',
-		marketplaces: [{ displayName: 'Gosti Marketplace', url: 'http://api.gosti.network' }],
-		mediaDataPath: './gosti-data/media/',
-		mintingDataPath: './gosti-data/minting/',
-		torrentsPath: './gosti-data/torrents/',
+export const SlimeApiContextProvider = ({ children }: { children: ReactNode | ReactNode[] }) => {
+	const [slimeConfig, setSlimeConfig] = React.useState<SlimeConfig>({
+		nostrRelays: [{ displayName: 'Slime Relay 1', url: 'ws://api.slimenetwork.org:7000' }],
+		activeMarketplace: { displayName: 'Slime Marketplace', url: 'http://api.slimenetwork.org' },
+		installsPath: './slime-data/installs/',
+		marketplaces: [{ displayName: 'Slime Marketplace', url: 'http://api.slimenetwork.org' }],
+		mediaDataPath: './slime-data/media/',
+		mintingDataPath: './slime-data/minting/',
+		torrentsPath: './slime-data/torrents/',
 		activeIdentity: { did: '', currentNostrPublicKey: '', proof: '' },
 		identities: [],
 		torrentClientPort: 5235,
@@ -83,27 +83,27 @@ export const GostiApiContextProvider = ({ children }: { children: ReactNode | Re
 			const configResponse: any = await invoke('get_config');
 			console.log('get_config', configResponse);
 			configResponse.result.default = false;
-			setGostiConfig(configResponse.result);
+			setSlimeConfig(configResponse.result);
 		};
 
-		if (gostiConfig.default) {
+		if (slimeConfig.default) {
 			console.log('fetchConfig');
 			fetchConfig();
 		} else {
-			console.log('has gostiConfig', gostiConfig);
-			const configResponse: any = invoke('save_config', { newConfig: gostiConfig });
+			console.log('has slimeConfig', slimeConfig);
+			const configResponse: any = invoke('save_config', { newConfig: slimeConfig });
 			console.log('save_config', configResponse);
 		}
-	}, [gostiConfig]);
+	}, [slimeConfig]);
 
-	const fetchGostiConfig = async () => {
-		if (gostiConfig) {
-			return gostiConfig;
+	const fetchSlimeConfig = async () => {
+		if (slimeConfig) {
+			return slimeConfig;
 		}
 		const configResponse: any = await invoke('get_config');
-		console.log('fetchGostiConfig', configResponse);
+		console.log('fetchSlimeConfig', configResponse);
 		configResponse.result.default = false;
-		setGostiConfig(configResponse.result);
+		setSlimeConfig(configResponse.result);
 		return configResponse.result;
 	};
 
@@ -234,11 +234,11 @@ export const GostiApiContextProvider = ({ children }: { children: ReactNode | Re
 	};
 
 	return (
-		<GostiApiContext.Provider
+		<SlimeApiContext.Provider
 			value={{
-				gostiConfig,
-				fetchGostiConfig,
-				setGostiConfig,
+				slimeConfig,
+				fetchSlimeConfig,
+				setSlimeConfig,
 				signNostrMessage,
 				addNostrKeypair,
 				hasNostrPrivateKey,
@@ -256,14 +256,14 @@ export const GostiApiContextProvider = ({ children }: { children: ReactNode | Re
 			}}
 		>
 			{children}
-		</GostiApiContext.Provider>
+		</SlimeApiContext.Provider>
 	);
 };
 
-export const useGostiApi = () => {
-	const context = React.useContext(GostiApiContext);
+export const useSlimeApi = () => {
+	const context = React.useContext(SlimeApiContext);
 	if (context === undefined) {
-		throw new Error('useGostiApi must be used within a GostiApiContextProvider');
+		throw new Error('useSlimeApi must be used within a SlimeApiContextProvider');
 	}
 	return context;
 };

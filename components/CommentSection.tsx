@@ -2,12 +2,12 @@ import { Box, Grid, Paper } from '@mui/material';
 import { NostrEvent, SimplePool, getEventHash } from 'nostr-tools';
 import React from 'react';
 
-import { useGostiApi } from '../contexts/GostiApiContext';
+import { useSlimeApi } from '../contexts/SlimeApiContext';
 import { useWalletConnectRpc } from '../contexts/WalletConnectRpcContext';
-import { Media } from '../types/gosti/Media';
-import { ProfileMetadata } from '../types/gosti/Profile';
+import { Media } from '../types/slime/Media';
+import { ProfileMetadata } from '../types/slime/Profile';
 import { GetDIDInfoRequest } from '../types/walletconnect/rpc/GetDIDInfo';
-import { GostiComment } from './Comment';
+import { SlimeComment } from './Comment';
 import { CommentBox } from './CommentBox';
 
 export interface CommentSectionProps {
@@ -20,20 +20,20 @@ export const CommentSection = (props: CommentSectionProps) => {
 
 	const [profiles, setProfiles] = React.useState<Map<string, ProfileMetadata>>(new Map<string, ProfileMetadata>());
 
-	const { gostiConfig, signNostrMessage } = useGostiApi();
+	const { slimeConfig, signNostrMessage } = useSlimeApi();
 	const { getDIDInfo } = useWalletConnectRpc();
 
 	const [events, setEvents] = React.useState<NostrEvent[]>([]);
 
-	if (!gostiConfig.nostrRelays) {
-		gostiConfig.nostrRelays = [];
+	if (!slimeConfig.nostrRelays) {
+		slimeConfig.nostrRelays = [];
 	}
 
 	React.useEffect(() => {
 		const subscribeToComments = async () => {
 			const nostrPool = new SimplePool();
 			const subs = nostrPool.subscribeMany(
-				[...gostiConfig.nostrRelays.map((relay) => relay.url)],
+				[...slimeConfig.nostrRelays.map((relay) => relay.url)],
 				[
 					{
 						'#e': [media.nostrEventId],
@@ -45,7 +45,7 @@ export const CommentSection = (props: CommentSectionProps) => {
 						setEvents([...events]);
 						event.tags.forEach(async (tag) => {
 							const nostrProfile = await nostrPool.querySync(
-								gostiConfig.nostrRelays.map((relay) => relay.url),
+								slimeConfig.nostrRelays.map((relay) => relay.url),
 								{
 									kinds: [0],
 									authors: [event.pubkey],
@@ -84,10 +84,10 @@ export const CommentSection = (props: CommentSectionProps) => {
 			subscribeToComments();
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps -- need to ignore events updates
-	}, [gostiConfig, open]);
+	}, [slimeConfig, open]);
 
 	const handleSubmitComment = async (comment: string) => {
-		const pk = gostiConfig.activeIdentity.currentNostrPublicKey;
+		const pk = slimeConfig.activeIdentity.currentNostrPublicKey;
 
 		if (!pk) {
 			console.log('No public key found');
@@ -101,8 +101,8 @@ export const CommentSection = (props: CommentSectionProps) => {
 			content: comment,
 			kind: 1,
 			tags: [
-				['e', media.nostrEventId, gostiConfig.nostrRelays[0].url, 'root'],
-				['i', `chia:${gostiConfig.activeIdentity.did}`, gostiConfig.activeIdentity.proof],
+				['e', media.nostrEventId, slimeConfig.nostrRelays[0].url, 'root'],
+				['i', `chia:${slimeConfig.activeIdentity.did}`, slimeConfig.activeIdentity.proof],
 			],
 			created_at: createdAt,
 			pubkey: pk,
@@ -116,7 +116,7 @@ export const CommentSection = (props: CommentSectionProps) => {
 
 		const nostrPool = new SimplePool();
 		const resp = await nostrPool.publish(
-			gostiConfig.nostrRelays.map((relay) => relay.url),
+			slimeConfig.nostrRelays.map((relay) => relay.url),
 			event
 		);
 		console.log('publish resp', resp);
@@ -135,7 +135,7 @@ export const CommentSection = (props: CommentSectionProps) => {
 				{events
 					.sort((a, b) => b.created_at - a.created_at)
 					.map((event: any) => (
-						<GostiComment event={event} profiles={profiles} key={event.id} />
+						<SlimeComment event={event} profiles={profiles} key={event.id} />
 					))}
 			</Grid>
 		</Paper>

@@ -2,9 +2,9 @@ import SendIcon from '@mui/icons-material/Send';
 import { Box, Divider, IconButton, InputBase, Paper } from '@mui/material';
 import React from 'react';
 
-import { useGostiApi } from '../contexts/GostiApiContext';
+import { useSlimeApi } from '../contexts/SlimeApiContext';
 import { useWalletConnectRpc } from '../contexts/WalletConnectRpcContext';
-import { ProfileMetadata } from '../types/gosti/Profile';
+import { ProfileMetadata } from '../types/slime/Profile';
 import { GetDIDInfoRequest } from '../types/walletconnect/rpc/GetDIDInfo';
 import { ProfilePFP } from './ProfilePFP';
 
@@ -22,13 +22,13 @@ export const CommentBox = (props: CommentBoxProps) => {
 	const [profile, setProfile] = React.useState<ProfileMetadata | undefined>(undefined);
 
 	const { getDIDInfo } = useWalletConnectRpc();
-	const { gostiConfig } = useGostiApi();
+	const { slimeConfig } = useSlimeApi();
 
 	React.useEffect(() => {
-		getDIDInfo({ coinId: gostiConfig.activeIdentity.did } as GetDIDInfoRequest).then((res) => {
+		getDIDInfo({ coinId: slimeConfig.activeIdentity.did } as GetDIDInfoRequest).then((res) => {
 			setProfile(res.metadata as ProfileMetadata);
 		});
-	}, [getDIDInfo, gostiConfig]);
+	}, [getDIDInfo, slimeConfig]);
 
 	React.useEffect(() => {
 		if (comment.length > 0) {
@@ -50,7 +50,7 @@ export const CommentBox = (props: CommentBoxProps) => {
 					setComment('');
 				}}
 			>
-				<ProfilePFP imgSrc={profile?.gostiAvatar} size={45} />
+				<ProfilePFP imgSrc={profile?.slimeAvatar} size={45} />
 				<Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
 				<InputBase
 					sx={{ ml: 1, flex: 1 }}

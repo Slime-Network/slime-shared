@@ -4,7 +4,7 @@ import WifiOffIcon from '@mui/icons-material/WifiOff';
 import { IconButton, Paper, Stack, Tooltip, Typography } from '@mui/material';
 import React from 'react';
 
-import { NostrRelay } from '../types/gosti/MarketplaceApiTypes';
+import { NostrRelay } from '../types/slime/MarketplaceApiTypes';
 
 interface NostrRelayDisplayProps {
 	relay: NostrRelay;

@@ -1,8 +1,8 @@
 import { Button, Grid, Modal, Paper, TextField, Typography } from '@mui/material';
 import React, { useState } from 'react';
 
-import { useGostiApi } from '../contexts/GostiApiContext';
-import { Marketplace } from '../types/gosti/MarketplaceApiTypes';
+import { useSlimeApi } from '../contexts/SlimeApiContext';
+import { Marketplace } from '../types/slime/MarketplaceApiTypes';
 
 export const style = {
 	position: 'absolute' as 'absolute',
@@ -27,7 +27,7 @@ export const AddMarketplaceModal = (props: AddMarketplaceModalProps) => {
 	const [marketplaceName, setMarketplaceName] = useState<string>('');
 	const [marketplaceUrl, setMarketplaceUrl] = useState<string>('');
 
-	const { gostiConfig, setGostiConfig } = useGostiApi();
+	const { slimeConfig, setSlimeConfig } = useSlimeApi();
 
 	return (
 		<Modal
@@ -82,11 +82,11 @@ export const AddMarketplaceModal = (props: AddMarketplaceModalProps) => {
 									displayName: marketplaceName,
 									url: marketplaceUrl,
 								};
-								if (gostiConfig.marketplaces === undefined) {
-									gostiConfig.marketplaces = [];
+								if (slimeConfig.marketplaces === undefined) {
+									slimeConfig.marketplaces = [];
 								}
-								gostiConfig.marketplaces.push(newMarketplace);
-								setGostiConfig({ ...gostiConfig });
+								slimeConfig.marketplaces.push(newMarketplace);
+								setSlimeConfig({ ...slimeConfig });
 								setOpen(false);
 							}}
 						>

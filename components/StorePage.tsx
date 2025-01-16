@@ -31,7 +31,7 @@ import ReactMarkdown from 'react-markdown';
 import { Slide as Slideshow } from 'react-slideshow-image';
 
 import { useWalletConnectRpc } from '../contexts/WalletConnectRpcContext';
-import { Media } from '../types/gosti/Media';
+import { Media } from '../types/slime/Media';
 import { TakeOfferRequest } from '../types/walletconnect/rpc/TakeOffer';
 import { CommentSection } from './CommentSection';
 import 'react-slideshow-image/dist/styles.css';

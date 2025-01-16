@@ -5,7 +5,7 @@ import { IconButton, Paper, Stack, Tooltip, Typography } from '@mui/material';
 import axios from 'axios';
 import React from 'react';
 
-import { Marketplace } from '../types/gosti/MarketplaceApiTypes';
+import { Marketplace } from '../types/slime/MarketplaceApiTypes';
 
 interface MarketplaceDisplayProps {
 	marketplace: Marketplace;
