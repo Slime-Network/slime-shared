@@ -79,6 +79,7 @@ export type MediaUrlSource = {
 	type: string;
 	source: string;
 	alt: string;
+	language: string;
 };
 
 export type MediaCredit = {
