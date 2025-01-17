@@ -74,32 +74,75 @@ export const parseNftMetadata = (resp: NftMetadataResponse): NftMetadataParsed =
 	};
 };
 
+export type MediaUrlSource = {
+	url: string;
+	type: string;
+	source: string;
+	alt: string;
+};
+
+export type MediaCredit = {
+	did: string;
+	role: string;
+};
+
+export type MediaContentRating = {
+	type: string;
+	rating: string;
+	link: string;
+};
+
+export type MediaDescription = {
+	type: string;
+	markdown: boolean;
+	description: string;
+	language: string;
+};
+
+export type MediaExecutable = {
+	platform: string;
+	command: string;
+};
+
+export type MediaTag = {
+	tag: string;
+	weight: number;
+	type: string;
+	adult: boolean;
+};
+
+export type MediaTorrent = {
+	platform: string;
+	size: number;
+	torrent: string;
+};
+
+export type MediaTitle = {
+	title: string;
+	language: string;
+};
+
 export type Media = {
 	mediaType: string;
-	adultTags: string[];
-	banner: string;
-	capsuleImage: string;
-	contentRating: string;
-	description: string;
-	creators: string[];
-	executables: string;
-	icon: string;
+	contentRating: MediaContentRating[];
+	descriptions: MediaDescription[];
+	credits: MediaCredit[];
+	childProducts: string[];
+	executables: MediaExecutable[];
 	lastUpdated: number;
 	lastUpdatedContent: number;
-	longDescription: string;
 	nostrEventId: string;
 	password: string;
-	paymentAddress: string;
+	images: MediaUrlSource[];
+	videos: MediaUrlSource[];
+	donationAddress: string;
+	parentProductId: string;
 	productId: string;
 	publisherDid: string;
-	screenshots: string[];
-	shortDescription: string;
-	status: string;
-	supportEmail: string;
-	tags: string[];
-	title: string;
-	torrents: string;
-	trailer: string;
-	trailerSource: string;
+	releaseStatus: string;
+	supportContact: string;
+	tags: MediaTag[];
+	titles: MediaTitle[];
+	torrents: MediaTorrent[];
 	version: string;
 };
