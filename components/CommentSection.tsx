@@ -113,7 +113,12 @@ export const CommentSection = (props: CommentSectionProps) => {
 			content: comment,
 			kind: 1,
 			tags: [
-				['e', media.nostrEventId, slimeConfig.nostrRelays[0].url, 'root'],
+				[
+					'e',
+					media.nostrEventId ? media.nostrEventId : 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+					slimeConfig.nostrRelays[0].url,
+					'root',
+				],
 				['i', `chia:${slimeConfig.activeIdentity.did}`, slimeConfig.activeIdentity.proof],
 			],
 			created_at: createdAt,

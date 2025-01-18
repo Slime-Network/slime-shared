@@ -591,6 +591,12 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 
 											profile.metadata.slimeActiveNostrPublicKey = activeNostrPublicKey;
 
+											slimeConfig.activeIdentity = {
+												currentNostrPublicKey: activeNostrPublicKey,
+												did: profile.did,
+												proof: provenKeys.find((key) => key.key === activeNostrPublicKey).proof,
+											};
+
 											const resp = await setSlimeConfig({ ...slimeConfig });
 											console.log('save_config', resp);
 
@@ -642,6 +648,15 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 							>
 								Update Profile
 							</Button>
+						</Grid>
+						<Grid item xs={12}>
+							<code>{JSON.stringify(profile, null, 2)}</code>
+						</Grid>
+						<Grid item xs={12}>
+							<HorizontalRule sx={{ width: '100%' }} />
+						</Grid>
+						<Grid item xs={12}>
+							<code>{JSON.stringify(slimeConfig, null, 2)}</code>
 						</Grid>
 					</Grid>
 					<Modal
