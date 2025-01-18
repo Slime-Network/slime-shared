@@ -25,7 +25,8 @@ export const CommentBox = (props: CommentBoxProps) => {
 	const { slimeConfig } = useSlimeApi();
 
 	React.useEffect(() => {
-		getDIDInfo({ coinId: slimeConfig.activeIdentity.did } as GetDIDInfoRequest).then((res) => {
+		console.log('slimeConfig', slimeConfig);
+		getDIDInfo({ coinId: slimeConfig?.activeIdentity.did } as GetDIDInfoRequest).then((res) => {
 			setProfile(res.metadata as ProfileMetadata);
 		});
 	}, [getDIDInfo, slimeConfig]);

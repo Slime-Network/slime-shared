@@ -12,7 +12,7 @@ export type SlimeConfig = {
 	identities: Identity[];
 	nostrRelays: NostrRelay[];
 	torrentClientPort: number;
-	default: boolean;
+	languages: string[];
 };
 
 export type Identity = {

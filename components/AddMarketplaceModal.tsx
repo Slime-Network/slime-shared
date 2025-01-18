@@ -78,6 +78,11 @@ export const AddMarketplaceModal = (props: AddMarketplaceModalProps) => {
 							variant="contained"
 							disabled={marketplaceName === '' || marketplaceUrl === '' || marketplaceUrl.startsWith('http') === false}
 							onClick={() => {
+								if (!slimeConfig) {
+									console.log('No slimeConfig found');
+									alert('No slimeConfig found. Please set up your profile.');
+									return;
+								}
 								const newMarketplace: Marketplace = {
 									displayName: marketplaceName,
 									url: marketplaceUrl,

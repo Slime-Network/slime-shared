@@ -23,12 +23,17 @@ export const ChatBox = (props: ChatBoxProps) => {
 
 	const [events, setEvents] = React.useState<NostrEvent[]>([]);
 
-	if (!slimeConfig.nostrRelays) {
+	if (slimeConfig && slimeConfig?.nostrRelays) {
 		slimeConfig.nostrRelays = [];
 	}
 
 	React.useEffect(() => {
 		const subscribeToComments = async () => {
+			if (!slimeConfig) {
+				console.log('No slimeConfig found');
+				alert('No slimeConfig found. Please set up your profile.');
+				return;
+			}
 			const nostrPool = new SimplePool();
 			const subs = nostrPool.subscribeMany(
 				[...slimeConfig.nostrRelays.map((relay) => relay.url)],
@@ -44,7 +49,7 @@ export const ChatBox = (props: ChatBoxProps) => {
 						setEvents([...events]);
 						event.tags.forEach(async (tag) => {
 							const nostrProfile = await nostrPool.querySync(
-								slimeConfig.nostrRelays.map((relay) => relay.url),
+								slimeConfig?.nostrRelays.map((relay) => relay.url),
 								{
 									kinds: [0],
 									authors: [event.pubkey],
@@ -87,6 +92,11 @@ export const ChatBox = (props: ChatBoxProps) => {
 	}, [slimeConfig, open]);
 
 	const handleSubmitComment = async (comment: string) => {
+		if (!slimeConfig) {
+			console.log('No slimeConfig found');
+			alert('No slimeConfig found. Please set up your profile.');
+			return;
+		}
 		const pk = slimeConfig.activeIdentity.currentNostrPublicKey;
 
 		if (!pk) {

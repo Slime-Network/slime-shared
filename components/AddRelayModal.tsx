@@ -78,6 +78,11 @@ export const AddRelayModal = (props: AddRelayModalProps) => {
 							variant="contained"
 							disabled={RelayName === '' || RelayUrl === '' || RelayUrl.startsWith('http') === false}
 							onClick={() => {
+								if (!slimeConfig) {
+									console.log('No slimeConfig found');
+									alert('No slimeConfig found. Please set up your profile.');
+									return;
+								}
 								const newRelay: NostrRelay = {
 									displayName: RelayName,
 									url: RelayUrl,

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { createContext, ReactNode, useContext } from 'react';
+import React, { createContext, ReactNode, useContext } from 'react';
 
 import {
 	GetSignMessageRequest,
@@ -66,7 +66,8 @@ export const MarketplaceApiContextProvider = ({ children }: { children: ReactNod
 
 	const search = async (params: SearchRequest) => {
 		try {
-			const response = await axios.get(`${slimeConfig.activeMarketplace.url}/listings/search`, { params });
+			console.log('searching!!!!!', params, slimeConfig);
+			const response = await axios.get(`${slimeConfig?.activeMarketplace.url}/listings/search`, { params });
 			return {
 				results: hitsToGameList(response.data.hits.hits),
 				message: response.data.message,
@@ -81,7 +82,7 @@ export const MarketplaceApiContextProvider = ({ children }: { children: ReactNod
 
 	const getSignMessage = async (params: GetSignMessageRequest) => {
 		try {
-			const response = await axios.get(`${slimeConfig.activeMarketplace.url}/listings/getSignMessage`, { params });
+			const response = await axios.get(`${slimeConfig?.activeMarketplace.url}/listings/getSignMessage`, { params });
 			return { message: response.data.message } as GetSignMessageResponse;
 		} catch (e) {
 			return { message: 'An unknown error occurred during getSignMessage' } as GetSignMessageResponse;
@@ -90,7 +91,7 @@ export const MarketplaceApiContextProvider = ({ children }: { children: ReactNod
 
 	const getInstallData = async (params: GetInstallDataRequest) => {
 		try {
-			const response = await axios.get(`${slimeConfig.activeMarketplace.url}/listings/getInstallData`, { params });
+			const response = await axios.get(`${slimeConfig?.activeMarketplace.url}/listings/getInstallData`, { params });
 			return {
 				installData: hitsToGameList(response.data.hits.hits)[0],
 				message: response.data.message,
@@ -103,7 +104,7 @@ export const MarketplaceApiContextProvider = ({ children }: { children: ReactNod
 	const uploadText = async (params: UploadTextRequest) => {
 		try {
 			const response = await axios.post(
-				`${params.url ? params.url : slimeConfig.activeMarketplace.url}/files/uploadText`,
+				`${params.url ? params.url : slimeConfig?.activeMarketplace.url}/files/uploadText`,
 				{ params }
 			);
 			return { id: response.data.id, message: response.data.message } as UploadResponse;
@@ -117,7 +118,7 @@ export const MarketplaceApiContextProvider = ({ children }: { children: ReactNod
 			const formData = new FormData();
 			formData.append('file', params.file);
 			const response = await axios.post(
-				`${params.url ? params.url : slimeConfig.activeMarketplace.url}/files/uploadFile`,
+				`${params.url ? params.url : slimeConfig?.activeMarketplace.url}/files/uploadFile`,
 				formData,
 				{
 					headers: {
@@ -135,7 +136,7 @@ export const MarketplaceApiContextProvider = ({ children }: { children: ReactNod
 	const requestListingOrUpdate = async (params: RequestListingOrUpdateRequest) => {
 		try {
 			const response = await axios.post(
-				`${params.url ? params.url : slimeConfig.activeMarketplace.url}/listings/requestListingOrUpdate`,
+				`${params.url ? params.url : slimeConfig?.activeMarketplace.url}/listings/requestListingOrUpdate`,
 				{ params },
 				{ headers: { 'max-http-header-size': 1_000_000_000 } }
 			);
@@ -154,7 +155,7 @@ export const MarketplaceApiContextProvider = ({ children }: { children: ReactNod
 	const setMediaPublic = async (params: SetMediaPublicRequest) => {
 		try {
 			const response = await axios.get(
-				`${params.url ? params.url : slimeConfig.activeMarketplace.url}/listings/setMediaPublic`,
+				`${params.url ? params.url : slimeConfig?.activeMarketplace.url}/listings/setMediaPublic`,
 				{ params }
 			);
 			return { currentStatus: response.data.currentStatus, message: response.data.message } as SetMediaPublicResponse;

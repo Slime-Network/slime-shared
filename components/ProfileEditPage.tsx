@@ -85,7 +85,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 	const nostrPool = new SimplePool();
 
 	React.useEffect(() => {
-		setMarketplaces(slimeConfig.marketplaces);
+		if (slimeConfig) setMarketplaces(slimeConfig.marketplaces);
 	}, [slimeConfig]);
 
 	React.useEffect(() => {
@@ -553,6 +553,11 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								fee={fee}
 								setFee={setFee}
 								action={async () => {
+									if (!slimeConfig) {
+										console.log('No slimeConfig found');
+										alert('No slimeConfig found. Please set up your profile.');
+										return;
+									}
 									if (!activeNostrPublicKey) {
 										alert('Please select an active Nostr public key.');
 										return;

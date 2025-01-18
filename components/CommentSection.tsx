@@ -25,12 +25,17 @@ export const CommentSection = (props: CommentSectionProps) => {
 
 	const [events, setEvents] = React.useState<NostrEvent[]>([]);
 
-	if (!slimeConfig.nostrRelays) {
+	if (slimeConfig && !slimeConfig.nostrRelays) {
 		slimeConfig.nostrRelays = [];
 	}
 
 	React.useEffect(() => {
 		const subscribeToComments = async () => {
+			if (!slimeConfig) {
+				console.log('No slimeConfig found');
+				alert('No slimeConfig found. Please set up your profile.');
+				return;
+			}
 			const nostrPool = new SimplePool();
 			const subs = nostrPool.subscribeMany(
 				[...slimeConfig.nostrRelays.map((relay) => relay.url)],
@@ -87,6 +92,11 @@ export const CommentSection = (props: CommentSectionProps) => {
 	}, [slimeConfig, open]);
 
 	const handleSubmitComment = async (comment: string) => {
+		if (!slimeConfig) {
+			console.log('No slimeConfig found');
+			alert('No slimeConfig found. Please set up your profile.');
+			return;
+		}
 		const pk = slimeConfig.activeIdentity.currentNostrPublicKey;
 
 		if (!pk) {
@@ -96,6 +106,8 @@ export const CommentSection = (props: CommentSectionProps) => {
 		}
 
 		const createdAt = Math.floor(Date.now() / 1000);
+
+		console.log('slimeConfigslimeConfig', slimeConfig, media);
 
 		const event: NostrEvent = {
 			content: comment,
@@ -114,6 +126,7 @@ export const CommentSection = (props: CommentSectionProps) => {
 		console.log('signResp', signResp);
 		event.sig = signResp.signature;
 
+		console.log('event', event);
 		const nostrPool = new SimplePool();
 		const resp = await nostrPool.publish(
 			slimeConfig.nostrRelays.map((relay) => relay.url),

@@ -30,9 +30,11 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Slide as Slideshow } from 'react-slideshow-image';
 
+import { useSlimeApi } from '../contexts/SlimeApiContext';
 import { useWalletConnectRpc } from '../contexts/WalletConnectRpcContext';
 import { Media } from '../types/slime/Media';
 import { TakeOfferRequest } from '../types/walletconnect/rpc/TakeOffer';
+import { getEmbedUrl } from '../utils/urlUtils';
 import { CommentSection } from './CommentSection';
 import 'react-slideshow-image/dist/styles.css';
 
@@ -80,6 +82,8 @@ export type StorePageProps = {
 export default function StorePage(props: StorePageProps) {
 	const { media, open, setOpen } = props;
 
+	const { slimeConfig } = useSlimeApi();
+
 	const [activeOffer, setActiveOffer] = React.useState<any | undefined>({});
 
 	const [price, setPrice] = React.useState('');
@@ -93,9 +97,74 @@ export default function StorePage(props: StorePageProps) {
 		takeOffer({ offer: activeOffer } as TakeOfferRequest);
 	};
 
+	const [title, setTitle] = React.useState<string | undefined>(undefined);
+	const [description, setDescription] = React.useState<string | undefined>(undefined);
+	const [longDescription, setLongDescription] = React.useState<string | undefined>(undefined);
+	const [videos, setVideos] = React.useState<string[]>([]);
+	const [screenshots, setScreenshots] = React.useState<string[]>([]);
+
 	React.useEffect(() => {
 		if (open) {
-			console.log('screenshots', media.screenshots);
+			let foundTitle = false;
+			let foundDescription = false;
+			const foundLongDescription = false;
+			const foundScreenshots: string[] = [];
+			const foundVideos: string[] = [];
+
+			slimeConfig?.languages.forEach((language) => {
+				if (!foundTitle) {
+					media.titles.forEach((titleI) => {
+						if (titleI.language === language && !foundTitle) {
+							foundTitle = true;
+							setTitle(titleI.title);
+						}
+					});
+				}
+				if (!foundDescription) {
+					media.descriptions.forEach((descriptionI) => {
+						if (descriptionI.language === language && descriptionI.type === 'short' && !foundDescription) {
+							foundDescription = true;
+							setDescription(descriptionI.description);
+						}
+					});
+				}
+				if (!foundLongDescription) {
+					media.descriptions.forEach((descriptionI) => {
+						if (descriptionI.language === language && descriptionI.type === 'long' && !foundLongDescription) {
+							setLongDescription(descriptionI.description);
+						}
+					});
+				}
+				if (foundScreenshots.length === 0) {
+					media.images.forEach((image) => {
+						if (image.type === 'screenshot' && image.language === language) {
+							foundScreenshots.push(image.url);
+						}
+					});
+				}
+				if (foundVideos.length === 0) {
+					media.videos.forEach((video) => {
+						if (video.language === language) {
+							foundVideos.push(video.url);
+						}
+					});
+				}
+			});
+
+			if (!foundTitle) {
+				setTitle(media.titles[0].title);
+			}
+			if (!foundDescription) {
+				setDescription(media.descriptions[0].description);
+			}
+
+			setScreenshots(foundScreenshots);
+			setVideos(foundVideos);
+		}
+	}, [media, slimeConfig?.languages, open]);
+
+	React.useEffect(() => {
+		if (open) {
 			const pubdid = media.publisherDid;
 			const id = media.productId;
 
@@ -141,7 +210,7 @@ export default function StorePage(props: StorePageProps) {
 						<CloseIcon />
 					</IconButton>
 					<Typography sx={{ ml: 2, flex: 1 }} variant="h6">
-						{media.title}
+						{title}
 					</Typography>
 				</Toolbar>
 			</AppBar>
@@ -160,20 +229,21 @@ export default function StorePage(props: StorePageProps) {
 				</AppBar>
 				<Grid container height={420} sx={{ width: '100%' }}>
 					<Grid id="mediaSection" item xs={12} md={8} sx={{ height: '100%' }}>
-						<TabPanel value={tab} index={0}>
-							<Box sx={{ height: '100%' }}>
-								<iframe
-									src={`https://www.youtube.com/embed/${media.trailer}?autoplay=1&origin=http://.com`}
-									height={'370'}
-									width={'100%'}
-								/>
-							</Box>
-						</TabPanel>
+						{media.videos && media.videos.length > 0 && (
+							<TabPanel value={tab} index={0}>
+								<Box sx={{ height: '100%' }}>
+									<Slideshow>
+										{videos &&
+											videos.map((trailer) => <iframe src={getEmbedUrl(trailer)} height={'370'} width={'100%'} />)}
+									</Slideshow>
+								</Box>
+							</TabPanel>
+						)}
 						<TabPanel value={tab} index={1}>
 							<Box sx={{ height: '100%' }}>
 								<Slideshow>
-									{media.screenshots &&
-										media.screenshots.map((screenshot, index) => (
+									{screenshots &&
+										screenshots.map((screenshot, index) => (
 											<div
 												key={index}
 												style={{
@@ -195,16 +265,16 @@ export default function StorePage(props: StorePageProps) {
 							<Paper elevation={1} sx={{ height: '60%', p: 2, m: 2 }}>
 								<Stack justifyContent={'space-between'} alignContent={'center'} direction="column" height={'100%'}>
 									<Box>
-										<Typography variant="h5">{media.title}</Typography>
+										<Typography variant="h5">{title}</Typography>
 										<Divider />
 									</Box>
 									<Box>
-										<Typography height={'100%'}>{media.description}</Typography>
+										<Typography height={'100%'}>{description}</Typography>
 									</Box>
 									<Box>
 										<Divider />
 										{media.tags &&
-											media.tags.map((tag, index) => <Chip size="small" label={tag} key={index} sx={{ m: 1 }} />)}
+											media.tags.map((tag, index) => <Chip size="small" label={tag.tag} key={index} sx={{ m: 1 }} />)}
 									</Box>
 								</Stack>
 							</Paper>
@@ -251,7 +321,7 @@ export default function StorePage(props: StorePageProps) {
 						</Stack>
 					</Grid>
 					<Paper elevation={1} sx={{ width: '100%', p: 2, m: 2 }}>
-						<ReactMarkdown children={media.longDescription} />
+						<ReactMarkdown children={longDescription || ''} />
 					</Paper>
 					{CommentSection({
 						media,
