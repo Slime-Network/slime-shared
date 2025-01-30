@@ -26,7 +26,7 @@ export default function GameCard(props: GameCardProps) {
 		slimeConfig?.languages.forEach((language) => {
 			if (!foundCapsule) {
 				media.images.forEach((image) => {
-					if (image.type === 'capsule' && image.language === language && !foundCapsule) {
+					if (image.type === 'capsule' && image.language.english === language && !foundCapsule) {
 						foundCapsule = true;
 						setCapsule(image.url);
 					}
@@ -34,7 +34,7 @@ export default function GameCard(props: GameCardProps) {
 			}
 			if (!foundTitle) {
 				media.titles.forEach((titleI) => {
-					if (titleI.language === language && !foundTitle) {
+					if (titleI.language.english === language && !foundTitle) {
 						foundTitle = true;
 						setTitle(titleI.title);
 					}
@@ -42,7 +42,7 @@ export default function GameCard(props: GameCardProps) {
 			}
 			if (!foundShortDescription) {
 				media.descriptions.forEach((descriptionI) => {
-					if (descriptionI.language === language && descriptionI.type === 'short' && !foundShortDescription) {
+					if (descriptionI.language.english === language && descriptionI.type === 'short' && !foundShortDescription) {
 						foundShortDescription = true;
 						setShortDescription(descriptionI.description);
 					}
@@ -50,13 +50,13 @@ export default function GameCard(props: GameCardProps) {
 			}
 		});
 
-		if (!foundCapsule) {
+		if (!foundCapsule && media.images.length > 0 && media.images[0]) {
 			setCapsule(media.images[0].url);
 		}
-		if (!foundTitle) {
+		if (!foundTitle && media.titles.length > 0) {
 			setTitle(media.titles[0].title);
 		}
-		if (!foundShortDescription) {
+		if (!foundShortDescription && media.descriptions.length > 0) {
 			setShortDescription(media.descriptions[0].description);
 		}
 	}, [media, slimeConfig]);
