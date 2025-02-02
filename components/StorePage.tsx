@@ -122,7 +122,11 @@ export default function StorePage(props: StorePageProps) {
 				}
 				if (!foundDescription) {
 					media.descriptions.forEach((descriptionI) => {
-						if (descriptionI.language.english === language && descriptionI.type === 'short' && !foundDescription) {
+						if (
+							descriptionI.language.english === language &&
+							descriptionI.type.toLowerCase() === 'short' &&
+							!foundDescription
+						) {
 							foundDescription = true;
 							setDescription(descriptionI.description);
 						}
@@ -130,14 +134,18 @@ export default function StorePage(props: StorePageProps) {
 				}
 				if (!foundLongDescription) {
 					media.descriptions.forEach((descriptionI) => {
-						if (descriptionI.language.english === language && descriptionI.type === 'long' && !foundLongDescription) {
+						if (
+							descriptionI.language.english === language &&
+							descriptionI.type.toLowerCase() === 'long' &&
+							!foundLongDescription
+						) {
 							setLongDescription(descriptionI.description);
 						}
 					});
 				}
 				if (foundScreenshots.length === 0) {
 					media.images.forEach((image) => {
-						if (image.type === 'screenshot' && image.language.english === language) {
+						if (image.type.toLowerCase() === 'screenshot' && image.language.english === language) {
 							foundScreenshots.push(image.url);
 						}
 					});

@@ -4,10 +4,6 @@ export const VideoSources = ['Youtube'];
 
 export const DescriptionTypes = ['Short', 'Medium', 'Long'];
 
-export const DefaultExecutables = `{
-	"windows": "game.exe",
-	"mac": "",
-	"linux": "",
-}`;
+export const Platforms = ['Windows', 'Mac', 'Linux'];
 
 export const DevelopmentStatuses = ['Coming Soon', 'Pre-Release', 'Early Access', 'Complete'];

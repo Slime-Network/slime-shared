@@ -81,6 +81,7 @@ export type MediaUrlSource = {
 	type: string;
 	source: string;
 	alt: string;
+	nsfw: boolean;
 	language: Language;
 };
 
@@ -123,10 +124,12 @@ export type MediaTag = {
 	adult: boolean;
 };
 
-export type MediaTorrent = {
-	platform: string;
+export type MediaFiles = {
 	size: number;
 	torrent: string;
+	executables: MediaExecutable[];
+	password: string;
+	version: string;
 };
 
 export type MediaTitle = {
@@ -144,7 +147,6 @@ export type Media = {
 	lastUpdated: number;
 	lastUpdatedContent: number;
 	nostrEventId: string;
-	password: string;
 	images: MediaUrlSource[];
 	videos: MediaUrlSource[];
 	donationAddress: string;
@@ -155,6 +157,5 @@ export type Media = {
 	supportContact: string;
 	tags: MediaTag[];
 	titles: MediaTitle[];
-	torrents: MediaTorrent[];
-	version: string;
+	files: MediaFiles[];
 };
