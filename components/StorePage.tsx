@@ -107,7 +107,7 @@ export default function StorePage(props: StorePageProps) {
 		if (open) {
 			let foundTitle = false;
 			let foundDescription = false;
-			const foundLongDescription = false;
+			let foundLongDescription = false;
 			const foundScreenshots: string[] = [];
 			const foundVideos: string[] = [];
 
@@ -131,6 +131,7 @@ export default function StorePage(props: StorePageProps) {
 				if (!foundLongDescription) {
 					media.descriptions.forEach((descriptionI) => {
 						if (descriptionI.language === language && descriptionI.type === 'long' && !foundLongDescription) {
+							foundLongDescription = true;
 							setLongDescription(descriptionI.description);
 						}
 					});
@@ -156,6 +157,9 @@ export default function StorePage(props: StorePageProps) {
 			}
 			if (!foundDescription) {
 				setDescription(media.descriptions[0].description);
+			}
+			if (!foundLongDescription) {
+				setLongDescription(media.descriptions[0].description);
 			}
 
 			setScreenshots(foundScreenshots);
