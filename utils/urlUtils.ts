@@ -1,6 +1,7 @@
 export function getEmbedUrl(url: string): string {
-	if (url.startsWith('https://www.youtube.com/watch?v=')) {
-		return `https://www.youtube.com/embed/${url.slice(32)}`;
+	if (url.includes('youtube')) {
+		const videoId = url.split('v=')[1];
+		return `https://www.youtube.com/embed/${videoId}`;
 	}
 	return url;
 }

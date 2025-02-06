@@ -24,7 +24,6 @@ import { bytesToHex } from '@noble/hashes/utils';
 import { SimplePool } from 'nostr-tools';
 import * as React from 'react';
 
-import { infoModalStyle } from '../constants';
 import { Language, Languages } from '../constants/languages';
 import { SocialLink, socialLinksOptions } from '../constants/social-links';
 import { useSlimeApi } from '../contexts/SlimeApiContext';
@@ -35,6 +34,7 @@ import { SignMessageByIdRequest } from '../types/walletconnect/rpc/SignMessageBy
 import { NostrEvent, getEventHash } from '../utils/nostr';
 import { FeeDialogModal } from './FeeDialogModal';
 import ImageUpload from './ImageUpload';
+import { InfoModal } from './InfoModal';
 
 const Transition = React.forwardRef((props: SlideProps, ref) => <Slide direction="up" ref={ref} {...props} />);
 
@@ -46,14 +46,26 @@ export type ProfileEditPageProps = {
 	setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
+export const infoModalStyle = {
+	position: 'absolute' as 'absolute',
+	top: '50%',
+	left: '50%',
+	transform: 'translate(-50%, -50%)',
+	width: '80%',
+	bgcolor: 'background.paper',
+	border: '2px solid #000',
+	boxShadow: 24,
+	p: 4,
+};
+
 export function ProfileEditPage(props: ProfileEditPageProps) {
 	const { profile, onChangeName, onUpdateMetadata, open, setOpen } = props;
 
 	const [fee, setFee] = React.useState<number>(50_000);
 
 	const [openNotice, setOpenNotice] = React.useState(false);
-	const [noticeTitle, setNoticeTitle] = React.useState<string | undefined>(undefined);
-	const [noticeMessage, setNoticeMessage] = React.useState<string | undefined>(undefined);
+	const [noticeTitle, setNoticeTitle] = React.useState<string>('');
+	const [noticeMessage, setNoticeMessage] = React.useState<string>('');
 	const [openImportKeysModal, setOpenImportKeysModal] = React.useState(false);
 
 	const [openFeeDialog, setOpenFeeDialog] = React.useState(false);
@@ -659,23 +671,12 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 							<code>{JSON.stringify(slimeConfig, null, 2)}</code>
 						</Grid>
 					</Grid>
-					<Modal
+					<InfoModal
 						open={openNotice}
-						onClose={() => {
-							setOpenNotice(false);
-						}}
-						aria-labelledby="modal-modal-title"
-						aria-describedby="modal-modal-description"
-					>
-						<Box sx={infoModalStyle}>
-							<Typography id="modal-modal-title" variant="h6" component="h2">
-								{noticeTitle}
-							</Typography>
-							<Typography id="modal-modal-description" sx={{ mt: 2 }}>
-								{noticeMessage}
-							</Typography>
-						</Box>
-					</Modal>
+						setOpen={setOpenNotice}
+						title={noticeTitle}
+						style={'info'}
+					>{`${noticeMessage}`}</InfoModal>
 				</Container>
 			</Dialog>
 		</Paper>

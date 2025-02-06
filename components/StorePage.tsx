@@ -107,14 +107,14 @@ export default function StorePage(props: StorePageProps) {
 		if (open) {
 			let foundTitle = false;
 			let foundDescription = false;
-			let foundLongDescription = false;
+			const foundLongDescription = false;
 			const foundScreenshots: string[] = [];
 			const foundVideos: string[] = [];
 
 			slimeConfig?.languages.forEach((language) => {
 				if (!foundTitle) {
 					media.titles.forEach((titleI) => {
-						if (titleI.language === language && !foundTitle) {
+						if (titleI.language.english === language && !foundTitle) {
 							foundTitle = true;
 							setTitle(titleI.title);
 						}
@@ -122,7 +122,11 @@ export default function StorePage(props: StorePageProps) {
 				}
 				if (!foundDescription) {
 					media.descriptions.forEach((descriptionI) => {
-						if (descriptionI.language === language && descriptionI.type === 'short' && !foundDescription) {
+						if (
+							descriptionI.language.english === language &&
+							descriptionI.type.toLowerCase() === 'short' &&
+							!foundDescription
+						) {
 							foundDescription = true;
 							setDescription(descriptionI.description);
 						}
@@ -130,22 +134,25 @@ export default function StorePage(props: StorePageProps) {
 				}
 				if (!foundLongDescription) {
 					media.descriptions.forEach((descriptionI) => {
-						if (descriptionI.language === language && descriptionI.type === 'long' && !foundLongDescription) {
-							foundLongDescription = true;
+						if (
+							descriptionI.language.english === language &&
+							descriptionI.type.toLowerCase() === 'long' &&
+							!foundLongDescription
+						) {
 							setLongDescription(descriptionI.description);
 						}
 					});
 				}
 				if (foundScreenshots.length === 0) {
 					media.images.forEach((image) => {
-						if (image.type === 'screenshot' && image.language === language) {
+						if (image.type.toLowerCase() === 'screenshot' && image.language.english === language) {
 							foundScreenshots.push(image.url);
 						}
 					});
 				}
 				if (foundVideos.length === 0) {
 					media.videos.forEach((video) => {
-						if (video.language === language) {
+						if (video.language.english === language) {
 							foundVideos.push(video.url);
 						}
 					});

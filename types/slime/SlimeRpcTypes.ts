@@ -1,5 +1,5 @@
 import { Marketplace, NostrRelay } from './MarketplaceApiTypes';
-import type { Media } from './Media';
+import type { Media, MediaFiles } from './Media';
 
 export type SlimeConfig = {
 	torrentsPath: string;
@@ -169,13 +169,14 @@ export type GetPublishedMediaResponse = {
 	message: string;
 };
 
-export type GenerateTorrentsRequest = {
-	media: Media;
-	sourcePaths: { windows: string; mac: string; linux: string };
+export type GenerateTorrentRequest = {
+	mediaFiles: MediaFiles;
 };
 
-export type GenerateTorrentsResponse = {
-	torrents: string;
+export type GenerateTorrentResponse = {
+	torrent: string;
+	fileName: string;
+	size: number;
 	message: string;
 };
 
