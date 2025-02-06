@@ -26,8 +26,8 @@ import {
 	UninstallMediaRequest,
 	UninstallMediaResponse,
 	GetOperatingSystemResponse,
-	GenerateTorrentsRequest,
-	GenerateTorrentsResponse,
+	GenerateTorrentRequest,
+	GenerateTorrentResponse,
 	GetUrlDataHashRequest,
 	GetUrlDataHashResponse,
 } from '../types/slime/SlimeRpcTypes';
@@ -68,7 +68,7 @@ interface IContext {
 	installMedia: (params: InstallMediaRequest) => Promise<InstallMediaResponse>;
 	uninstallMedia: (params: UninstallMediaRequest) => Promise<UninstallMediaResponse>;
 	launchMedia: (params: LaunchMediaRequest) => Promise<LaunchMediaResponse>;
-	generateTorrents: (params: GenerateTorrentsRequest) => Promise<GenerateTorrentsResponse>;
+	generateTorrent: (params: GenerateTorrentRequest) => Promise<GenerateTorrentResponse>;
 	getUrlDataHash: (params: GetUrlDataHashRequest) => Promise<GetUrlDataHashResponse>;
 }
 
@@ -216,12 +216,12 @@ export const SlimeApiContextProvider = ({ children }: { children: ReactNode | Re
 		}
 	};
 
-	const generateTorrents = async (params: GenerateTorrentsRequest) => {
+	const generateTorrent = async (params: GenerateTorrentRequest) => {
 		try {
-			return (await invoke('generate_torrents', { params })) as GenerateTorrentsResponse;
+			return (await invoke('generate_torrent', { params })) as GenerateTorrentResponse;
 		} catch (e) {
 			console.error(e);
-			return { message: e, status: 'error' } as unknown as GenerateTorrentsResponse;
+			return { message: e, status: 'error' } as unknown as GenerateTorrentResponse;
 		}
 	};
 
@@ -252,7 +252,7 @@ export const SlimeApiContextProvider = ({ children }: { children: ReactNode | Re
 				installMedia,
 				uninstallMedia,
 				launchMedia,
-				generateTorrents,
+				generateTorrent,
 				getUrlDataHash,
 			}}
 		>

@@ -125,6 +125,7 @@ export type MediaTag = {
 };
 
 export type MediaFiles = {
+	name: string;
 	size: number;
 	torrent: string;
 	executables: MediaExecutable[];
@@ -143,7 +144,6 @@ export type Media = {
 	descriptions: MediaDescription[];
 	credits: MediaCredit[];
 	childProducts: string[];
-	executables: MediaExecutable[];
 	lastUpdated: number;
 	lastUpdatedContent: number;
 	nostrEventId: string;
