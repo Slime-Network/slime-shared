@@ -23,10 +23,10 @@ export default function GameCard(props: GameCardProps) {
 		let foundCapsule = false;
 		let foundTitle = false;
 		let foundShortDescription = false;
-		slimeConfig?.languages.forEach((language) => {
+		slimeConfig?.languages?.forEach((language) => {
 			if (!foundCapsule) {
 				media.images.forEach((image) => {
-					if (image.type === 'capsule' && image.language.english === language && !foundCapsule) {
+					if (image.type === 'capsule' && image.language.english === language.english && !foundCapsule) {
 						foundCapsule = true;
 						setCapsule(image.url);
 					}
@@ -34,7 +34,7 @@ export default function GameCard(props: GameCardProps) {
 			}
 			if (!foundTitle) {
 				media.titles.forEach((titleI) => {
-					if (titleI.language.english === language && !foundTitle) {
+					if (titleI.language.english === language.english && !foundTitle) {
 						foundTitle = true;
 						setTitle(titleI.title);
 					}
@@ -42,7 +42,11 @@ export default function GameCard(props: GameCardProps) {
 			}
 			if (!foundShortDescription) {
 				media.descriptions.forEach((descriptionI) => {
-					if (descriptionI.language.english === language && descriptionI.type === 'short' && !foundShortDescription) {
+					if (
+						descriptionI.language.english === language.english &&
+						descriptionI.type === 'short' &&
+						!foundShortDescription
+					) {
 						foundShortDescription = true;
 						setShortDescription(descriptionI.description);
 					}

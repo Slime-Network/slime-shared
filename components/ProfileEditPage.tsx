@@ -745,7 +745,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 							</Button>
 						</Grid>
 
-						<Grid item xs={12}>
+						{/* <Grid item xs={12}>
 							<code>Chia: {JSON.stringify(chiaProfile, null, 2)}</code>
 						</Grid>
 						<Grid item xs={12}>
@@ -757,7 +757,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 						</Grid>
 						<Grid item xs={12}>
 							<code>config: {JSON.stringify(slimeConfig, null, 2)}</code>
-						</Grid>
+						</Grid> */}
 					</Grid>
 					<InfoModal
 						open={openNotice}
