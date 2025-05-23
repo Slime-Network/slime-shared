@@ -3,20 +3,20 @@ import { NostrEvent } from 'nostr-tools';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 
-import { ProfileMetadata } from '../types/slime/Profile';
+import { ChiaProfileMetadata } from '../types/slime/Profile';
 import { ProfilePFP } from './ProfilePFP';
 import { ProfileViewModal } from './ProfileViewModal';
 
 interface SlimeCommentProps {
 	event: NostrEvent;
-	profiles: Map<string, ProfileMetadata>;
+	profiles: Map<string, ChiaProfileMetadata>;
 }
 
 export const SlimeComment = (props: SlimeCommentProps) => {
 	const { event, profiles } = props;
 
 	const [openProfileView, setOpenProfileView] = React.useState(false);
-	const [profile, setProfile] = React.useState<ProfileMetadata | undefined>(undefined);
+	const [profile, setProfile] = React.useState<ChiaProfileMetadata | undefined>(undefined);
 	const [did, setDid] = React.useState<string>('Anonymous User');
 
 	React.useEffect(() => {

@@ -3,7 +3,7 @@ import React from 'react';
 
 import { SocialLink } from '../constants/social-links';
 import { useWalletConnectRpc } from '../contexts/WalletConnectRpcContext';
-import { ProfileMetadata } from '../types/slime/Profile';
+import { ChiaProfileMetadata } from '../types/slime/Profile';
 import { GetDIDInfoRequest } from '../types/walletconnect/rpc/GetDIDInfo';
 import { ProfilePFP } from './ProfilePFP';
 
@@ -30,12 +30,12 @@ export const ProfileViewModal = (props: ProfileViewModalProps) => {
 
 	const { getDIDInfo } = useWalletConnectRpc();
 
-	const [profile, setProfile] = React.useState<ProfileMetadata | undefined>(undefined);
+	const [profile, setProfile] = React.useState<ChiaProfileMetadata | undefined>(undefined);
 
 	React.useEffect(() => {
 		if (did && open) {
 			getDIDInfo({ coinId: did } as GetDIDInfoRequest).then((res) => {
-				setProfile(res.metadata as ProfileMetadata);
+				setProfile(res.metadata as ChiaProfileMetadata);
 			});
 		}
 	}, [did, getDIDInfo, open]);

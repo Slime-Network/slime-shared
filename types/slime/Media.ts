@@ -1,3 +1,5 @@
+import { Language } from '../../constants/languages';
+
 export type NftMetadataResponse = {
 	format: string;
 	name: string;
@@ -79,7 +81,7 @@ export type MediaUrlSource = {
 	type: string;
 	source: string;
 	alt: string;
-	language: string;
+	language: Language;
 };
 
 export type MediaCredit = {
@@ -97,7 +99,7 @@ export type MediaDescription = {
 	type: string;
 	markdown: boolean;
 	description: string;
-	language: string;
+	language: Language;
 };
 
 export type MediaExecutable = {
@@ -120,7 +122,7 @@ export type MediaTorrent = {
 
 export type MediaTitle = {
 	title: string;
-	language: string;
+	language: Language;
 };
 
 export type Media = {

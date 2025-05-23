@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api';
 import React, { ReactNode, createContext } from 'react';
 
+import { Identity, Marketplace, NostrRelay, SlimePath } from '../types/slime/MarketplaceApiTypes';
 import {
 	DownloadMediaRequest,
 	DownloadMediaResponse,
@@ -30,32 +31,64 @@ import {
 	GenerateTorrentsResponse,
 	GetUrlDataHashRequest,
 	GetUrlDataHashResponse,
+	AddMarketplaceRequest,
+	AddMarketplaceResponse,
+	RemoveMarketplaceRequest,
+	RemoveMarketplaceResponse,
+	AddNostrRelayRequest,
+	AddNostrRelayResponse,
+	RemoveNostrRelayRequest,
+	RemoveNostrRelayResponse,
+	SetActiveIdentityRequest,
+	SetActiveIdentityResponse,
+	AddIdentityRequest,
+	AddIdentityResponse,
+	SetActiveMarketplaceRequest,
+	SetActiveMarketplaceResponse,
+	GetInstallPathsRequest,
+	GetInstallPathsResponse,
+	AddInstallPathRequest,
+	AddInstallPathResponse,
+	RemoveInstallPathRequest,
+	RemoveInstallPathResponse,
+	GetTorrentPathsRequest,
+	GetTorrentPathsResponse,
+	AddTorrentPathRequest,
+	AddTorrentPathResponse,
+	SetActiveTorrentPathRequest,
+	SetActiveTorrentPathResponse,
+	SetActiveInstallPathRequest,
+	SetActiveInstallPathResponse,
+	RemoveIdentityRequest,
+	RemoveIdentityResponse,
 } from '../types/slime/SlimeRpcTypes';
-
-const defaultConfig = {
-	nostrRelays: [{ displayName: 'Slime Relay 1', url: 'ws://api.slimenetwork.org:7000' }],
-	activeMarketplace: { displayName: 'Localhost', url: 'http://localhost:5233' },
-	installsPath: './slime-data/installs/',
-	marketplaces: [
-		{ displayName: 'Slime Marketplace', url: 'http://api.slimenetwork.org' },
-		{ displayName: 'Localhost', url: 'http://localhost:5233' },
-	],
-	mediaDataPath: './slime-data/media/',
-	mintingDataPath: './slime-data/minting/',
-	torrentsPath: './slime-data/torrents/',
-	activeIdentity: { did: '', currentNostrPublicKey: '', proof: '' },
-	identities: [],
-	torrentClientPort: 5235,
-	languages: ['English'],
-};
 
 /**
  * Types
  */
 interface IContext {
 	slimeConfig: SlimeConfig | undefined;
-	fetchSlimeConfig: () => Promise<SlimeConfig>;
-	setSlimeConfig: React.Dispatch<React.SetStateAction<SlimeConfig | undefined>>;
+	marketplaces: Marketplace[] | undefined;
+	nostrRelays: NostrRelay[] | undefined;
+	identities: Identity[] | undefined;
+	installPaths: SlimePath[] | undefined;
+	torrentPaths: SlimePath[] | undefined;
+	addMarketplace: (params: AddMarketplaceRequest) => Promise<AddMarketplaceResponse>;
+	removeMarketplace: (params: RemoveMarketplaceRequest) => Promise<RemoveMarketplaceResponse>;
+	setActiveMarketplace: (params: SetActiveMarketplaceRequest) => Promise<SetActiveMarketplaceResponse>;
+	addNostrRelay: (params: AddNostrRelayRequest) => Promise<AddNostrRelayResponse>;
+	removeNostrRelay: (params: RemoveNostrRelayRequest) => Promise<RemoveNostrRelayResponse>;
+	setActiveIdentity: (params: SetActiveIdentityRequest) => Promise<SetActiveIdentityResponse>;
+	addIdentity: (params: AddIdentityRequest) => Promise<AddIdentityResponse>;
+	removeIdentity: (params: RemoveIdentityRequest) => Promise<RemoveIdentityResponse>;
+	getInstallPaths: (params: GetInstallPathsRequest) => Promise<GetInstallPathsResponse>;
+	addInstallPath: (params: AddInstallPathRequest) => Promise<AddInstallPathResponse>;
+	removeInstallPath: (params: RemoveInstallPathRequest) => Promise<RemoveInstallPathResponse>;
+	setActiveInstallPath: (params: SetActiveInstallPathRequest) => Promise<SetActiveInstallPathResponse>;
+	getTorrentPaths: (params: GetTorrentPathsRequest) => Promise<GetTorrentPathsResponse>;
+	addTorrentPath: (params: AddTorrentPathRequest) => Promise<AddTorrentPathResponse>;
+	removeTorrentPath: (params: RemoveInstallPathRequest) => Promise<RemoveInstallPathResponse>;
+	setActiveTorrentPath: (params: SetActiveTorrentPathRequest) => Promise<SetActiveTorrentPathResponse>;
 	signNostrMessage: (params: SignNostrMessageRequest) => Promise<SignNostrMessageResponse>;
 	addNostrKeypair: (params: AddNostrKeypairRequest) => Promise<AddNostrKeypairResponse>;
 	hasNostrPrivateKey: (params: HasNostrPrivateKeyRequest) => Promise<HasNostrPrivateKeyResponse>;
@@ -82,35 +115,344 @@ export const SlimeApiContext = createContext<IContext>({} as IContext);
  */
 export const SlimeApiContextProvider = ({ children }: { children: ReactNode | ReactNode[] }) => {
 	const [slimeConfig, setSlimeConfig] = React.useState<SlimeConfig>();
-
-	React.useEffect(() => {
-		if (slimeConfig) {
-			const configResponse: any = invoke('save_config', { newConfig: slimeConfig });
-			console.log('save_config', configResponse);
-		}
-	}, [slimeConfig]);
+	const [identities, setIdentities] = React.useState<Identity[]>();
+	const [nostrRelays, setNostrRelays] = React.useState<NostrRelay[]>();
+	const [marketplaces, setMarketplaces] = React.useState<Marketplace[]>();
+	const [installPaths, setInstallPaths] = React.useState<SlimePath[]>();
+	const [torrentPaths, setTorrentPaths] = React.useState<SlimePath[]>();
 
 	const fetchSlimeConfig = React.useCallback(async () => {
-		if (slimeConfig) {
-			return slimeConfig;
-		}
 		const configResponse: any = await invoke('get_config');
-		console.log('fetchSlimeConfig', configResponse);
-		if (configResponse.status === 'error') {
-			setSlimeConfig(defaultConfig);
-			return defaultConfig;
-		}
+		console.log('slimeConfigooo', configResponse.result);
+		configResponse.result.proof = JSON.parse(configResponse.result.proof);
+		configResponse.result.languages = JSON.parse(configResponse.result.languages);
 		setSlimeConfig(configResponse.result);
-		return configResponse.result;
-	}, [slimeConfig]);
+	}, [setSlimeConfig]);
 
 	React.useEffect(() => {
-		if (!slimeConfig) fetchSlimeConfig();
-	}, [fetchSlimeConfig, slimeConfig]);
+		if (!slimeConfig) {
+			fetchSlimeConfig();
+		}
+		console.log('slimeConfig', slimeConfig);
+	}, [slimeConfig, fetchSlimeConfig]);
+
+	const fetchIdentities = React.useCallback(async () => {
+		const response: any = await invoke('get_identities');
+		console.log('fetchIdentities', response);
+		setIdentities(
+			response.map((identity: any) => ({
+				...identity,
+				activeProof: JSON.parse(identity.activeProof),
+				languages: JSON.parse(identity.languages),
+				links: JSON.parse(identity.links),
+				proofs: JSON.parse(identity.proofs),
+			}))
+		);
+	}, [setIdentities]);
+
+	React.useEffect(() => {
+		if (!identities) {
+			fetchIdentities();
+		}
+		console.log('identities', identities);
+	}, [identities, fetchIdentities]);
+
+	const fetchMarketplaces = React.useCallback(async () => {
+		const response: any = await invoke('get_marketplaces');
+		console.log('marketplaces -', response);
+		setMarketplaces(response);
+	}, [setMarketplaces]);
+
+	React.useEffect(() => {
+		if (!marketplaces) {
+			fetchMarketplaces();
+		}
+		console.log('marketplaces 2', marketplaces);
+	}, [marketplaces, fetchMarketplaces]);
+
+	const fetchNostrRelays = React.useCallback(async () => {
+		const response: any = await invoke('get_nostr_relays');
+		console.log('nostrRelays -', response);
+		setNostrRelays(response);
+	}, [setNostrRelays]);
+
+	React.useEffect(() => {
+		if (!nostrRelays) {
+			fetchNostrRelays();
+		}
+		console.log('nostrRelaysx', nostrRelays);
+	}, [nostrRelays, fetchNostrRelays]);
+
+	const fetchInstallPaths = React.useCallback(async () => {
+		const response: any = await invoke('get_install_paths');
+		console.log('fetchInstallPaths', response);
+		setInstallPaths(response);
+	}, [setInstallPaths]);
+
+	React.useEffect(() => {
+		if (!installPaths) {
+			fetchInstallPaths();
+		}
+		console.log('installPaths', installPaths);
+	}, [installPaths, fetchInstallPaths]);
+
+	const fetchTorrentPaths = React.useCallback(async () => {
+		const response: any = await invoke('get_torrent_paths');
+		console.log('fetchTorrentPaths', response);
+		setTorrentPaths(response);
+	}, [setTorrentPaths]);
+
+	React.useEffect(() => {
+		if (!torrentPaths) {
+			fetchTorrentPaths();
+		}
+		console.log('torrentPaths', torrentPaths);
+	}, [torrentPaths, fetchTorrentPaths]);
+
+	const addMarketplace = async (params: AddMarketplaceRequest) => {
+		try {
+			const highestId = marketplaces?.length ? Math.max(...marketplaces.map((marketplace) => marketplace.id)) : 0;
+			marketplaces?.push({ id: highestId + 1, displayName: params.displayName, url: params.url });
+			console.log('adding marketplace', { id: highestId + 1, displayName: params.displayName, url: params.url });
+			if (!marketplaces) {
+				setMarketplaces([{ id: highestId + 1, displayName: params.displayName, url: params.url }]);
+			} else {
+				setMarketplaces([...marketplaces!]);
+			}
+			return (await invoke('add_marketplace', { params })) as AddMarketplaceResponse;
+		} catch (e) {
+			console.error(e);
+			return { message: e, status: 'error' } as AddMarketplaceResponse;
+		}
+	};
+
+	const removeMarketplace = async (params: RemoveMarketplaceRequest) => {
+		if (!marketplaces) {
+			return { message: 'No marketplaces found', status: 'error' } as RemoveMarketplaceResponse;
+		}
+		try {
+			const index = marketplaces.findIndex((marketplace) => marketplace.id === params.id);
+			if (index === -1) {
+				return { message: 'Marketplace not found', status: 'error' } as RemoveMarketplaceResponse;
+			}
+			marketplaces.splice(index, 1);
+			setMarketplaces([...marketplaces]);
+			return (await invoke('remove_marketplace', { params })) as RemoveMarketplaceResponse;
+		} catch (e) {
+			console.error(e);
+			return { message: e, status: 'error' } as RemoveMarketplaceResponse;
+		}
+	};
+
+	const setActiveMarketplace = async (params: SetActiveMarketplaceRequest) => {
+		try {
+			const active = marketplaces?.find((marketplace) => marketplace.id === params.marketplaceId);
+			setSlimeConfig({
+				...slimeConfig,
+				marketplaceUrl: active?.url,
+				marketplaceDisplayName: active?.displayName,
+			});
+			return (await invoke('set_active_marketplace', { params })) as SetActiveMarketplaceResponse;
+		} catch (e) {
+			console.error(e);
+			return { message: e, status: 'error' } as SetActiveMarketplaceResponse;
+		}
+	};
+
+	const addNostrRelay = async (params: AddNostrRelayRequest) => {
+		try {
+			return (await invoke('add_nostr_relay', { params })) as AddNostrRelayResponse;
+		} catch (e) {
+			console.error(e);
+			return { message: e, status: 'error' } as AddNostrRelayResponse;
+		}
+	};
+
+	const removeNostrRelay = async (params: RemoveNostrRelayRequest) => {
+		if (!nostrRelays) {
+			return { message: 'No relays found', status: 'error' } as RemoveNostrRelayResponse;
+		}
+		try {
+			const index = nostrRelays?.findIndex((relay) => relay.id === params.id);
+			if (index === -1) {
+				return { message: 'Relay not found', status: 'error' } as RemoveNostrRelayResponse;
+			}
+			nostrRelays.splice(index, 1);
+			setNostrRelays([...nostrRelays!]);
+			return (await invoke('remove_nostr_relay', { params })) as RemoveNostrRelayResponse;
+		} catch (e) {
+			console.error(e);
+			return { message: e, status: 'error' } as RemoveNostrRelayResponse;
+		}
+	};
+
+	const setActiveIdentity = async (params: SetActiveIdentityRequest) => {
+		try {
+			const active = identities?.find((identity) => identity.did === params.did);
+			setSlimeConfig({
+				...slimeConfig,
+				did: active?.did,
+				activeProof: active?.activeProof,
+			});
+			return (await invoke('set_active_identity', { params })) as SetActiveIdentityResponse;
+		} catch (e) {
+			console.error(e);
+			return { message: e, status: 'error' } as SetActiveIdentityResponse;
+		}
+	};
+
+	const addIdentity = async (params: AddIdentityRequest) => {
+		if (!identities) {
+			return { message: 'No identities found', status: 'error' } as AddIdentityResponse;
+		}
+		try {
+			identities?.push({
+				did: params.did,
+				activeProof: params.activeProof,
+				avatar: params.avatar,
+				displayName: params.displayName,
+				bio: params.bio,
+				location: params.location,
+				languages: params.languages,
+				links: params.links,
+				proofs: params.proofs,
+			});
+			const stringified = {
+				...params,
+				activeProof: JSON.stringify(params.activeProof),
+				languages: JSON.stringify(params.languages),
+				links: JSON.stringify(params.links),
+				proofs: JSON.stringify(params.proofs),
+			};
+			console.log('adding identity3333', stringified);
+			return (await invoke('add_identity', { params: stringified })) as AddIdentityResponse;
+		} catch (e) {
+			console.error(e);
+			return { message: e, status: 'error' } as AddIdentityResponse;
+		}
+	};
+
+	const removeIdentity = async (params: RemoveIdentityRequest) => {
+		if (!identities) {
+			return { message: 'No identities found', status: 'error' } as RemoveIdentityResponse;
+		}
+		try {
+			const index = identities?.findIndex((identity) => identity.did === params.did);
+			if (index === -1) {
+				return { message: 'Identity not found', status: 'error' } as RemoveIdentityResponse;
+			}
+			identities?.splice(index, 1);
+			setIdentities([...identities]);
+			return (await invoke('remove_identity', { params })) as RemoveIdentityResponse;
+		} catch (e) {
+			console.error(e);
+			return { message: e, status: 'error' } as RemoveIdentityResponse;
+		}
+	};
+
+	const getInstallPaths = async (params: GetInstallPathsRequest) => {
+		try {
+			return (await invoke('get_install_paths', { params })) as GetInstallPathsResponse;
+		} catch (e) {
+			console.error(e);
+			return { message: e, status: 'error' } as GetInstallPathsResponse;
+		}
+	};
+
+	const addInstallPath = async (params: AddInstallPathRequest) => {
+		try {
+			const highestId = installPaths?.length ? Math.max(...installPaths.map((path) => path.id)) : 0;
+			installPaths?.push({ id: highestId + 1, displayName: params.displayName, path: params.path });
+			setInstallPaths([...installPaths!]);
+			return (await invoke('add_install_path', { params })) as AddInstallPathResponse;
+		} catch (e) {
+			console.error(e);
+			return { message: e, status: 'error' } as AddInstallPathResponse;
+		}
+	};
+
+	const removeInstallPath = async (params: RemoveInstallPathRequest) => {
+		if (!installPaths) {
+			return { message: 'No install paths found', status: 'error' } as RemoveInstallPathResponse;
+		}
+		try {
+			const index = installPaths?.findIndex((path) => path.id === params.id);
+			if (index === -1) {
+				return { message: 'Install path not found', status: 'error' } as RemoveInstallPathResponse;
+			}
+			installPaths?.splice(index, 1);
+			setInstallPaths([...installPaths!]);
+			return (await invoke('remove_install_path', { params })) as RemoveInstallPathResponse;
+		} catch (e) {
+			console.error(e);
+			return { message: e, status: 'error' } as RemoveInstallPathResponse;
+		}
+	};
+
+	const setActiveInstallPath = async (params: SetActiveInstallPathRequest) => {
+		try {
+			const active = installPaths?.find((path) => path.id === params.id);
+			setSlimeConfig({ ...slimeConfig, installPath: active?.path, installPathDisplayName: active?.displayName });
+			return (await invoke('set_active_install_path', { params })) as SetActiveInstallPathResponse;
+		} catch (e) {
+			console.error(e);
+			return { message: e, status: 'error' } as SetActiveInstallPathResponse;
+		}
+	};
+
+	const getTorrentPaths = async (params: GetTorrentPathsRequest) => {
+		try {
+			return (await invoke('get_torrent_paths', { params })) as GetTorrentPathsResponse;
+		} catch (e) {
+			console.error(e);
+			return { message: e, status: 'error' } as GetTorrentPathsResponse;
+		}
+	};
+
+	const addTorrentPath = async (params: AddTorrentPathRequest) => {
+		try {
+			const highestId = torrentPaths?.length ? Math.max(...torrentPaths.map((path) => path.id)) : 0;
+			torrentPaths?.push({ id: highestId + 1, displayName: params.displayName, path: params.path });
+			setTorrentPaths([...torrentPaths!]);
+			return (await invoke('add_torrent_path', { params })) as AddTorrentPathResponse;
+		} catch (e) {
+			console.error(e);
+			return { message: e, status: 'error' } as AddTorrentPathResponse;
+		}
+	};
+
+	const removeTorrentPath = async (params: RemoveInstallPathRequest) => {
+		if (!torrentPaths) {
+			return { message: 'No torrent paths found', status: 'error' } as RemoveInstallPathResponse;
+		}
+		try {
+			const index = torrentPaths?.findIndex((path) => path.id === params.id);
+			if (index === -1) {
+				return { message: 'Torrent path not found', status: 'error' } as RemoveInstallPathResponse;
+			}
+			torrentPaths?.splice(index, 1);
+			setTorrentPaths([...torrentPaths]);
+			return (await invoke('remove_torrent_path', { params })) as RemoveInstallPathResponse;
+		} catch (e) {
+			console.error(e);
+			return { message: e, status: 'error' } as RemoveInstallPathResponse;
+		}
+	};
+
+	const setActiveTorrentPath = async (params: SetActiveTorrentPathRequest) => {
+		try {
+			const active = torrentPaths?.find((path) => path.id === params.id);
+			setSlimeConfig({ ...slimeConfig, torrentPath: active?.path, torrentPathDisplayName: active?.displayName });
+			return (await invoke('set_active_torrent_path', { params })) as SetActiveTorrentPathResponse;
+		} catch (e) {
+			console.error(e);
+			return { message: e, status: 'error' } as SetActiveTorrentPathResponse;
+		}
+	};
 
 	const signNostrMessage = async (params: SignNostrMessageRequest) => {
 		try {
-			return (await invoke('sign_nostr_message', params)) as SignNostrMessageResponse;
+			return (await invoke('sign_nostr_message', { params })) as SignNostrMessageResponse;
 		} catch (e) {
 			console.error(e);
 			return { signature: '', message: e, status: 'error' } as SignNostrMessageResponse;
@@ -238,8 +580,27 @@ export const SlimeApiContextProvider = ({ children }: { children: ReactNode | Re
 		<SlimeApiContext.Provider
 			value={{
 				slimeConfig,
-				fetchSlimeConfig,
-				setSlimeConfig,
+				marketplaces,
+				nostrRelays,
+				identities,
+				installPaths,
+				torrentPaths,
+				addMarketplace,
+				removeMarketplace,
+				setActiveMarketplace,
+				addNostrRelay,
+				removeNostrRelay,
+				addIdentity,
+				removeIdentity,
+				setActiveIdentity,
+				getInstallPaths,
+				addInstallPath,
+				removeInstallPath,
+				setActiveInstallPath,
+				getTorrentPaths,
+				addTorrentPath,
+				removeTorrentPath,
+				setActiveTorrentPath,
 				signNostrMessage,
 				addNostrKeypair,
 				hasNostrPrivateKey,

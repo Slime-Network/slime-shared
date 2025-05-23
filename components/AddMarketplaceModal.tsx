@@ -2,7 +2,7 @@ import { Button, Grid, Modal, Paper, TextField, Typography } from '@mui/material
 import React, { useState } from 'react';
 
 import { useSlimeApi } from '../contexts/SlimeApiContext';
-import { Marketplace } from '../types/slime/MarketplaceApiTypes';
+import { AddMarketplaceRequest } from '../types/slime/SlimeRpcTypes';
 
 export const style = {
 	position: 'absolute' as 'absolute',
@@ -27,7 +27,7 @@ export const AddMarketplaceModal = (props: AddMarketplaceModalProps) => {
 	const [marketplaceName, setMarketplaceName] = useState<string>('');
 	const [marketplaceUrl, setMarketplaceUrl] = useState<string>('');
 
-	const { slimeConfig, setSlimeConfig } = useSlimeApi();
+	const { addMarketplace } = useSlimeApi();
 
 	return (
 		<Modal
@@ -78,20 +78,7 @@ export const AddMarketplaceModal = (props: AddMarketplaceModalProps) => {
 							variant="contained"
 							disabled={marketplaceName === '' || marketplaceUrl === '' || marketplaceUrl.startsWith('http') === false}
 							onClick={() => {
-								if (!slimeConfig) {
-									console.log('No slimeConfig found');
-									alert('No slimeConfig found. Please set up your profile.');
-									return;
-								}
-								const newMarketplace: Marketplace = {
-									displayName: marketplaceName,
-									url: marketplaceUrl,
-								};
-								if (slimeConfig.marketplaces === undefined) {
-									slimeConfig.marketplaces = [];
-								}
-								slimeConfig.marketplaces.push(newMarketplace);
-								setSlimeConfig({ ...slimeConfig });
+								addMarketplace({ id: -1, displayName: marketplaceName, url: marketplaceUrl } as AddMarketplaceRequest);
 								setOpen(false);
 							}}
 						>

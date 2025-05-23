@@ -4,7 +4,7 @@ import React from 'react';
 
 import { useSlimeApi } from '../contexts/SlimeApiContext';
 import { useWalletConnectRpc } from '../contexts/WalletConnectRpcContext';
-import { ProfileMetadata } from '../types/slime/Profile';
+import { ChiaProfileMetadata } from '../types/slime/Profile';
 import { GetDIDInfoRequest } from '../types/walletconnect/rpc/GetDIDInfo';
 import { SlimeComment } from './Comment';
 import { CommentBox } from './CommentBox';
@@ -16,27 +16,25 @@ export interface ChatBoxProps {
 export const ChatBox = (props: ChatBoxProps) => {
 	const { open } = props;
 
-	const [profiles, setProfiles] = React.useState<Map<string, ProfileMetadata>>(new Map<string, ProfileMetadata>());
+	const [profiles, setProfiles] = React.useState<Map<string, ChiaProfileMetadata>>(
+		new Map<string, ChiaProfileMetadata>()
+	);
 
-	const { slimeConfig, signNostrMessage } = useSlimeApi();
+	const { slimeConfig, signNostrMessage, nostrRelays } = useSlimeApi();
 	const { getDIDInfo } = useWalletConnectRpc();
 
 	const [events, setEvents] = React.useState<NostrEvent[]>([]);
 
-	if (slimeConfig && slimeConfig?.nostrRelays) {
-		slimeConfig.nostrRelays = [];
-	}
-
 	React.useEffect(() => {
 		const subscribeToComments = async () => {
-			if (!slimeConfig) {
+			if (!nostrRelays) {
 				console.log('No slimeConfig found');
 				alert('No slimeConfig found. Please set up your profile.');
 				return;
 			}
 			const nostrPool = new SimplePool();
 			const subs = nostrPool.subscribeMany(
-				[...slimeConfig.nostrRelays.map((relay) => relay.url)],
+				[...nostrRelays.map((relay) => relay.url)],
 				[
 					{
 						// "#e": [media.nostrEventId],
@@ -49,7 +47,7 @@ export const ChatBox = (props: ChatBoxProps) => {
 						setEvents([...events]);
 						event.tags.forEach(async (tag) => {
 							const nostrProfile = await nostrPool.querySync(
-								slimeConfig?.nostrRelays.map((relay) => relay.url),
+								nostrRelays.map((relay) => relay.url),
 								{
 									kinds: [0],
 									authors: [event.pubkey],
@@ -66,14 +64,14 @@ export const ChatBox = (props: ChatBoxProps) => {
 									const quickProfile = JSON.parse(nostrProfile[0].content);
 									console.log('quickProfile', quickProfile, event.pubkey, did);
 									if (quickProfile) {
-										profiles.set(did, quickProfile as ProfileMetadata);
+										profiles.set(did, quickProfile as ChiaProfileMetadata);
 										setProfiles(new Map(profiles));
 									}
 									return;
 								}
 								const foundProfile = await getDIDInfo({ coinId: did } as GetDIDInfoRequest);
 								if (foundProfile) {
-									profiles.set(did, foundProfile.metadata as ProfileMetadata);
+									profiles.set(did, foundProfile.metadata as ChiaProfileMetadata);
 									setProfiles(new Map(profiles));
 								}
 							}
@@ -97,7 +95,12 @@ export const ChatBox = (props: ChatBoxProps) => {
 			alert('No slimeConfig found. Please set up your profile.');
 			return;
 		}
-		const pk = slimeConfig.activeIdentity.currentNostrPublicKey;
+		if (!nostrRelays) {
+			console.log('No Relays found');
+			alert('No Relays found. Please set up your profile.');
+			return;
+		}
+		const pk = slimeConfig.activeProof?.pubkey;
 
 		if (!pk) {
 			console.log('No public key found');
@@ -110,7 +113,7 @@ export const ChatBox = (props: ChatBoxProps) => {
 		const event: NostrEvent = {
 			content: comment,
 			kind: 1,
-			tags: [['i', `chia:${slimeConfig.activeIdentity.did}`, slimeConfig.activeIdentity.proof]],
+			tags: [['i', `chia:${slimeConfig.did}`, slimeConfig.activeProof?.proof || '']],
 			created_at: createdAt,
 			pubkey: pk,
 			id: '',
@@ -123,7 +126,7 @@ export const ChatBox = (props: ChatBoxProps) => {
 
 		const nostrPool = new SimplePool();
 		const resp = await nostrPool.publish(
-			slimeConfig.nostrRelays.map((relay) => relay.url),
+			nostrRelays.map((relay) => relay.url),
 			event
 		);
 		console.log('publish resp', resp);

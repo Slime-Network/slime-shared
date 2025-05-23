@@ -1,24 +1,168 @@
-import { Marketplace, NostrRelay } from './MarketplaceApiTypes';
+import { Language } from '../../constants/languages';
+import { SocialLink } from '../../constants/social-links';
+import { IdentityProof } from './MarketplaceApiTypes';
 import type { Media } from './Media';
 
 export type SlimeConfig = {
-	torrentsPath: string;
-	marketplaces: Marketplace[];
-	activeMarketplace: Marketplace;
-	mintingDataPath: string;
-	mediaDataPath: string;
-	installsPath: string;
-	activeIdentity: Identity;
-	identities: Identity[];
-	nostrRelays: NostrRelay[];
-	torrentClientPort: number;
-	languages: string[];
+	did?: string;
+	activeProof?: IdentityProof;
+	marketplaceDisplayName?: string;
+	marketplaceUrl?: string;
+	torrentClientPort?: number;
+	languages?: Language[];
+	installPath?: string;
+	installPathDisplayName?: string;
+	torrentPath?: string;
+	torrentPathDisplayName?: string;
+	mintingDataPath?: string;
 };
 
-export type Identity = {
+export type AddMarketplaceRequest = {
+	id: number;
+	displayName: string;
+	url: string;
+};
+
+export type AddMarketplaceResponse = {
+	status: 'added' | 'error';
+	message: string;
+};
+
+export type RemoveMarketplaceRequest = {
+	id: number;
+};
+export type RemoveMarketplaceResponse = {
+	status: 'removed' | 'error';
+	message: string;
+};
+
+export type AddNostrRelayRequest = {
+	displayName: string;
+	url: string;
+};
+export type AddNostrRelayResponse = {
+	status: 'added' | 'error';
+	message: string;
+};
+export type RemoveNostrRelayRequest = {
+	id: number;
+};
+export type RemoveNostrRelayResponse = {
+	status: 'removed' | 'error';
+	message: string;
+};
+
+export type SetActiveIdentityRequest = {
 	did: string;
-	currentNostrPublicKey: string;
-	proof: string;
+};
+export type SetActiveIdentityResponse = {
+	status: 'set' | 'error';
+	message: string;
+};
+export type AddIdentityRequest = {
+	did: string;
+	activeProof: IdentityProof;
+	displayName: string;
+	avatar: string;
+	bio: string;
+	location: string;
+	languages: Language[];
+	links: SocialLink[];
+	proofs: IdentityProof[];
+};
+export type AddIdentityResponse = {
+	status: 'added' | 'error';
+	message: string;
+};
+
+export type RemoveIdentityRequest = {
+	did: string;
+};
+
+export type RemoveIdentityResponse = {
+	status: 'removed' | 'error';
+	message: string;
+};
+
+export type SetActiveMarketplaceRequest = {
+	marketplaceId: number;
+};
+
+export type SetActiveMarketplaceResponse = {
+	status: 'set' | 'error';
+	message: string;
+};
+
+export type GetInstallPathsRequest = {};
+
+export type GetInstallPathsResponse = {
+	status: 'found' | 'error';
+	message: string;
+	paths: any;
+};
+
+export type AddInstallPathRequest = {
+	path: string;
+	displayName: string;
+};
+
+export type AddInstallPathResponse = {
+	status: 'added' | 'error';
+	message: string;
+};
+
+export type RemoveInstallPathRequest = {
+	id: number;
+};
+
+export type RemoveInstallPathResponse = {
+	status: 'removed' | 'error';
+	message: string;
+};
+
+export type SetActiveInstallPathRequest = {
+	id: number;
+};
+
+export type SetActiveInstallPathResponse = {
+	status: 'set' | 'error';
+	message: string;
+};
+
+export type GetTorrentPathsRequest = {};
+
+export type GetTorrentPathsResponse = {
+	status: 'found' | 'error';
+	message: string;
+	paths: any;
+};
+
+export type AddTorrentPathRequest = {
+	path: string;
+	displayName: string;
+};
+
+export type AddTorrentPathResponse = {
+	status: 'added' | 'error';
+	message: string;
+};
+
+export type RemoveTorrentPathRequest = {
+	id: number;
+};
+
+export type RemoveTorrentPathResponse = {
+	status: 'removed' | 'error';
+	message: string;
+};
+
+export type SetActiveTorrentPathRequest = {
+	id: number;
+};
+
+export type SetActiveTorrentPathResponse = {
+	status: 'set' | 'error';
+	message: string;
 };
 
 export type SignNostrMessageRequest = {
@@ -34,10 +178,11 @@ export type SignNostrMessageResponse = {
 export type AddNostrKeypairRequest = {
 	publicKey: string;
 	privateKey: string;
+	proof: string;
 };
 
 export type AddNostrKeypairResponse = {
-	status: 'added' | 'error';
+	status: 'success' | 'error';
 	message: string;
 };
 
@@ -46,7 +191,7 @@ export type HasNostrPrivateKeyRequest = {
 };
 
 export type HasNostrPrivateKeyResponse = {
-	status: 'hasPrivateKey' | 'error';
+	status: 'success' | 'error';
 	message: string;
 	hasPrivateKey: boolean;
 };

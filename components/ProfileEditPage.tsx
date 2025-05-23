@@ -1,6 +1,7 @@
 import { HorizontalRule } from '@mui/icons-material';
 import CloseIcon from '@mui/icons-material/Close';
 import InfoIcon from '@mui/icons-material/Info';
+import RestoreIcon from '@mui/icons-material/Restore';
 import {
 	Dialog,
 	Container,
@@ -29,8 +30,8 @@ import { Language, Languages } from '../constants/languages';
 import { SocialLink, socialLinksOptions } from '../constants/social-links';
 import { useSlimeApi } from '../contexts/SlimeApiContext';
 import { useWalletConnectRpc } from '../contexts/WalletConnectRpcContext';
-import { Marketplace } from '../types/slime/MarketplaceApiTypes';
-import { Profile } from '../types/slime/Profile';
+import { Identity, IdentityProof } from '../types/slime/MarketplaceApiTypes';
+import { ChiaProfile } from '../types/slime/Profile';
 import { SignMessageByIdRequest } from '../types/walletconnect/rpc/SignMessageById';
 import { NostrEvent, getEventHash } from '../utils/nostr';
 import { FeeDialogModal } from './FeeDialogModal';
@@ -39,7 +40,8 @@ import ImageUpload from './ImageUpload';
 const Transition = React.forwardRef((props: SlideProps, ref) => <Slide direction="up" ref={ref} {...props} />);
 
 export type ProfileEditPageProps = {
-	profile: Profile | undefined;
+	chiaProfile: ChiaProfile | undefined;
+	localIdentity: Identity | undefined;
 	onUpdateMetadata: (metadata: any) => void;
 	onChangeName: (name: string) => void;
 	open: boolean;
@@ -47,7 +49,7 @@ export type ProfileEditPageProps = {
 };
 
 export function ProfileEditPage(props: ProfileEditPageProps) {
-	const { profile, onChangeName, onUpdateMetadata, open, setOpen } = props;
+	const { chiaProfile, localIdentity, onChangeName, onUpdateMetadata, open, setOpen } = props;
 
 	const [fee, setFee] = React.useState<number>(50_000);
 
@@ -58,72 +60,58 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 
 	const [openFeeDialog, setOpenFeeDialog] = React.useState(false);
 
-	const [name, setName] = React.useState<string | undefined>(profile?.name);
-	const [displayName, setDisplayName] = React.useState<string>(profile?.metadata?.slimeDisplayName || '');
-	const [avatar, setAvatar] = React.useState<string>(profile?.metadata?.slimeAvatar || '');
-	const [bio, setBio] = React.useState<string>(profile?.metadata?.slimeBio || '');
-	const [location, setLocation] = React.useState<string>(profile?.metadata?.slimeLocation || '');
-	const [languages, setLanguages] = React.useState<Language[]>(
-		JSON.parse(profile?.metadata?.slimeLanguages || '[]') || []
-	);
-	const [links, setLinks] = React.useState<SocialLink[]>(JSON.parse(profile?.metadata?.slimeLinks || '[]') || []);
-	const [nostrPublicKeys, setNostrPublicKeys] = React.useState<any[]>(
-		JSON.parse(profile?.metadata?.slimeNostrPublicKeys || '[]') || []
-	);
+	const [name, setName] = React.useState<string | undefined>(chiaProfile?.name);
+	const [displayName, setDisplayName] = React.useState<string>(localIdentity?.displayName || '');
+	const [avatar, setAvatar] = React.useState<string>(localIdentity?.avatar || '');
+	const [bio, setBio] = React.useState<string>(localIdentity?.bio || '');
+	const [location, setLocation] = React.useState<string>(localIdentity?.location || '');
+	const [languages, setLanguages] = React.useState<Language[]>(localIdentity?.languages || []);
+	const [links, setLinks] = React.useState<SocialLink[]>(localIdentity?.links || []);
+	const [proofs, setProofs] = React.useState<IdentityProof[]>(localIdentity?.proofs || []);
 	const [tempPrivateKey, setTempPrivateKey] = React.useState<string | undefined>(undefined);
 	const [tempPublicKey, setTempPublicKey] = React.useState<string | undefined>(undefined);
-	const [activeNostrPublicKey, setActiveNostrPublicKey] = React.useState<string | undefined>(
-		profile?.metadata?.slimeActiveNostrPublicKey
+	const [activeProof, setActiveProof] = React.useState<IdentityProof>(
+		localIdentity?.activeProof || { pubkey: '', proof: '' }
 	);
 
-	const [marketplaces, setMarketplaces] = React.useState<Marketplace[]>([]);
 	const [hasPrivateKey, setHasPrivateKey] = React.useState<Map<string, boolean>>(new Map());
 	const { signMessageById } = useWalletConnectRpc();
 
-	const { slimeConfig, addNostrKeypair, hasNostrPrivateKey, signNostrMessage, setSlimeConfig } = useSlimeApi();
+	const { slimeConfig, addNostrKeypair, addIdentity, hasNostrPrivateKey, signNostrMessage, marketplaces, nostrRelays } =
+		useSlimeApi();
 
 	const nostrPool = new SimplePool();
-
-	React.useEffect(() => {
-		if (slimeConfig) setMarketplaces(slimeConfig.marketplaces);
-	}, [slimeConfig]);
-
-	React.useEffect(() => {
-		if (profile) {
-			if (profile.name) setName(profile?.name);
-			if (profile.metadata.slimeDisplayName) setDisplayName(profile.metadata.slimeDisplayName);
-			if (profile.metadata.slimeAvatar) setAvatar(profile.metadata.slimeAvatar);
-			if (profile.metadata.slimeBio) setBio(profile.metadata.slimeBio);
-			if (profile.metadata.slimeLocation) setLocation(profile.metadata.slimeLocation);
-			if (profile.metadata.slimeLanguages) setLanguages(JSON.parse(profile.metadata.slimeLanguages));
-			if (profile.metadata.slimeLinks) setLinks(JSON.parse(profile.metadata.slimeLinks));
-			if (profile.metadata.slimeNostrPublicKeys) setNostrPublicKeys(JSON.parse(profile.metadata.slimeNostrPublicKeys));
-			if (profile.metadata.slimeActiveNostrPublicKey)
-				setActiveNostrPublicKey(profile.metadata.slimeActiveNostrPublicKey);
-		}
-	}, [profile]);
 
 	const handleClose = () => {
 		setOpen(false);
 	};
 
 	React.useEffect(() => {
-		console.log('nostrPublicKeys', nostrPublicKeys);
-		nostrPublicKeys.forEach(async (key) => {
-			console.log('key3', key);
-			const result = await hasNostrPrivateKey({ publicKey: key.key });
-			console.log('result pk', result);
+		console.log('updating local identity', localIdentity);
+		if (localIdentity) {
+			setDisplayName(localIdentity.displayName);
+			setAvatar(localIdentity.avatar);
+			setBio(localIdentity.bio);
+			setLocation(localIdentity.location);
+			setLanguages(localIdentity.languages);
+			setLinks(localIdentity.links);
+		}
+	}, [localIdentity]);
 
-			hasPrivateKey.set(key.key, result.hasPrivateKey);
+	React.useEffect(() => {
+		if (chiaProfile) {
+			setName(chiaProfile.name);
+		}
+	}, [chiaProfile]);
+
+	React.useEffect(() => {
+		proofs.forEach(async (proof) => {
+			const result = await hasNostrPrivateKey({ publicKey: proof.pubkey });
+			hasPrivateKey.set(proof.pubkey, result.hasPrivateKey);
 			setHasPrivateKey(new Map(hasPrivateKey));
-			if (activeNostrPublicKey) {
-				if (activeNostrPublicKey === key.key && !result.hasPrivateKey) {
-					setActiveNostrPublicKey(undefined);
-				}
-			}
 		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps -- This is intentional
-	}, [hasNostrPrivateKey, nostrPublicKeys]);
+	}, [hasNostrPrivateKey, proofs]);
 
 	return (
 		<Paper>
@@ -134,7 +122,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 							<CloseIcon />
 						</IconButton>
 						<Typography sx={{ ml: 2, flex: 1 }} variant="h6">
-							{profile?.name}
+							{chiaProfile?.name}
 						</Typography>
 					</Toolbar>
 				</AppBar>
@@ -146,7 +134,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								sx={{ width: '100%' }}
 								label="Profile Name"
 								variant="filled"
-								defaultValue={profile?.name}
+								defaultValue={chiaProfile?.name}
 								value={name}
 								onChange={(event: any) => {
 									setName(event.target.value);
@@ -191,64 +179,97 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								sx={{ width: '100%' }}
 								label="Display Name"
 								variant="filled"
-								defaultValue={profile?.metadata?.slimeDisplayName}
+								defaultValue={localIdentity?.displayName}
 								value={displayName}
-								onChange={(event: any) => {
+								onChange={async (event: any) => {
 									setDisplayName(event.target.value);
+									localIdentity!.displayName = event.target.value;
+									await addIdentity({ ...localIdentity! });
 								}}
 								InputProps={{
 									endAdornment: (
-										<IconButton
-											size="small"
-											onClick={() => {
-												setNoticeTitle('Profile Update Fee');
-												setNoticeMessage(
-													`Creating or updating a profile requires a blockchain transaction. This optional fee can help speed up that transaction if volume is high.`
-												);
-												setOpenNotice(true);
-											}}
-										>
-											<InfoIcon />
-										</IconButton>
+										<>
+											{displayName !== chiaProfile?.metadata.slimeDisplayName && (
+												<IconButton
+													size="small"
+													onClick={async () => {
+														setDisplayName(chiaProfile?.metadata.slimeDisplayName || '');
+														localIdentity!.displayName = chiaProfile?.metadata.slimeDisplayName || '';
+														await addIdentity({ ...localIdentity! });
+													}}
+												>
+													<RestoreIcon />
+												</IconButton>
+											)}
+											<IconButton
+												size="small"
+												onClick={() => {
+													setNoticeTitle('Profile Update Fee');
+													setNoticeMessage(
+														`Creating or updating a profile requires a blockchain transaction. This optional fee can help speed up that transaction if volume is high.`
+													);
+													setOpenNotice(true);
+												}}
+											>
+												<InfoIcon />
+											</IconButton>
+										</>
 									),
 								}}
 							/>
 						</Grid>
-
 						<Grid item xs={12}>
-							{ImageUpload({
-								marketplaces,
-								title: 'Avatar',
-								setGui: (value) => {
-									setAvatar(value);
-								},
-								initialImage: avatar,
-								height: 256,
-							})}
+							{marketplaces && (
+								<ImageUpload
+									marketplaces={marketplaces}
+									title={'Avatar'}
+									setGui={(value) => {
+										setAvatar(value);
+									}}
+									height={256}
+									initialImage={avatar}
+								/>
+							)}
 							<TextField
 								id="AvatarTextField"
 								sx={{ width: '100%' }}
 								label="Avatar URL"
 								variant="filled"
-								defaultValue={profile?.metadata?.slimeAvatar}
+								defaultValue={localIdentity?.avatar}
 								value={avatar}
-								onChange={(event: any) => {
+								onChange={async (event: any) => {
 									setAvatar(event.target.value);
+									localIdentity!.avatar = event.target.value;
+									await addIdentity({ ...localIdentity! });
 								}}
 								InputProps={{
 									endAdornment: (
-										<IconButton
-											size="small"
-											onClick={() => {
-												setNoticeTitle('Avatar');
-												setNoticeMessage(
-													'This is the URL for your avatar, you can upload an image to our server, or enter a URL manually, to host your avatar elsewhere.'
-												);
-												setOpenNotice(true);
-											}}
-										>
-											<InfoIcon />
-										</IconButton>
+										<>
+											{avatar !== chiaProfile?.metadata.slimeAvatar && (
+												<IconButton
+													size="small"
+													onClick={async () => {
+														setAvatar(chiaProfile?.metadata.slimeAvatar || '');
+														localIdentity!.avatar = chiaProfile?.metadata.slimeAvatar || '';
+														await addIdentity({ ...localIdentity! });
+													}}
+												>
+													<RestoreIcon />
+												</IconButton>
+											)}
+											<IconButton
+												size="small"
+												onClick={() => {
+													setNoticeTitle('Avatar');
+													setNoticeMessage(
+														'This is the URL for your avatar, you can upload an image to our server, or enter a URL manually, to host your avatar elsewhere.'
+													);
+													setOpenNotice(true);
+												}}
+											>
+												<InfoIcon />
+											</IconButton>
+										</>
 									),
 								}}
 							/>
@@ -261,25 +282,41 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								variant="filled"
 								multiline
 								maxRows={4}
-								defaultValue={profile?.metadata?.slimeBio}
+								defaultValue={localIdentity?.bio}
 								value={bio}
-								onChange={(event: any) => {
+								onChange={async (event: any) => {
 									setBio(event.target.value);
+									localIdentity!.bio = event.target.value;
+									await addIdentity({ ...localIdentity! });
 								}}
 								InputProps={{
 									endAdornment: (
-										<IconButton
-											size="small"
-											onClick={() => {
-												setNoticeTitle('Profile Update Fee');
-												setNoticeMessage(
-													`Creating or updating a profile requires a blockchain transaction. This optional fee can help speed up that transaction if volume is high.`
-												);
-												setOpenNotice(true);
-											}}
-										>
-											<InfoIcon />
-										</IconButton>
+										<>
+											{bio !== chiaProfile?.metadata.slimeBio && (
+												<IconButton
+													size="small"
+													onClick={async () => {
+														setBio(chiaProfile?.metadata.slimeBio || '');
+														localIdentity!.bio = chiaProfile?.metadata.slimeBio || '';
+														await addIdentity({ ...localIdentity! });
+													}}
+												>
+													<RestoreIcon />
+												</IconButton>
+											)}
+											<IconButton
+												size="small"
+												onClick={() => {
+													setNoticeTitle('Profile Update Fee');
+													setNoticeMessage(
+														`Creating or updating a profile requires a blockchain transaction. This optional fee can help speed up that transaction if volume is high.`
+													);
+													setOpenNotice(true);
+												}}
+											>
+												<InfoIcon />
+											</IconButton>
+										</>
 									),
 								}}
 							/>
@@ -290,23 +327,39 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								sx={{ width: '100%' }}
 								label="Location"
 								variant="filled"
-								defaultValue={profile?.metadata?.slimeLocation}
+								defaultValue={localIdentity?.location}
 								value={location}
-								onChange={(event: any) => {
+								onChange={async (event: any) => {
 									setLocation(event.target.value);
+									localIdentity!.location = event.target.value;
+									await addIdentity({ ...localIdentity! });
 								}}
 								InputProps={{
 									endAdornment: (
-										<IconButton
-											size="small"
-											onClick={() => {
-												setNoticeTitle('Location');
-												setNoticeMessage('Your country of origin, IRL location, .');
-												setOpenNotice(true);
-											}}
-										>
-											<InfoIcon />
-										</IconButton>
+										<>
+											{location !== chiaProfile?.metadata.slimeLocation && (
+												<IconButton
+													size="small"
+													onClick={async () => {
+														setLocation(chiaProfile?.metadata.slimeLocation || '');
+														localIdentity!.location = chiaProfile?.metadata.slimeLocation || '';
+														await addIdentity({ ...localIdentity! });
+													}}
+												>
+													<RestoreIcon />
+												</IconButton>
+											)}
+											<IconButton
+												size="small"
+												onClick={() => {
+													setNoticeTitle('Location');
+													setNoticeMessage('Your country of origin, IRL location, .');
+													setOpenNotice(true);
+												}}
+											>
+												<InfoIcon />
+											</IconButton>
+										</>
 									),
 								}}
 							/>
@@ -316,7 +369,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								multiple
 								id="languages"
 								options={Languages}
-								defaultValue={[]}
+								defaultValue={localIdentity?.languages}
 								getOptionLabel={(option: Language) => (option.native === '' ? option.english : option.native)}
 								renderTags={(tagValue: Language[], getTagProps) =>
 									tagValue.map((option, index) => (
@@ -328,6 +381,11 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 									))
 								}
 								renderInput={(params) => <TextField {...params} variant="filled" label="Languages" placeholder="+" />}
+								onChange={async (event: any, value: Language[]) => {
+									setLanguages(value);
+									localIdentity!.languages = value;
+									await addIdentity({ ...localIdentity! });
+								}}
 							/>
 						</Grid>
 
@@ -354,38 +412,39 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								renderInput={(params) => <TextField {...params} label="Add Social Link" variant="filled" />}
 							/>
 						</Grid>
-						{links.map((link, index) => (
-							<>
-								<Grid item xs={6}>
-									<TextField
-										id={`LinkTextField${link.name}`}
-										sx={{ width: '100%' }}
-										label={link.name}
-										variant="filled"
-										defaultValue={link.link}
-										value={link.link}
-										onChange={(event: any) => {
-											links[index].link = event.target.value;
-											setLinks([...links]);
-										}}
-										InputProps={{
-											endAdornment: (
-												<IconButton
-													size="small"
-													aria-label="delete"
-													onClick={() => {
-														links.splice(index, 1);
-														setLinks([...links]);
-													}}
-												>
-													<CloseIcon />
-												</IconButton>
-											),
-										}}
-									/>
-								</Grid>
-							</>
-						))}
+						{links &&
+							links.map((link, index) => (
+								<>
+									<Grid item xs={6}>
+										<TextField
+											id={`LinkTextField${link.name}`}
+											sx={{ width: '100%' }}
+											label={link.name}
+											variant="filled"
+											defaultValue={link.link}
+											value={link.link}
+											onChange={(event: any) => {
+												links[index].link = event.target.value;
+												setLinks([...links]);
+											}}
+											InputProps={{
+												endAdornment: (
+													<IconButton
+														size="small"
+														aria-label="delete"
+														onClick={() => {
+															links.splice(index, 1);
+															setLinks([...links]);
+														}}
+													>
+														<CloseIcon />
+													</IconButton>
+												),
+											}}
+										/>
+									</Grid>
+								</>
+							))}
 						<Grid item xs={12}>
 							<HorizontalRule sx={{ width: '100%' }} />
 						</Grid>
@@ -405,30 +464,45 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								>
 									<InfoIcon />
 								</IconButton>
+								<IconButton
+									size="small"
+									onClick={() => {
+										setProofs(chiaProfile?.metadata.slimeProofs ? JSON.parse(chiaProfile.metadata.slimeProofs) : []);
+										setActiveProof(
+											chiaProfile?.metadata.slimeActiveProof
+												? JSON.parse(chiaProfile.metadata.slimeActiveProof)
+												: undefined
+										);
+										setNoticeTitle('Nostr Keys Reset');
+										setNoticeMessage(
+											'Your of keys has been restored to the last saved state. You may need to refresh the page to see the changes.'
+										);
+									}}
+								>
+									<RestoreIcon />
+								</IconButton>
 							</Typography>
 							<Box sx={{ m: 2 }}>
 								<Grid container>
-									{nostrPublicKeys.map((key, index) => (
+									{proofs.map((proof, index) => (
 										<Grid item xs={6}>
 											<Chip
-												label={`${key.key}`}
+												label={`${proof.pubkey}`}
 												color={
-													hasPrivateKey.get(key.key)
-														? key.key === activeNostrPublicKey
-															? 'primary'
-															: 'default'
-														: 'error'
+													hasPrivateKey.get(proof.pubkey) ? (proof === activeProof ? 'primary' : 'default') : 'error'
 												}
 												onDelete={() => {
-													nostrPublicKeys.splice(index, 1);
-													setNostrPublicKeys([...nostrPublicKeys]);
+													proofs.splice(index, 1);
+													setProofs([...proofs]);
 												}}
 												onClick={async (event) => {
-													console.log('Chip', event, key);
-													console.log('hasPrivateKey', hasPrivateKey, hasPrivateKey.get(key.key));
-													console.log('activeNostrPublicKey', activeNostrPublicKey);
-													if (hasPrivateKey.get(key.key)) {
-														setActiveNostrPublicKey(key.key);
+													console.log('Chip', event, proof);
+													console.log('hasPrivateKey', hasPrivateKey, hasPrivateKey.get(proof.pubkey));
+													console.log('activeProof', activeProof);
+													if (hasPrivateKey.get(proof.pubkey)) {
+														setActiveProof(proof);
+														localIdentity!.activeProof = proof;
+														await addIdentity({ ...localIdentity! });
 													} else {
 														alert('You do not have the private key for this public key.');
 													}
@@ -441,18 +515,40 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 						</Grid>
 						<Grid item xs={6}>
 							<Button
-								id="NostrPublicKeysButton"
+								id="proofsButton"
 								variant="contained"
 								sx={{ width: '100%' }}
 								onClick={async () => {
-									console.log('NostrPublicKeysButton', nostrPublicKeys);
+									if (!localIdentity) {
+										alert('No local identity found. Please create a new identity.');
+										return;
+									}
+									console.log('proofsButton', proofs);
 									const sk = schnorr.utils.randomPrivateKey(); // `sk` is a Uint8Array
 									const pk = schnorr.getPublicKey(sk);
-									setNostrPublicKeys([...nostrPublicKeys, { key: bytesToHex(pk), proof: '' }]);
-									setActiveNostrPublicKey(bytesToHex(pk));
 
-									const resp = await addNostrKeypair({ publicKey: bytesToHex(pk), privateKey: bytesToHex(sk) });
-									console.log('add_nostr_keys', resp);
+									const signResponse = await signMessageById({
+										id: localIdentity.did,
+										message: bytesToHex(pk),
+									} as SignMessageByIdRequest);
+
+									const resp = await addNostrKeypair({
+										publicKey: bytesToHex(pk),
+										privateKey: bytesToHex(sk),
+										proof: signResponse.signature,
+									});
+									if (resp.status === 'success') {
+										setProofs([...proofs, { pubkey: bytesToHex(pk), proof: signResponse.signature }]);
+										setActiveProof({ pubkey: bytesToHex(pk), proof: signResponse.signature });
+										localIdentity!.activeProof = { pubkey: bytesToHex(pk), proof: signResponse.signature };
+										localIdentity!.proofs.push({
+											pubkey: bytesToHex(pk),
+											proof: signResponse.signature,
+										});
+										await addIdentity({ ...localIdentity! });
+									} else {
+										alert(`Error adding key: ${resp.message}`);
+									}
 								}}
 							>
 								Create New Nostr Key
@@ -460,7 +556,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 						</Grid>
 						<Grid item xs={6}>
 							<Button
-								id="NostrPublicKeysImportButton"
+								id="proofsImportButton"
 								variant="contained"
 								sx={{ width: '100%' }}
 								onClick={() => {
@@ -509,14 +605,33 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 												variant="contained"
 												sx={{ width: '100%' }}
 												onClick={async () => {
+													if (!localIdentity) {
+														alert('No local identity found. Please create a new identity.');
+														return;
+													}
 													if (tempPublicKey && tempPrivateKey) {
-														setNostrPublicKeys([...nostrPublicKeys, { key: tempPublicKey, proof: '' }]);
+														const signResponse = await signMessageById({
+															id: localIdentity.did,
+															message: tempPublicKey,
+														} as SignMessageByIdRequest);
+
 														const resp = await addNostrKeypair({
 															publicKey: tempPublicKey,
 															privateKey: tempPrivateKey,
+															proof: signResponse.signature,
 														});
-														console.log('add_nostr_keys', resp);
-														setActiveNostrPublicKey(tempPublicKey);
+														if (resp.status === 'success') {
+															setProofs([...proofs, { pubkey: tempPublicKey, proof: signResponse.signature }]);
+															setActiveProof({ pubkey: tempPublicKey, proof: signResponse.signature });
+															localIdentity!.activeProof = { pubkey: tempPublicKey, proof: signResponse.signature };
+															localIdentity!.proofs.push({
+																pubkey: tempPublicKey,
+																proof: signResponse.signature,
+															});
+															await addIdentity({ ...localIdentity! });
+														} else {
+															alert(`Error adding key: ${resp.message}`);
+														}
 													}
 													setOpenImportKeysModal(false);
 												}}
@@ -558,79 +673,47 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 										alert('No slimeConfig found. Please set up your profile.');
 										return;
 									}
-									if (!activeNostrPublicKey) {
+									if (!activeProof) {
 										alert('Please select an active Nostr public key.');
 										return;
 									}
-									if (profile) {
-										if (!profile.metadata) profile.metadata = {};
-										if (displayName !== '') profile.metadata.slimeDisplayName = displayName;
-										if (avatar !== '') profile.metadata.slimeAvatar = avatar;
-										if (bio !== '') profile.metadata.slimeBio = bio;
-										if (location !== '') profile.metadata.slimeLocation = location;
-										if (languages.length !== 0) profile.metadata.slimeLanguages = JSON.stringify(languages);
-										if (links.length !== 0) profile.metadata.slimeLinks = JSON.stringify(links);
+									if (chiaProfile) {
+										if (!chiaProfile.metadata) chiaProfile.metadata = {};
+										if (displayName !== '') chiaProfile.metadata.slimeDisplayName = displayName;
+										if (avatar !== '') chiaProfile.metadata.slimeAvatar = avatar;
+										if (bio !== '') chiaProfile.metadata.slimeBio = bio;
+										if (location !== '') chiaProfile.metadata.slimeLocation = location;
+										if (languages.length !== 0) chiaProfile.metadata.slimeLanguages = JSON.stringify(languages);
+										if (links.length !== 0) chiaProfile.metadata.slimeLinks = JSON.stringify(links);
+										if (proofs.length !== 0) chiaProfile.metadata.slimeProofs = JSON.stringify(proofs);
+										if (activeProof) chiaProfile.metadata.slimeActiveProof = JSON.stringify(activeProof);
 
-										if (nostrPublicKeys.length !== 0) {
-											const provenKeys = await Promise.all(
-												nostrPublicKeys.map(async (key) => {
-													if (key.proof === '') {
-														const signResponse = await signMessageById({
-															id: profile.did,
-															message: key.key,
-														} as SignMessageByIdRequest);
-														return { key: key.key, proof: signResponse.signature };
-													}
-													return key;
-												})
-											);
+										onUpdateMetadata(chiaProfile.metadata);
 
-											console.log('provenKeys', provenKeys);
+										const createdAt = Math.floor(Date.now() / 1000);
 
-											profile.metadata.slimeNostrPublicKeys = JSON.stringify(provenKeys);
+										const event: NostrEvent = {
+											content: JSON.stringify({
+												...chiaProfile.metadata,
+												name: chiaProfile.metadata.slimeDisplayName,
+												about: chiaProfile.metadata.slimeBio,
+												picture: chiaProfile.metadata.slimeAvatar,
+											}),
+											kind: 0,
+											tags: [['i', `chia:${chiaProfile.did}`, activeProof.proof]],
+											created_at: createdAt,
+											pubkey: activeProof.pubkey,
+											id: '',
+											sig: '',
+										};
+										event.id = getEventHash(event);
+										const signResp = await signNostrMessage({ message: event.id });
+										console.log('signResp', signResp);
+										event.sig = signResp.signature;
 
-											profile.metadata.slimeActiveNostrPublicKey = activeNostrPublicKey;
-
-											slimeConfig.activeIdentity = {
-												currentNostrPublicKey: activeNostrPublicKey,
-												did: profile.did,
-												proof: provenKeys.find((key) => key.key === activeNostrPublicKey).proof,
-											};
-
-											const resp = await setSlimeConfig({ ...slimeConfig });
-											console.log('save_config', resp);
-
-											onUpdateMetadata(profile.metadata);
-
-											const createdAt = Math.floor(Date.now() / 1000);
-
-											const event: NostrEvent = {
-												content: JSON.stringify({
-													...profile.metadata,
-													name: profile.metadata.slimeDisplayName,
-													about: profile.metadata.slimeBio,
-													picture: profile.metadata.slimeAvatar,
-												}),
-												kind: 0,
-												tags: [
-													[
-														'i',
-														`chia:${profile.did}`,
-														provenKeys.find((key) => key.key === activeNostrPublicKey).proof,
-													],
-												],
-												created_at: createdAt,
-												pubkey: activeNostrPublicKey,
-												id: '',
-												sig: '',
-											};
-											event.id = getEventHash(event);
-											const signResp = await signNostrMessage({ message: event.id });
-											console.log('signResp', signResp);
-											event.sig = signResp.signature;
-
+										if (nostrRelays) {
 											nostrPool.publish(
-												slimeConfig.nostrRelays.map((relay) => relay.url),
+												nostrRelays.map((relay) => relay.url),
 												event
 											);
 										}
@@ -638,7 +721,7 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								}}
 							/>
 							<Button
-								disabled={!profile?.coinAvailable}
+								// disabled={!chiaProfile?.coinAvailable}
 								id="UpdateProfileButton"
 								variant="contained"
 								sx={{ width: '100%' }}
@@ -649,14 +732,19 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 								Update Profile
 							</Button>
 						</Grid>
+
 						<Grid item xs={12}>
-							<code>{JSON.stringify(profile, null, 2)}</code>
+							<code>Chia: {JSON.stringify(chiaProfile, null, 2)}</code>
 						</Grid>
 						<Grid item xs={12}>
 							<HorizontalRule sx={{ width: '100%' }} />
 						</Grid>
+						<code>local: {JSON.stringify(localIdentity, null, 2)}</code>
 						<Grid item xs={12}>
-							<code>{JSON.stringify(slimeConfig, null, 2)}</code>
+							<HorizontalRule sx={{ width: '100%' }} />
+						</Grid>
+						<Grid item xs={12}>
+							<code>config: {JSON.stringify(slimeConfig, null, 2)}</code>
 						</Grid>
 					</Grid>
 					<Modal

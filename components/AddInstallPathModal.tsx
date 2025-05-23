@@ -2,7 +2,7 @@ import { Button, Grid, Modal, Paper, TextField, Typography } from '@mui/material
 import React, { useState } from 'react';
 
 import { useSlimeApi } from '../contexts/SlimeApiContext';
-import { AddNostrRelayRequest } from '../types/slime/SlimeRpcTypes';
+import { AddInstallPathRequest } from '../types/slime/SlimeRpcTypes';
 
 export const style = {
 	position: 'absolute' as 'absolute',
@@ -16,18 +16,18 @@ export const style = {
 	p: 4,
 };
 
-interface AddRelayModalProps {
+interface AddInstallPathModalProps {
 	open: boolean;
 	setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export const AddRelayModal = (props: AddRelayModalProps) => {
+export const AddInstallPathModal = (props: AddInstallPathModalProps) => {
 	const { open, setOpen } = props;
 
-	const [RelayName, setRelayName] = useState<string>('');
-	const [RelayUrl, setRelayUrl] = useState<string>('');
+	const [InstallPathName, setInstallPathName] = useState<string>('');
+	const [InstallPath, setInstallPath] = useState<string>('');
 
-	const { addNostrRelay } = useSlimeApi();
+	const { addInstallPath } = useSlimeApi();
 
 	return (
 		<Modal
@@ -39,27 +39,27 @@ export const AddRelayModal = (props: AddRelayModalProps) => {
 			<Paper elevation={1} sx={style}>
 				<Grid container spacing={2}>
 					<Grid item xs={12}>
-						<Typography variant="h4">Add Relay</Typography>
+						<Typography variant="h4">Add InstallPath</Typography>
 					</Grid>
 					<Grid item xs={12}>
 						<TextField
-							id="RelayName"
-							label="Relay Name"
+							id="InstallPathName"
+							label="InstallPath Name"
 							variant="outlined"
-							value={RelayName}
+							value={InstallPathName}
 							onChange={(event) => {
-								setRelayName(event.target.value);
+								setInstallPathName(event.target.value);
 							}}
 						/>
 					</Grid>
 					<Grid item xs={12}>
 						<TextField
-							id="RelayUrl"
-							label="Relay URL"
+							id="InstallPath"
+							label="Install Path "
 							variant="outlined"
-							value={RelayUrl}
+							value={InstallPath}
 							onChange={(event) => {
-								setRelayUrl(event.target.value);
+								setInstallPath(event.target.value);
 							}}
 						/>
 					</Grid>
@@ -76,13 +76,13 @@ export const AddRelayModal = (props: AddRelayModalProps) => {
 					<Grid item xs={6}>
 						<Button
 							variant="contained"
-							disabled={RelayName === '' || RelayUrl === '' || RelayUrl.startsWith('ws://') === false}
+							disabled={InstallPathName === '' || InstallPath === ''}
 							onClick={() => {
-								addNostrRelay({ displayName: RelayName, url: RelayUrl } as AddNostrRelayRequest);
+								addInstallPath({ displayName: InstallPathName, path: InstallPath } as AddInstallPathRequest);
 								setOpen(false);
 							}}
 						>
-							Add Relay
+							Add InstallPath
 						</Button>
 					</Grid>
 				</Grid>

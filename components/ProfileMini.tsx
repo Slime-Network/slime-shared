@@ -1,12 +1,12 @@
 import { Typography, Paper, Stack, Button, Divider } from '@mui/material';
 import React from 'react';
 
-import { Profile } from '../types/slime/Profile';
+import { ChiaProfile } from '../types/slime/Profile';
 import { ProfilePFP } from './ProfilePFP';
 import { ProfileViewModal } from './ProfileViewModal';
 
 interface ProfileMiniProps {
-	profile: Profile;
+	profile: ChiaProfile;
 }
 
 export const ProfileMini = (props: ProfileMiniProps) => {

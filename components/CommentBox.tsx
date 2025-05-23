@@ -4,7 +4,7 @@ import React from 'react';
 
 import { useSlimeApi } from '../contexts/SlimeApiContext';
 import { useWalletConnectRpc } from '../contexts/WalletConnectRpcContext';
-import { ProfileMetadata } from '../types/slime/Profile';
+import { ChiaProfileMetadata } from '../types/slime/Profile';
 import { GetDIDInfoRequest } from '../types/walletconnect/rpc/GetDIDInfo';
 import { ProfilePFP } from './ProfilePFP';
 
@@ -19,15 +19,15 @@ export const CommentBox = (props: CommentBoxProps) => {
 	const [comment, setComment] = React.useState('');
 	const [commentValid, setCommentValid] = React.useState(true);
 
-	const [profile, setProfile] = React.useState<ProfileMetadata | undefined>(undefined);
+	const [profile, setProfile] = React.useState<ChiaProfileMetadata | undefined>(undefined);
 
 	const { getDIDInfo } = useWalletConnectRpc();
 	const { slimeConfig } = useSlimeApi();
 
 	React.useEffect(() => {
 		console.log('slimeConfig', slimeConfig);
-		getDIDInfo({ coinId: slimeConfig?.activeIdentity.did } as GetDIDInfoRequest).then((res) => {
-			setProfile(res.metadata as ProfileMetadata);
+		getDIDInfo({ coinId: slimeConfig?.did } as GetDIDInfoRequest).then((res) => {
+			setProfile(res.metadata as ChiaProfileMetadata);
 		});
 	}, [getDIDInfo, slimeConfig]);
 

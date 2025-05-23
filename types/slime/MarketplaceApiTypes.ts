@@ -1,13 +1,40 @@
+import { Language } from '../../constants/languages';
+import { SocialLink } from '../../constants/social-links';
 import { Media } from './Media';
 
 export type Marketplace = {
+	id: number;
 	displayName: string;
 	url: string;
 };
 
 export type NostrRelay = {
+	id: number;
 	displayName: string;
 	url: string;
+};
+
+export type Identity = {
+	did: string;
+	activeProof: IdentityProof;
+	displayName: string;
+	avatar: string;
+	bio: string;
+	location: string;
+	languages: Language[];
+	links: SocialLink[];
+	proofs: IdentityProof[];
+};
+
+export type SlimePath = {
+	id: number;
+	displayName: string;
+	path: string;
+};
+
+export type IdentityProof = {
+	pubkey: string;
+	proof: string;
 };
 
 export enum SortOptions {

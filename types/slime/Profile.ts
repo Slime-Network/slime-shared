@@ -1,20 +1,20 @@
-export type ProfileMetadata = {
+export type ChiaProfileMetadata = {
 	slimeDisplayName?: string;
 	slimeAvatar?: string;
 	slimeBio?: string;
 	slimeLocation?: string;
 	slimeLanguages?: string;
 	slimeLinks?: string;
-	slimeNostrPublicKeys?: string;
-	slimeActiveNostrPublicKey?: string;
+	slimeProofs?: string;
+	slimeActiveProof?: string;
 };
 
-export type Profile = {
+export type ChiaProfile = {
 	name: string;
 	did: string;
 	coinId: string;
 	p2Address: string;
 	walletId: number;
-	metadata: ProfileMetadata;
+	metadata: ChiaProfileMetadata;
 	coinAvailable: boolean;
 };

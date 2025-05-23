@@ -111,7 +111,7 @@ export default function StorePage(props: StorePageProps) {
 			const foundScreenshots: string[] = [];
 			const foundVideos: string[] = [];
 
-			slimeConfig?.languages.forEach((language) => {
+			slimeConfig?.languages?.forEach((language) => {
 				if (!foundTitle) {
 					media.titles.forEach((titleI) => {
 						if (titleI.language === language && !foundTitle) {
