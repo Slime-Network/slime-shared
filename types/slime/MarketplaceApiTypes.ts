@@ -51,6 +51,7 @@ export enum SortOptions {
 export type SearchResponse = {
 	results: Media[];
 	message: string;
+	status: 'success' | 'error';
 };
 
 export type SearchRequest = {

@@ -32,7 +32,7 @@ import { Slide as Slideshow } from 'react-slideshow-image';
 
 import { useSlimeApi } from '../contexts/SlimeApiContext';
 import { useWalletConnectRpc } from '../contexts/WalletConnectRpcContext';
-import { Media } from '../types/slime/Media';
+import { Media, MediaDescription, MediaTitle } from '../types/slime/Media';
 import { TakeOfferRequest } from '../types/walletconnect/rpc/TakeOffer';
 import { getEmbedUrl } from '../utils/urlUtils';
 import { CommentSection } from './CommentSection';
@@ -97,80 +97,50 @@ export default function StorePage(props: StorePageProps) {
 		takeOffer({ offer: activeOffer } as TakeOfferRequest);
 	};
 
-	const [title, setTitle] = React.useState<string | undefined>(undefined);
-	const [description, setDescription] = React.useState<string | undefined>(undefined);
-	const [longDescription, setLongDescription] = React.useState<string | undefined>(undefined);
-	const [videos, setVideos] = React.useState<string[]>([]);
-	const [screenshots, setScreenshots] = React.useState<string[]>([]);
+	const [title, setTitle] = React.useState<MediaTitle | undefined>(undefined);
+	const [description, setDescription] = React.useState<MediaDescription | undefined>(undefined);
+	const [longDescription, setLongDescription] = React.useState<MediaDescription | undefined>(undefined);
 
 	React.useEffect(() => {
 		if (open) {
-			let foundTitle = false;
-			let foundDescription = false;
-			const foundLongDescription = false;
-			const foundScreenshots: string[] = [];
-			const foundVideos: string[] = [];
+			let foundTitle: MediaTitle | undefined;
+			let foundDescription: MediaDescription | undefined;
+			let foundLongDescription: MediaDescription | undefined;
 
 			slimeConfig?.languages?.forEach((language) => {
 				if (!foundTitle) {
-					media.titles.forEach((titleI) => {
-						if (titleI.language.english === language.english && !foundTitle) {
-							foundTitle = true;
-							setTitle(titleI.title);
-						}
-					});
+					foundTitle = media.titles.find((titleI) => titleI.language.english === language.english);
+					if (foundTitle) {
+						setTitle(foundTitle);
+					}
 				}
 				if (!foundDescription) {
-					media.descriptions.forEach((descriptionI) => {
-						if (
-							descriptionI.language.english === language.english &&
-							descriptionI.type.toLowerCase() === 'short' &&
-							!foundDescription
-						) {
-							foundDescription = true;
-							setDescription(descriptionI.description);
-						}
-					});
+					foundDescription = media.descriptions.find(
+						(descriptionI) => descriptionI.language.english === language.english
+					);
+					if (foundDescription) {
+						setDescription(foundDescription);
+					}
 				}
 				if (!foundLongDescription) {
-					media.descriptions.forEach((descriptionI) => {
-						if (
-							descriptionI.language.english === language.english &&
-							descriptionI.type.toLowerCase() === 'long' &&
-							!foundLongDescription
-						) {
-							setLongDescription(descriptionI.description);
-						}
-					});
-				}
-				if (foundScreenshots.length === 0) {
-					media.images.forEach((image) => {
-						if (image.type.toLowerCase() === 'screenshot' && image.language.english === language.english) {
-							foundScreenshots.push(image.url);
-						}
-					});
-				}
-				if (foundVideos.length === 0) {
-					media.videos.forEach((video) => {
-						if (video.language.english === language.english) {
-							foundVideos.push(video.url);
-						}
-					});
+					foundLongDescription = media.descriptions.find(
+						(descriptionI) => descriptionI.language.english === language.english
+					);
+					if (foundLongDescription) {
+						setLongDescription(foundLongDescription);
+					}
 				}
 			});
 
 			if (!foundTitle) {
-				setTitle(media.titles[0].title);
+				setTitle(media.titles[0]);
 			}
 			if (!foundDescription) {
-				setDescription(media.descriptions[0].description);
+				setDescription(media.descriptions[0]);
 			}
 			if (!foundLongDescription) {
-				setLongDescription(media.descriptions[0].description);
+				setLongDescription(media.descriptions[0]);
 			}
-
-			setScreenshots(foundScreenshots);
-			setVideos(foundVideos);
 		}
 	}, [media, slimeConfig?.languages, open]);
 
@@ -221,7 +191,7 @@ export default function StorePage(props: StorePageProps) {
 						<CloseIcon />
 					</IconButton>
 					<Typography sx={{ ml: 2, flex: 1 }} variant="h6">
-						{title}
+						{title?.title}
 					</Typography>
 				</Toolbar>
 			</AppBar>
@@ -244,8 +214,10 @@ export default function StorePage(props: StorePageProps) {
 							<TabPanel value={tab} index={0}>
 								<Box sx={{ height: '100%' }}>
 									<Slideshow>
-										{videos &&
-											videos.map((trailer) => <iframe src={getEmbedUrl(trailer)} height={'370'} width={'100%'} />)}
+										{media.videos &&
+											media.videos.map((trailer) => (
+												<iframe src={getEmbedUrl(trailer.url)} height={'370'} width={'100%'} />
+											))}
 									</Slideshow>
 								</Box>
 							</TabPanel>
@@ -253,8 +225,8 @@ export default function StorePage(props: StorePageProps) {
 						<TabPanel value={tab} index={1}>
 							<Box sx={{ height: '100%' }}>
 								<Slideshow>
-									{screenshots &&
-										screenshots.map((screenshot, index) => (
+									{media.images &&
+										media.images.map((screenshot, index) => (
 											<div
 												key={index}
 												style={{
@@ -263,7 +235,7 @@ export default function StorePage(props: StorePageProps) {
 													justifyContent: 'center',
 													backgroundSize: 'cover',
 													height: '370px',
-													backgroundImage: `url(${screenshot})`,
+													backgroundImage: `url(${screenshot.url})`,
 												}}
 											/>
 										))}
@@ -276,11 +248,11 @@ export default function StorePage(props: StorePageProps) {
 							<Paper elevation={1} sx={{ height: '60%', p: 2, m: 2 }}>
 								<Stack justifyContent={'space-between'} alignContent={'center'} direction="column" height={'100%'}>
 									<Box>
-										<Typography variant="h5">{title}</Typography>
+										<Typography variant="h5">{title?.title}</Typography>
 										<Divider />
 									</Box>
 									<Box>
-										<Typography height={'100%'}>{description}</Typography>
+										<Typography height={'100%'}>{description?.description}</Typography>
 									</Box>
 									<Box>
 										<Divider />
@@ -332,12 +304,9 @@ export default function StorePage(props: StorePageProps) {
 						</Stack>
 					</Grid>
 					<Paper elevation={1} sx={{ width: '100%', p: 2, m: 2 }}>
-						<ReactMarkdown children={longDescription || ''} />
+						<ReactMarkdown children={longDescription?.description || ''} />
 					</Paper>
-					{CommentSection({
-						media,
-						open,
-					})}
+					<CommentSection media={media} open={open} />
 				</Grid>
 			</Container>
 		</Dialog>

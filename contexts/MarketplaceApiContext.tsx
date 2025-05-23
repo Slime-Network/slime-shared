@@ -66,15 +66,24 @@ export const MarketplaceApiContextProvider = ({ children }: { children: ReactNod
 
 	const search = async (params: SearchRequest) => {
 		try {
+			if (!slimeConfig) {
+				return {
+					results: [],
+					message: 'No Config',
+					status: 'error',
+				} as SearchResponse;
+			}
 			const response = await axios.get(`${slimeConfig?.marketplaceUrl}/listings/search`, { params });
 			return {
 				results: hitsToGameList(response.data.hits.hits),
 				message: response.data.message,
+				status: 'success',
 			} as SearchResponse;
 		} catch (e) {
 			return {
 				results: [],
-				message: 'An unknown error occurred during search',
+				message: `An unknown error occurred during search: ${(e as Error).message}`,
+				status: 'error',
 			} as SearchResponse;
 		}
 	};

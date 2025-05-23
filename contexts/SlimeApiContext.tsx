@@ -123,8 +123,7 @@ export const SlimeApiContextProvider = ({ children }: { children: ReactNode | Re
 
 	const fetchSlimeConfig = React.useCallback(async () => {
 		const configResponse: any = await invoke('get_config');
-		console.log('slimeConfigooo', configResponse.result);
-		configResponse.result.proof = JSON.parse(configResponse.result.proof);
+		configResponse.result.activeProof = JSON.parse(configResponse.result.activeProof);
 		configResponse.result.languages = JSON.parse(configResponse.result.languages);
 		setSlimeConfig(configResponse.result);
 	}, [setSlimeConfig]);
@@ -133,12 +132,10 @@ export const SlimeApiContextProvider = ({ children }: { children: ReactNode | Re
 		if (!slimeConfig) {
 			fetchSlimeConfig();
 		}
-		console.log('slimeConfig', slimeConfig);
 	}, [slimeConfig, fetchSlimeConfig]);
 
 	const fetchIdentities = React.useCallback(async () => {
 		const response: any = await invoke('get_identities');
-		console.log('fetchIdentities', response);
 		setIdentities(
 			response.map((identity: any) => ({
 				...identity,
@@ -154,12 +151,10 @@ export const SlimeApiContextProvider = ({ children }: { children: ReactNode | Re
 		if (!identities) {
 			fetchIdentities();
 		}
-		console.log('identities', identities);
 	}, [identities, fetchIdentities]);
 
 	const fetchMarketplaces = React.useCallback(async () => {
 		const response: any = await invoke('get_marketplaces');
-		console.log('marketplaces -', response);
 		setMarketplaces(response);
 	}, [setMarketplaces]);
 
@@ -167,12 +162,10 @@ export const SlimeApiContextProvider = ({ children }: { children: ReactNode | Re
 		if (!marketplaces) {
 			fetchMarketplaces();
 		}
-		console.log('marketplaces 2', marketplaces);
 	}, [marketplaces, fetchMarketplaces]);
 
 	const fetchNostrRelays = React.useCallback(async () => {
 		const response: any = await invoke('get_nostr_relays');
-		console.log('nostrRelays -', response);
 		setNostrRelays(response);
 	}, [setNostrRelays]);
 
@@ -180,12 +173,10 @@ export const SlimeApiContextProvider = ({ children }: { children: ReactNode | Re
 		if (!nostrRelays) {
 			fetchNostrRelays();
 		}
-		console.log('nostrRelaysx', nostrRelays);
 	}, [nostrRelays, fetchNostrRelays]);
 
 	const fetchInstallPaths = React.useCallback(async () => {
 		const response: any = await invoke('get_install_paths');
-		console.log('fetchInstallPaths', response);
 		setInstallPaths(response);
 	}, [setInstallPaths]);
 
@@ -193,12 +184,10 @@ export const SlimeApiContextProvider = ({ children }: { children: ReactNode | Re
 		if (!installPaths) {
 			fetchInstallPaths();
 		}
-		console.log('installPaths', installPaths);
 	}, [installPaths, fetchInstallPaths]);
 
 	const fetchTorrentPaths = React.useCallback(async () => {
 		const response: any = await invoke('get_torrent_paths');
-		console.log('fetchTorrentPaths', response);
 		setTorrentPaths(response);
 	}, [setTorrentPaths]);
 
@@ -206,14 +195,12 @@ export const SlimeApiContextProvider = ({ children }: { children: ReactNode | Re
 		if (!torrentPaths) {
 			fetchTorrentPaths();
 		}
-		console.log('torrentPaths', torrentPaths);
 	}, [torrentPaths, fetchTorrentPaths]);
 
 	const addMarketplace = async (params: AddMarketplaceRequest) => {
 		try {
 			const highestId = marketplaces?.length ? Math.max(...marketplaces.map((marketplace) => marketplace.id)) : 0;
 			marketplaces?.push({ id: highestId + 1, displayName: params.displayName, url: params.url });
-			console.log('adding marketplace', { id: highestId + 1, displayName: params.displayName, url: params.url });
 			if (!marketplaces) {
 				setMarketplaces([{ id: highestId + 1, displayName: params.displayName, url: params.url }]);
 			} else {
@@ -324,7 +311,6 @@ export const SlimeApiContextProvider = ({ children }: { children: ReactNode | Re
 				links: JSON.stringify(params.links),
 				proofs: JSON.stringify(params.proofs),
 			};
-			console.log('adding identity3333', stringified);
 			return (await invoke('add_identity', { params: stringified })) as AddIdentityResponse;
 		} catch (e) {
 			console.error(e);

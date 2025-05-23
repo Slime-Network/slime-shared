@@ -6,6 +6,7 @@ import { useSlimeApi } from '../contexts/SlimeApiContext';
 import { useWalletConnectRpc } from '../contexts/WalletConnectRpcContext';
 import { Media } from '../types/slime/Media';
 import { ChiaProfileMetadata } from '../types/slime/Profile';
+import { SignNostrMessageRequest } from '../types/slime/SlimeRpcTypes';
 import { GetDIDInfoRequest } from '../types/walletconnect/rpc/GetDIDInfo';
 import { SlimeComment } from './Comment';
 import { CommentBox } from './CommentBox';
@@ -108,7 +109,7 @@ export const CommentSection = (props: CommentSectionProps) => {
 		const pubkey = slimeConfig.activeProof?.pubkey;
 
 		if (!pubkey) {
-			console.log('No public key found');
+			console.log('No public key found', slimeConfig);
 			alert('No public key found. Please set up your profile.');
 			return;
 		}
@@ -135,7 +136,11 @@ export const CommentSection = (props: CommentSectionProps) => {
 			sig: '',
 		};
 		event.id = getEventHash(event);
-		const signResp = await signNostrMessage({ message: event.id });
+		console.log('event222', event);
+		const signResp = await signNostrMessage({
+			message: event.id,
+			publicKey: pubkey,
+		} as SignNostrMessageRequest);
 		console.log('signResp', signResp);
 		event.sig = signResp.signature;
 

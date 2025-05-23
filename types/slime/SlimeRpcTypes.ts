@@ -167,6 +167,7 @@ export type SetActiveTorrentPathResponse = {
 
 export type SignNostrMessageRequest = {
 	message: string;
+	publicKey: string;
 };
 
 export type SignNostrMessageResponse = {

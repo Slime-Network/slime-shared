@@ -31,6 +31,7 @@ import { useSlimeApi } from '../contexts/SlimeApiContext';
 import { useWalletConnectRpc } from '../contexts/WalletConnectRpcContext';
 import { Identity, IdentityProof } from '../types/slime/MarketplaceApiTypes';
 import { ChiaProfile } from '../types/slime/Profile';
+import { SignNostrMessageRequest } from '../types/slime/SlimeRpcTypes';
 import { SignMessageByIdRequest } from '../types/walletconnect/rpc/SignMessageById';
 import { NostrEvent, getEventHash } from '../utils/nostr';
 import { FeeDialogModal } from './FeeDialogModal';
@@ -719,7 +720,10 @@ export function ProfileEditPage(props: ProfileEditPageProps) {
 											sig: '',
 										};
 										event.id = getEventHash(event);
-										const signResp = await signNostrMessage({ message: event.id });
+										const signResp = await signNostrMessage({
+											message: event.id,
+											publicKey: activeProof.pubkey,
+										} as SignNostrMessageRequest);
 										console.log('signResp', signResp);
 										event.sig = signResp.signature;
 

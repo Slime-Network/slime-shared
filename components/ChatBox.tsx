@@ -103,7 +103,7 @@ export const ChatBox = (props: ChatBoxProps) => {
 		const pk = slimeConfig.activeProof?.pubkey;
 
 		if (!pk) {
-			console.log('No public key found');
+			console.log('No public key found', slimeConfig);
 			alert('No public key found. Please set up your profile.');
 			return;
 		}
@@ -120,7 +120,7 @@ export const ChatBox = (props: ChatBoxProps) => {
 			sig: '',
 		};
 		event.id = getEventHash(event);
-		const signResp = await signNostrMessage({ message: event.id });
+		const signResp = await signNostrMessage({ message: event.id, publicKey: pk });
 		console.log('signResp', signResp);
 		event.sig = signResp.signature;
 
