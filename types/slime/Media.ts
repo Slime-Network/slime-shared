@@ -81,6 +81,7 @@ export type MediaUrlSource = {
 	type: string;
 	source: string;
 	alt: string;
+	nsfw: boolean;
 	language: Language;
 };
 
@@ -89,10 +90,19 @@ export type MediaCredit = {
 	role: string;
 };
 
+export type MediaContent = {
+	content: string;
+	description?: string;
+	image?: string;
+	value?: number;
+};
+
 export type MediaContentRating = {
-	type: string;
+	name: string;
+	fullName: string;
 	rating: string;
 	link: string;
+	containsContent: MediaContent[];
 };
 
 export type MediaDescription = {
@@ -114,10 +124,13 @@ export type MediaTag = {
 	adult: boolean;
 };
 
-export type MediaTorrent = {
-	platform: string;
+export type MediaFiles = {
+	name: string;
 	size: number;
 	torrent: string;
+	executables: MediaExecutable[];
+	password: string;
+	version: string;
 };
 
 export type MediaTitle = {
@@ -127,15 +140,13 @@ export type MediaTitle = {
 
 export type Media = {
 	mediaType: string;
-	contentRating: MediaContentRating[];
+	contentRatings: MediaContentRating[];
 	descriptions: MediaDescription[];
 	credits: MediaCredit[];
 	childProducts: string[];
-	executables: MediaExecutable[];
 	lastUpdated: number;
 	lastUpdatedContent: number;
 	nostrEventId: string;
-	password: string;
 	images: MediaUrlSource[];
 	videos: MediaUrlSource[];
 	donationAddress: string;
@@ -146,6 +157,5 @@ export type Media = {
 	supportContact: string;
 	tags: MediaTag[];
 	titles: MediaTitle[];
-	torrents: MediaTorrent[];
-	version: string;
+	files: MediaFiles[];
 };

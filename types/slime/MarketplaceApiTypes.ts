@@ -63,6 +63,7 @@ export type SearchRequest = {
 	tags: string[];
 	status: string;
 	includeAdultOnly: boolean;
+	size: number;
 };
 
 export type GetInstallDataResponse = {
