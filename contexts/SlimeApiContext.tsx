@@ -293,17 +293,35 @@ export const SlimeApiContextProvider = ({ children }: { children: ReactNode | Re
 			return { message: 'No identities found', status: 'error' } as AddIdentityResponse;
 		}
 		try {
-			identities?.push({
-				did: params.did,
-				activeProof: params.activeProof,
-				avatar: params.avatar,
-				displayName: params.displayName,
-				bio: params.bio,
-				location: params.location,
-				languages: params.languages,
-				links: params.links,
-				proofs: params.proofs,
-			});
+			const contains = identities?.some((identity) => identity.did === params.did);
+			if (contains) {
+				const index = identities?.findIndex((identity) => identity.did === params.did);
+				identities?.splice(index, 1);
+				identities?.push({
+					did: params.did,
+					activeProof: params.activeProof,
+					avatar: params.avatar,
+					displayName: params.displayName,
+					bio: params.bio,
+					location: params.location,
+					languages: params.languages,
+					links: params.links,
+					proofs: params.proofs,
+				});
+			} else {
+				identities?.push({
+					did: params.did,
+					activeProof: params.activeProof,
+					avatar: params.avatar,
+					displayName: params.displayName,
+					bio: params.bio,
+					location: params.location,
+					languages: params.languages,
+					links: params.links,
+					proofs: params.proofs,
+				});
+			}
+			setIdentities([...identities]);
 			const stringified = {
 				...params,
 				activeProof: JSON.stringify(params.activeProof),
