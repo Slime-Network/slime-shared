@@ -114,7 +114,7 @@ export default function StorePage(props: StorePageProps) {
 			slimeConfig?.languages?.forEach((language) => {
 				if (!foundTitle) {
 					media.titles.forEach((titleI) => {
-						if (titleI.language.english === language && !foundTitle) {
+						if (titleI.language.english === language.english && !foundTitle) {
 							foundTitle = true;
 							setTitle(titleI.title);
 						}
@@ -123,7 +123,7 @@ export default function StorePage(props: StorePageProps) {
 				if (!foundDescription) {
 					media.descriptions.forEach((descriptionI) => {
 						if (
-							descriptionI.language.english === language &&
+							descriptionI.language.english === language.english &&
 							descriptionI.type.toLowerCase() === 'short' &&
 							!foundDescription
 						) {
@@ -135,7 +135,7 @@ export default function StorePage(props: StorePageProps) {
 				if (!foundLongDescription) {
 					media.descriptions.forEach((descriptionI) => {
 						if (
-							descriptionI.language.english === language &&
+							descriptionI.language.english === language.english &&
 							descriptionI.type.toLowerCase() === 'long' &&
 							!foundLongDescription
 						) {
@@ -145,14 +145,14 @@ export default function StorePage(props: StorePageProps) {
 				}
 				if (foundScreenshots.length === 0) {
 					media.images.forEach((image) => {
-						if (image.type.toLowerCase() === 'screenshot' && image.language.english === language) {
+						if (image.type.toLowerCase() === 'screenshot' && image.language.english === language.english) {
 							foundScreenshots.push(image.url);
 						}
 					});
 				}
 				if (foundVideos.length === 0) {
 					media.videos.forEach((video) => {
-						if (video.language.english === language) {
+						if (video.language.english === language.english) {
 							foundVideos.push(video.url);
 						}
 					});
