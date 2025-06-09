@@ -61,6 +61,10 @@ import {
 	SetActiveInstallPathResponse,
 	RemoveIdentityRequest,
 	RemoveIdentityResponse,
+	RelayPostToSidecarRequest,
+	RelayPostToSidecarResponse,
+	RelayGetToSidecarRequest,
+	RelayGetToSidecarResponse,
 } from '../types/slime/SlimeRpcTypes';
 
 /**
@@ -103,6 +107,8 @@ interface IContext {
 	launchMedia: (params: LaunchMediaRequest) => Promise<LaunchMediaResponse>;
 	generateTorrent: (params: GenerateTorrentRequest) => Promise<GenerateTorrentResponse>;
 	getUrlDataHash: (params: GetUrlDataHashRequest) => Promise<GetUrlDataHashResponse>;
+	relayPostToSidecar: (params: RelayPostToSidecarRequest) => Promise<RelayPostToSidecarResponse>;
+	relayGetToSidecar: (params: RelayGetToSidecarRequest) => Promise<RelayGetToSidecarResponse>;
 }
 
 /**
@@ -123,7 +129,8 @@ export const SlimeApiContextProvider = ({ children }: { children: ReactNode | Re
 
 	const fetchSlimeConfig = React.useCallback(async () => {
 		const configResponse: any = await invoke('get_config');
-		configResponse.result.activeProof = JSON.parse(configResponse.result.activeProof);
+		console.log('slimeConfigooo', configResponse.result);
+		configResponse.result.proof = JSON.parse(configResponse.result.proof);
 		configResponse.result.languages = JSON.parse(configResponse.result.languages);
 		setSlimeConfig(configResponse.result);
 	}, [setSlimeConfig]);
@@ -132,10 +139,12 @@ export const SlimeApiContextProvider = ({ children }: { children: ReactNode | Re
 		if (!slimeConfig) {
 			fetchSlimeConfig();
 		}
+		console.log('slimeConfig', slimeConfig);
 	}, [slimeConfig, fetchSlimeConfig]);
 
 	const fetchIdentities = React.useCallback(async () => {
 		const response: any = await invoke('get_identities');
+		console.log('fetchIdentities', response);
 		setIdentities(
 			response.map((identity: any) => ({
 				...identity,
@@ -151,10 +160,12 @@ export const SlimeApiContextProvider = ({ children }: { children: ReactNode | Re
 		if (!identities) {
 			fetchIdentities();
 		}
+		console.log('identities', identities);
 	}, [identities, fetchIdentities]);
 
 	const fetchMarketplaces = React.useCallback(async () => {
 		const response: any = await invoke('get_marketplaces');
+		console.log('marketplaces -', response);
 		setMarketplaces(response);
 	}, [setMarketplaces]);
 
@@ -162,10 +173,12 @@ export const SlimeApiContextProvider = ({ children }: { children: ReactNode | Re
 		if (!marketplaces) {
 			fetchMarketplaces();
 		}
+		console.log('marketplaces 2', marketplaces);
 	}, [marketplaces, fetchMarketplaces]);
 
 	const fetchNostrRelays = React.useCallback(async () => {
 		const response: any = await invoke('get_nostr_relays');
+		console.log('nostrRelays -', response);
 		setNostrRelays(response);
 	}, [setNostrRelays]);
 
@@ -173,10 +186,12 @@ export const SlimeApiContextProvider = ({ children }: { children: ReactNode | Re
 		if (!nostrRelays) {
 			fetchNostrRelays();
 		}
+		console.log('nostrRelaysx', nostrRelays);
 	}, [nostrRelays, fetchNostrRelays]);
 
 	const fetchInstallPaths = React.useCallback(async () => {
 		const response: any = await invoke('get_install_paths');
+		console.log('fetchInstallPaths', response);
 		setInstallPaths(response);
 	}, [setInstallPaths]);
 
@@ -184,10 +199,12 @@ export const SlimeApiContextProvider = ({ children }: { children: ReactNode | Re
 		if (!installPaths) {
 			fetchInstallPaths();
 		}
+		console.log('installPaths', installPaths);
 	}, [installPaths, fetchInstallPaths]);
 
 	const fetchTorrentPaths = React.useCallback(async () => {
 		const response: any = await invoke('get_torrent_paths');
+		console.log('fetchTorrentPaths', response);
 		setTorrentPaths(response);
 	}, [setTorrentPaths]);
 
@@ -195,12 +212,14 @@ export const SlimeApiContextProvider = ({ children }: { children: ReactNode | Re
 		if (!torrentPaths) {
 			fetchTorrentPaths();
 		}
+		console.log('torrentPaths', torrentPaths);
 	}, [torrentPaths, fetchTorrentPaths]);
 
 	const addMarketplace = async (params: AddMarketplaceRequest) => {
 		try {
 			const highestId = marketplaces?.length ? Math.max(...marketplaces.map((marketplace) => marketplace.id)) : 0;
 			marketplaces?.push({ id: highestId + 1, displayName: params.displayName, url: params.url });
+			console.log('adding marketplace', { id: highestId + 1, displayName: params.displayName, url: params.url });
 			if (!marketplaces) {
 				setMarketplaces([{ id: highestId + 1, displayName: params.displayName, url: params.url }]);
 			} else {
@@ -293,35 +312,17 @@ export const SlimeApiContextProvider = ({ children }: { children: ReactNode | Re
 			return { message: 'No identities found', status: 'error' } as AddIdentityResponse;
 		}
 		try {
-			const contains = identities?.some((identity) => identity.did === params.did);
-			if (contains) {
-				const index = identities?.findIndex((identity) => identity.did === params.did);
-				identities?.splice(index, 1);
-				identities?.push({
-					did: params.did,
-					activeProof: params.activeProof,
-					avatar: params.avatar,
-					displayName: params.displayName,
-					bio: params.bio,
-					location: params.location,
-					languages: params.languages,
-					links: params.links,
-					proofs: params.proofs,
-				});
-			} else {
-				identities?.push({
-					did: params.did,
-					activeProof: params.activeProof,
-					avatar: params.avatar,
-					displayName: params.displayName,
-					bio: params.bio,
-					location: params.location,
-					languages: params.languages,
-					links: params.links,
-					proofs: params.proofs,
-				});
-			}
-			setIdentities([...identities]);
+			identities?.push({
+				did: params.did,
+				activeProof: params.activeProof,
+				avatar: params.avatar,
+				displayName: params.displayName,
+				bio: params.bio,
+				location: params.location,
+				languages: params.languages,
+				links: params.links,
+				proofs: params.proofs,
+			});
 			const stringified = {
 				...params,
 				activeProof: JSON.stringify(params.activeProof),
@@ -329,6 +330,7 @@ export const SlimeApiContextProvider = ({ children }: { children: ReactNode | Re
 				links: JSON.stringify(params.links),
 				proofs: JSON.stringify(params.proofs),
 			};
+			console.log('adding identity3333', stringified);
 			return (await invoke('add_identity', { params: stringified })) as AddIdentityResponse;
 		} catch (e) {
 			console.error(e);
@@ -580,6 +582,24 @@ export const SlimeApiContextProvider = ({ children }: { children: ReactNode | Re
 		}
 	};
 
+	const relayPostToSidecar = async (params: RelayPostToSidecarRequest) => {
+		try {
+			return (await invoke('relay_post_to_sidecar', { params })) as RelayPostToSidecarResponse;
+		} catch (e) {
+			console.error(e);
+			return { message: e, status: 'error' } as RelayPostToSidecarResponse;
+		}
+	};
+
+	const relayGetToSidecar = async (params: RelayGetToSidecarRequest) => {
+		try {
+			return (await invoke('relay_get_to_sidecar', { params })) as RelayGetToSidecarResponse;
+		} catch (e) {
+			console.error(e);
+			return { message: e, status: 'error' } as RelayGetToSidecarResponse;
+		}
+	};
+
 	return (
 		<SlimeApiContext.Provider
 			value={{
@@ -619,6 +639,8 @@ export const SlimeApiContextProvider = ({ children }: { children: ReactNode | Re
 				launchMedia,
 				generateTorrent,
 				getUrlDataHash,
+				relayPostToSidecar,
+				relayGetToSidecar,
 			}}
 		>
 			{children}

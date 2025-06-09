@@ -348,3 +348,21 @@ export type GetUrlDataHashResponse = {
 	hash: string;
 	message: string;
 };
+
+export type RelayPostToSidecarRequest = {
+	port: number;
+	method: string;
+	data: any;
+};
+
+export type RelayPostToSidecarResponse = {
+	status: 'success' | 'error';
+	message: string;
+};
+
+export type RelayGetToSidecarRequest = {
+	port: number;
+	method: string;
+};
+
+export type RelayGetToSidecarResponse = any;
