@@ -3,9 +3,14 @@ export type Product = {
 	name: string;
 	description: string;
 	price: number;
+	options: string[];
 	images: string[];
 	videos: string[];
-	quantity: number;
+	stock: {
+		quantity: number;
+		option: string;
+	};
+	creator: string;
 	hasPhysical: boolean;
 	hasChiaAsset: boolean;
 	lastUpdated: number;
@@ -14,6 +19,7 @@ export type Product = {
 
 export type OrderProduct = {
 	product: Product;
+	option: string;
 	pricePaid: number;
 	quantity: number;
 };
@@ -28,4 +34,15 @@ export type Order = {
 	totalPrice: number;
 	orderDate: Date;
 	orderCodes: string[];
+};
+
+export type Person = {
+	personId: string;
+	name: string;
+	socials: any[];
+	description: string;
+	images: any[];
+	videos: any[];
+	lastUpdated: number;
+	isPublic: boolean;
 };
