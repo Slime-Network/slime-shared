@@ -41,18 +41,24 @@ export type Person = {
 	name: string;
 	description: string;
 	did: string;
-	socials: {
-		platform: string;
-		url: string;
-	};
-	images: {
-		url: string;
-		type: string;
-	};
-	videos: {
-		url: string;
-		type: string;
-	};
+	socials: [
+		{
+			platform: string;
+			url: string;
+		}
+	];
+	images: [
+		{
+			url: string;
+			type: string;
+		}
+	];
+	videos: [
+		{
+			url: string;
+			type: string;
+		}
+	];
 	lastUpdated: number;
 	isPublic: boolean;
 };
