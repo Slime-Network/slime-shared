@@ -39,10 +39,20 @@ export type Order = {
 export type Person = {
 	personId: string;
 	name: string;
-	socials: any[];
 	description: string;
-	images: any[];
-	videos: any[];
+	did: string;
+	socials: {
+		platform: string;
+		url: string;
+	};
+	images: {
+		url: string;
+		type: string;
+	};
+	videos: {
+		url: string;
+		type: string;
+	};
 	lastUpdated: number;
 	isPublic: boolean;
 };
