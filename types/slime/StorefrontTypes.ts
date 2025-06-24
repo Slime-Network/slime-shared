@@ -10,7 +10,7 @@ export type Product = {
 	stock: {
 		quantity: number;
 		option: string;
-	};
+	}[];
 	creator: string;
 	hasPhysical: boolean;
 	hasChiaAsset: boolean;
@@ -43,24 +43,9 @@ export type Person = {
 	description: string;
 	longDescription: string;
 	did: string;
-	socials: [
-		{
-			platform: string;
-			url: string;
-		}
-	];
-	images: [
-		{
-			url: string;
-			type: string;
-		}
-	];
-	videos: [
-		{
-			url: string;
-			type: string;
-		}
-	];
+	socials: { platform: string; url: string }[];
+	images: { url: string; type: string }[];
+	videos: { url: string; type: string }[];
 	lastUpdated: number;
 	isPublic: boolean;
 };
