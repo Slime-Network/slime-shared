@@ -2,6 +2,7 @@ export type Product = {
 	productId: string;
 	name: string;
 	description: string;
+	longDescription: string;
 	price: number;
 	options: string[];
 	images: string[];
@@ -40,6 +41,7 @@ export type Person = {
 	personId: string;
 	name: string;
 	description: string;
+	longDescription: string;
 	did: string;
 	socials: [
 		{
